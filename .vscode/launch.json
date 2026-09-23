@@ -1,0 +1,217 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Live CISA KEV Case",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_live_kev_case.py",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Run Operational Master",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_operational_master.py",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--run-tests"
+      ]
+    },
+    {
+      "name": "Run VessellFramework Preflight",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_preflight.py",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--strict"
+      ]
+    },
+    {
+      "name": "Build Active Defense Plan",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_active_defense.py",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--inventory",
+        "${workspaceFolder}/example_asset_inventory.json"
+      ]
+    },
+    {
+      "name": "Import Authorized Scanner Export",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_scanner_ingest.py",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--inventory",
+        "${workspaceFolder}/example_asset_inventory.json",
+        "--asset-id",
+        "${input:scannerAssetId}",
+        "--source",
+        "${input:scannerSource}",
+        "--report",
+        "${input:scannerReport}"
+      ]
+    },
+    {
+      "name": "Run Local Authorized Scanner",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_scanner_ingest.py",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--inventory",
+        "${workspaceFolder}/example_asset_inventory.json",
+        "--asset-id",
+        "${input:scannerAssetId}",
+        "--source",
+        "${input:localScannerSource}",
+        "--local-path",
+        "${input:localScannerPath}"
+      ]
+    },
+    {
+      "name": "Run KEV Remediation Orchestrator",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "vessell.app.remediation_orchestrator",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000"
+      ]
+    },
+    {
+      "name": "Run VessellFramework Program (Dry Run)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_framework.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--dry-run",
+        "--target-root",
+        "${workspaceFolder}",
+        "--skip-checks"
+      ]
+    },
+    {
+      "name": "Run VessellFramework Program (Apply)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_framework.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--apply",
+        "--create-missing",
+        "--target-root",
+        "${workspaceFolder}",
+        "--skip-checks"
+      ]
+    },
+    {
+      "name": "Run VessellFramework Program (One Click Full)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_framework.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--apply",
+        "--create-missing",
+        "--target-root",
+        "${workspaceFolder}",
+        "--skip-checks"
+      ]
+    },
+    {
+      "name": "Run VessellFramework Program (Strict Full)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_framework.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--apply",
+        "--create-missing",
+        "--target-root",
+        "${workspaceFolder}"
+      ]
+    },
+    {
+      "name": "Run VessellFramework Full Program Demo",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "vessell.app.main",
+      "python": "${workspaceFolder}/.venv313/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--input",
+        "example_case.json"
+      ]
+    },
+    {
+      "name": "Debug Current Test File (pytest)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "${file}",
+        "-v"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "scannerAssetId",
+      "type": "promptString",
+      "description": "Authorized asset_id from the inventory"
+    },
+    {
+      "id": "scannerSource",
+      "type": "pickString",
+      "description": "Scanner export source",
+      "options": ["greenbone", "trivy", "osv-scanner", "wazuh"]
+    },
+    {
+      "id": "scannerReport",
+      "type": "promptString",
+      "description": "Path to the scanner JSON export"
+    },
+    {
+      "id": "localScannerSource",
+      "type": "pickString",
+      "description": "Local scanner",
+      "options": ["trivy", "osv-scanner"]
+    },
+    {
+      "id": "localScannerPath",
+      "type": "promptString",
+      "description": "Local directory to scan"
+    }
+  ]
+}

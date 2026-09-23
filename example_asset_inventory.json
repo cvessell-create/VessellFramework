@@ -1,0 +1,15 @@
+{
+  "assets": [
+    {
+      "asset_id": "replace-with-authorized-asset-id",
+      "vendor": "Check Point",
+      "product": "Security Gateway",
+      "authorized": false,
+      "confirmed_cves": [],
+      "remediation_provider": "microsoft-intune",
+      "intune_device_id": "replace-with-intune-managed-device-id",
+      "internet_exposed": true,
+      "criticality": "critical"
+    }
+  ]
+}

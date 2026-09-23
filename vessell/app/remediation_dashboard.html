@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VessellFramework Control Room</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root { --ink:#17212b; --muted:#62717e; --line:#cbd4db; --paper:#f6f7f4; --panel:#ffffff; --teal:#006c70; --blue:#17599c; --amber:#9a5d00; --red:#a62930; --green:#176b45; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:linear-gradient(130deg,#e8f1ee 0%,var(--paper) 42%,#e9eff5 100%); font-family:Georgia, "Times New Roman", serif; }
+    button, input, textarea { font:inherit; }
+    header { padding:22px clamp(20px,4vw,62px); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; align-items:center; background:rgba(255,255,255,.76); }
+    h1 { margin:0; font-size:28px; letter-spacing:0; } h1 span { color:var(--teal); }
+    .eyebrow, label { color:var(--muted); font-family:Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:0; text-transform:uppercase; }
+    main { max-width:1400px; margin:0 auto; padding:30px clamp(20px,4vw,62px) 50px; }
+    .status { display:flex; align-items:center; gap:8px; color:var(--muted); font-family:Arial,sans-serif; font-size:13px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:var(--amber); } .dot.ok { background:var(--green); }
+    .summary { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid var(--line); background:var(--panel); margin-bottom:26px; }
+    .metric { min-height:105px; padding:20px; border-right:1px solid var(--line); } .metric:last-child { border:0; }
+    .metric b { display:block; margin-top:6px; font:34px/1 Arial,sans-serif; } .metric span { font-family:Arial,sans-serif; color:var(--muted); font-size:12px; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:26px; align-items:start; }
+    .section-title { display:flex; align-items:end; justify-content:space-between; border-bottom:2px solid var(--ink); padding-bottom:9px; margin-bottom:14px; }
+    h2 { margin:0; font-size:21px; } .timestamp { font:12px Arial,sans-serif; color:var(--muted); }
+    .queue { display:grid; gap:10px; }
+    .action { display:grid; grid-template-columns:92px 1fr auto; gap:14px; align-items:center; border:1px solid var(--line); padding:15px; background:rgba(255,255,255,.88); }
+    .action h3 { font-size:16px; margin:3px 0 5px; } .action p { margin:0; color:var(--muted); font:13px/1.45 Arial,sans-serif; }
+    .badge { display:inline-block; padding:5px 8px; color:#fff; font:700 10px Arial,sans-serif; letter-spacing:0; text-align:center; }
+    .pending { background:var(--amber); } .review { background:var(--blue); } .verified { background:var(--green); } .blocked, .failed { background:var(--red); } .other { background:var(--teal); }
+    button { cursor:pointer; border:1px solid var(--ink); background:var(--ink); color:#fff; padding:9px 12px; font:700 12px Arial,sans-serif; } button:hover { background:var(--teal); border-color:var(--teal); } button.secondary { background:#fff; color:var(--ink); } button:disabled { opacity:.5; cursor:default; }
+    aside { border-top:2px solid var(--teal); background:var(--panel); padding:18px; box-shadow:8px 8px 0 rgba(23,33,43,.08); }
+    form { display:grid; gap:10px; margin:16px 0 24px; } input, textarea { width:100%; border:1px solid var(--line); padding:9px; background:#fbfcfa; } textarea { min-height:86px; resize:vertical; }
+    .rule { border:0; border-top:1px solid var(--line); margin:22px 0; } .notice { min-height:20px; color:var(--red); font:12px Arial,sans-serif; } .selected { outline:3px solid #c4e3d5; }
+    @media (max-width:850px) { .summary { grid-template-columns:repeat(2,1fr); } .metric:nth-child(2) { border-right:0; } .metric:nth-child(-n+2) { border-bottom:1px solid var(--line); } .layout { grid-template-columns:1fr; } }
+    @media (max-width:540px) { header { align-items:flex-start; flex-direction:column; } .summary { grid-template-columns:1fr; } .metric { border-right:0; border-bottom:1px solid var(--line); } .action { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header><div><div class="eyebrow">Authorized remediation workspace</div><h1>VessellFramework <span>Control Room</span></h1></div><div class="status"><span id="health-dot" class="dot"></span><span id="health-text">Checking local service</span></div></header>
+  <main>
+    <section class="summary"><div class="metric"><span>Actions</span><b id="count-all">0</b></div><div class="metric"><span>Pending approval</span><b id="count-pending">0</b></div><div class="metric"><span>Review required</span><b id="count-review">0</b></div><div class="metric"><span>Verified</span><b id="count-verified">0</b></div></section>
+    <div class="layout"><section><div class="section-title"><h2>Remediation Queue</h2><span id="updated" class="timestamp">Not loaded</span></div><div id="queue" class="queue"></div></section>
+      <aside><div class="eyebrow">Service controls</div><h2>Live Intelligence</h2><form id="sync-form"><label>Approval token<input id="approval-token" type="password" autocomplete="off" required></label><button type="submit"><i data-lucide="refresh-cw"></i> Sync CISA KEV</button></form>
+      <hr class="rule"><div class="eyebrow">Selected action</div><h2 id="selected-label">None selected</h2><form id="approve-form"><label>Approver<input id="approved-by" required></label><label>Change ticket<input id="change-ticket" required></label><button id="approve-button" type="submit" disabled><i data-lucide="badge-check"></i> Approve and Dispatch</button></form>
+      <hr class="rule"><div class="eyebrow">Scanner verification</div><form id="verify-form"><label>Scanner token<input id="scanner-token" type="password" autocomplete="off" required></label><label>Evidence<textarea id="evidence" required></textarea></label><label><input id="fixed" type="checkbox"> Fixed</label><button id="verify-button" type="submit" disabled><i data-lucide="shield-check"></i> Record Verification</button></form><div id="notice" class="notice"></div></aside>
+    </div>
+  </main>
+  <script>
+    let actions = [], selected = null;
+    const el = id => document.getElementById(id);
+    const statusClass = status => ({PENDING_APPROVAL:'pending', REVIEW_REQUIRED:'review', VERIFIED:'verified', BLOCKED_CONFIGURATION:'blocked', DISPATCH_FAILED:'failed'})[status] || 'other';
+    const text = value => String(value || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    async function request(path, options={}) { const response = await fetch(path, options); if (!response.ok) throw new Error((await response.text()) || response.statusText); return response.json(); }
+    function render() { const total = actions.length; el('count-all').textContent = total; el('count-pending').textContent = actions.filter(a=>a.status==='PENDING_APPROVAL').length; el('count-review').textContent = actions.filter(a=>a.status==='REVIEW_REQUIRED').length; el('count-verified').textContent = actions.filter(a=>a.status==='VERIFIED').length; el('queue').innerHTML = total ? actions.map(a => `<article class="action ${selected===a.action_id?'selected':''}"><span class="badge ${statusClass(a.status)}">${text(a.status.replaceAll('_',' '))}</span><div><div class="eyebrow">${text(a.asset_id)} · ${text(a.cve_id)}</div><h3>${text(a.action_id)}</h3><p>${text(a.updated_at)}${a.change_ticket ? ' · '+text(a.change_ticket) : ''}</p></div><button data-action="${text(a.action_id)}">Select</button></article>`).join('') : '<p class="timestamp">No actions recorded. Sync CISA KEV after scanner-confirmed inventory data is available.</p>'; document.querySelectorAll('[data-action]').forEach(button => button.onclick = () => { selected = button.dataset.action; const action = actions.find(a=>a.action_id===selected); el('selected-label').textContent = action ? action.cve_id : 'None selected'; el('approve-button').disabled = !action || action.status !== 'PENDING_APPROVAL'; el('verify-button').disabled = !action; render(); }); }
+    async function refresh() { try { const [health, queue] = await Promise.all([request('/health'), request('/actions')]); actions = queue; el('health-dot').className='dot ok'; el('health-text').textContent='Local service healthy'; el('updated').textContent='Updated '+new Date(health.time).toLocaleTimeString(); render(); } catch (error) { el('health-dot').className='dot'; el('health-text').textContent='Service unavailable'; el('notice').textContent=error.message; } }
+    function report(error) { el('notice').textContent = error.message; }
+    el('sync-form').onsubmit = async event => { event.preventDefault(); try { await request('/sync', {method:'POST', headers:{'X-Approval-Token':el('approval-token').value}}); el('notice').textContent='CISA KEV synchronization complete.'; await refresh(); } catch(error) { report(error); } };
+    el('approve-form').onsubmit = async event => { event.preventDefault(); if (!selected) return; try { await request('/actions/'+encodeURIComponent(selected)+'/approve', {method:'POST', headers:{'Content-Type':'application/json','X-Approval-Token':el('approval-token').value}, body:JSON.stringify({approved_by:el('approved-by').value,change_ticket:el('change-ticket').value})}); el('notice').textContent='Approved. Dispatch status will update after the authorized worker runs.'; await refresh(); } catch(error) { report(error); } };
+    el('verify-form').onsubmit = async event => { event.preventDefault(); if (!selected) return; try { await request('/actions/'+encodeURIComponent(selected)+'/verify', {method:'POST', headers:{'Content-Type':'application/json','X-Scanner-Token':el('scanner-token').value}, body:JSON.stringify({fixed:el('fixed').checked,evidence:el('evidence').value})}); el('notice').textContent='Verification recorded.'; await refresh(); } catch(error) { report(error); } };
+    lucide.createIcons(); refresh(); setInterval(refresh, 15000);
+  </script>
+</body>
+</html>

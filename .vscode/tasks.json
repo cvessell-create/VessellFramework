@@ -1,0 +1,211 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run VessellFramework Program (One Click Full)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_framework.py",
+				"--apply",
+				"--create-missing",
+				"--target-root",
+				"${workspaceFolder}",
+				"--skip-checks"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Run VessellFramework Program (Apply)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_framework.py",
+				"--apply",
+				"--create-missing",
+				"--target-root",
+				"${workspaceFolder}",
+				"--skip-checks"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run VessellFramework Program (Strict Full)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_framework.py",
+				"--apply",
+				"--create-missing",
+				"--target-root",
+				"${workspaceFolder}"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run VessellFramework Program (Dry Run)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_framework.py",
+				"--dry-run",
+				"--target-root",
+				"${workspaceFolder}",
+				"--skip-checks"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run VessellFramework Reference Script",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"vesselframework_reference_v1.1_provenance_firewall.py"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run VessellFramework Full Program Demo",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"-m",
+				"vessell.app.main",
+				"--input",
+				"example_case.json"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run VessellFramework Conformance Tests",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"-m",
+				"pytest",
+				"tests/conformance/test_program_pipeline.py"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Live CISA KEV Case",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_live_kev_case.py"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Operational Master",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_operational_master.py",
+				"--run-tests"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run VessellFramework Preflight",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_preflight.py",
+				"--strict"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build Active Defense Plan",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_active_defense.py",
+				"--inventory",
+				"${workspaceFolder}/example_asset_inventory.json"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run KEV Remediation Orchestrator",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"-m",
+				"vessell.app.remediation_orchestrator",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"8000"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Import Authorized Scanner Export",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_scanner_ingest.py",
+				"--inventory",
+				"${workspaceFolder}/example_asset_inventory.json",
+				"--asset-id",
+				"${input:scannerAssetId}",
+				"--source",
+				"${input:scannerSource}",
+				"--report",
+				"${input:scannerReport}"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Local Authorized Scanner",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv313/bin/python",
+			"args": [
+				"run_scanner_ingest.py",
+				"--inventory",
+				"${workspaceFolder}/example_asset_inventory.json",
+				"--asset-id",
+				"${input:scannerAssetId}",
+				"--source",
+				"${input:localScannerSource}",
+				"--local-path",
+				"${input:localScannerPath}"
+			],
+			"group": "build"
+		}
+	],
+	"inputs": [
+		{
+			"id": "scannerAssetId",
+			"type": "promptString",
+			"description": "Authorized asset_id from the inventory"
+		},
+		{
+			"id": "scannerSource",
+			"type": "pickString",
+			"description": "Scanner export source",
+			"options": ["greenbone", "trivy", "osv-scanner", "wazuh"]
+		},
+		{
+			"id": "scannerReport",
+			"type": "promptString",
+			"description": "Path to the scanner JSON export"
+		},
+		{
+			"id": "localScannerSource",
+			"type": "pickString",
+			"description": "Local scanner",
+			"options": ["trivy", "osv-scanner"]
+		},
+		{
+			"id": "localScannerPath",
+			"type": "promptString",
+			"description": "Local directory to scan"
+		}
+	]
+}

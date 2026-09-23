@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VesselFramework Evidence Product",
+  "type": "object",
+  "required": ["claim", "evidence_ids", "confidence", "validation_level", "release_status"],
+  "properties": {
+    "claim": {"type": "string", "minLength": 1},
+    "evidence_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "confidence": {"type": "string", "minLength": 1},
+    "validation_level": {"type": "string", "minLength": 1},
+    "release_status": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": true
+}

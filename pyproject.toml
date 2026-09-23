@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vessell-framework"
+version = "3.8.1"
+description = "VessellFramework: auditable evidence, intelligence, and approved remediation controls."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "mypy>=1.13", "ruff>=0.8", "types-jsonschema>=4.23"]
+core = ["pydantic>=2.9", "jsonschema>=4.23", "rich>=13.9", "typer>=0.15"]
+agent = ["httpx>=0.27", "openai>=1.55"]
+documents = ["pypdf>=5", "python-docx>=1.1", "python-pptx>=1.0", "openpyxl>=3.1"]
+research = ["beautifulsoup4>=4.12", "networkx>=3.4", "pyyaml>=6.0"]
+soc = ["azure-identity>=1.17", "azure-monitor-query>=1.3"]
+orchestrator = ["fastapi>=0.115", "httpx>=0.28", "uvicorn[standard]>=0.34"]
+
+[project.scripts]
+vessell = "vessell.cli:main"
+vessell-program = "vessell.app.main:main"
+vessell-remediator = "vessell.app.remediation_orchestrator:main"
+vf = "vessell.cli:main"
+vf-program = "vessell.app.main:main"
+vf-remediator = "vessell.app.remediation_orchestrator:main"
+
+[tool.setuptools.packages.find]
+include = ["vessell*", "vessel*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+packages = ["vessell", "vessel"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"

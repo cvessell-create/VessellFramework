@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VesselFramework Case Intake",
+  "type": "object",
+  "required": ["title", "decision_question", "domain", "subject", "evidence"],
+  "properties": {
+    "title": {"type": "string", "minLength": 1},
+    "decision_question": {"type": "string", "minLength": 1},
+    "domain": {"type": "string", "minLength": 1},
+    "subject": {"type": "string", "minLength": 1},
+    "maskirovka": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/maskirovka_assessment"}
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/evidence"}
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": ["description", "status", "source_id"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "status": {"enum": ["SOURCE-ESTABLISHED", "FRAMEWORK SYNTHESIS", "WORKING HYPOTHESIS", "ILLUSTRATIVE"]},
+        "source_id": {"type": "string", "minLength": 1},
+        "upstream_of": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "maskirovka_assessment": {
+      "type": "object",
+      "required": ["variant", "trigger_conditions_met", "evidence_ids"],
+      "properties": {
+        "variant": {
+          "enum": [
+            "Budgetary",
+            "Structural",
+            "Operational",
+            "Brute-Force Stealth"
+          ]
+        },
+        "trigger_conditions_met": {"type": "boolean"},
+        "evidence_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

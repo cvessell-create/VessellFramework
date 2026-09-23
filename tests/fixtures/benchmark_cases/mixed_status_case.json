@@ -1,0 +1,31 @@
+{
+  "title": "Mixed status benchmark",
+  "subject": "Source status separation",
+  "decision_question": "Are status classes preserved in executable counts?",
+  "evidence": [
+    {
+      "description": "Direct source",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "src-1"
+    },
+    {
+      "description": "Framework interpretation",
+      "status": "FRAMEWORK SYNTHESIS",
+      "source_id": "syn-1"
+    },
+    {
+      "description": "Working assumption",
+      "status": "WORKING HYPOTHESIS",
+      "source_id": "hyp-1"
+    },
+    {
+      "description": "Training illustration",
+      "status": "ILLUSTRATIVE",
+      "source_id": "ill-1"
+    }
+  ],
+  "maskirovka": [],
+  "analysis": {
+    "posture": "Maintain explicit status distinctions in downstream claims."
+  }
+}

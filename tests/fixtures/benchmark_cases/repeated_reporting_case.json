@@ -1,0 +1,22 @@
+{
+  "title": "Repeated reporting benchmark",
+  "subject": "Synthetic repeated-source scenario",
+  "decision_question": "Do two reports from one root count as two independent streams?",
+  "evidence": [
+    {
+      "description": "Primary source",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "root-1"
+    },
+    {
+      "description": "Secondary summary",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "summary-1",
+      "upstream_of": "root-1"
+    }
+  ],
+  "maskirovka": [],
+  "analysis": {
+    "posture": "Do not inflate confidence with repeated lineage."
+  }
+}

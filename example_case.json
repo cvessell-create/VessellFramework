@@ -1,0 +1,52 @@
+{
+  "title": "Illustrative provenance and posture review",
+  "subject": "A fictional organizational security claim",
+  "decision_question": "Does the available evidence support treating the stated protection claim as operationally demonstrated?",
+  "domain": "Cybersecurity / Organizational",
+  "time_horizon": "Current review period",
+  "evidence": [
+    {
+      "description": "Primary control assessment",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "assessment-001"
+    },
+    {
+      "description": "Report summarizing the primary assessment",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "summary-001",
+      "upstream_of": "assessment-001"
+    },
+    {
+      "description": "Independent operational telemetry sample",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "telemetry-001"
+    }
+  ],
+  "maskirovka": [
+    {
+      "variant": "Structural",
+      "trigger_conditions_met": false,
+      "evidence_ids": ["assessment-001", "telemetry-001"],
+      "notes": "Illustrative case only; do not treat the label as established."
+    },
+    {
+      "variant": "Brute-Force Stealth",
+      "trigger_conditions_met": false,
+      "evidence_ids": ["summary-001", "telemetry-001"],
+      "notes": "Developing doctrine: saturation pattern not yet evidenced as campaign persistence."
+    }
+  ],
+  "harm_gate": {
+    "accuracy_risk": true,
+    "professional_risk": true,
+    "hard_to_reverse": false,
+    "benefit_proportionate": true
+  },
+  "analysis": {
+    "paradox": "The stated protection claim may exceed what the assessment actually measures.",
+    "bottleneck": "Unknown pending review of detection methodology and operational telemetry.",
+    "alternatives": "The gap may reflect incomplete measurement rather than intentional concealment.",
+    "confidence": "MODERATE at most until the scope and independence of the evidence are confirmed.",
+    "posture": "Conduct a control-efficacy review before making a stronger operational claim."
+  }
+}

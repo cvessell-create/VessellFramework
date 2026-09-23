@@ -1,0 +1,17 @@
+{
+  "title": "Unresolved lineage benchmark",
+  "subject": "Synthetic unresolved parent",
+  "decision_question": "Can unresolved lineage support elevated confidence?",
+  "evidence": [
+    {
+      "description": "Derived report with missing parent",
+      "status": "SOURCE-ESTABLISHED",
+      "source_id": "child-1",
+      "upstream_of": "missing-root"
+    }
+  ],
+  "maskirovka": [],
+  "analysis": {
+    "posture": "Hold confidence until lineage resolves."
+  }
+}
