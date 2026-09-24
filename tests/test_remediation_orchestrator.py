@@ -93,3 +93,68 @@ def test_api_rechecks_configuration_for_protected_operations(monkeypatch, tmp_pa
         assert client.post("/sync", headers=headers).status_code == 503
         assert client.post("/actions/example/approve", headers=headers, json={}).status_code == 503
         assert client.post("/actions/example/verify", headers={"X-Scanner-Token": "scanner"}, json={}).status_code == 503
+
+
+def test_dispatch_blocks_non_allowlisted_webhook(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("APPROVAL_TOKEN", "approval")
+    monkeypatch.setenv("SCANNER_TOKEN", "scanner")
+    monkeypatch.setenv("WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("ALLOWED_WEBHOOK_PREFIX", "https://automation.example.internal/")
+
+    store = RemediationStore(tmp_path / "remediation.db")
+    store.initialize()
+    assets = _assets()
+    assets[0]["remediation_webhook"] = "https://attacker.example.org/remediate"
+    store.synchronize(assets, _catalog())
+    action = store.list_actions()[0]
+    store.approve(action["action_id"], "security-operator", "CHG-12345")
+
+    status = store.dispatch(action["action_id"])
+    updated = store.list_actions()[0]
+
+    assert status == "BLOCKED_CONFIGURATION"
+    assert updated["status"] == "BLOCKED_CONFIGURATION"
+    assert "allowlist" in str(updated["result"]).lower()
+
+
+def test_dispatch_posts_signed_webhook_for_approved_action(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("APPROVAL_TOKEN", "approval")
+    monkeypatch.setenv("SCANNER_TOKEN", "scanner")
+    monkeypatch.setenv("WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("ALLOWED_WEBHOOK_PREFIX", "https://automation.example.internal/")
+
+    captured: dict[str, object] = {}
+
+    class _Response:
+        text = "ok"
+
+        def raise_for_status(self) -> None:
+            return None
+
+    def _fake_post(url: str, *, content: bytes, headers: dict[str, str], timeout: int) -> _Response:
+        captured["url"] = url
+        captured["content"] = content
+        captured["headers"] = headers
+        captured["timeout"] = timeout
+        return _Response()
+
+    import httpx
+
+    monkeypatch.setattr(httpx, "post", _fake_post)
+
+    store = RemediationStore(tmp_path / "remediation.db")
+    store.initialize()
+    store.synchronize(_assets(), _catalog())
+    action = store.list_actions()[0]
+    store.approve(action["action_id"], "security-operator", "CHG-12345")
+
+    status = store.dispatch(action["action_id"])
+    updated = store.list_actions()[0]
+
+    assert status == "DISPATCHED"
+    assert updated["status"] == "DISPATCHED"
+    assert captured["url"] == "https://automation.example.internal/checkpoint/remediate"
+    headers = captured["headers"]
+    assert isinstance(headers, dict)
+    assert headers["Idempotency-Key"] == action["action_id"]
+    assert headers["X-Remediation-Signature"].startswith("sha256=")

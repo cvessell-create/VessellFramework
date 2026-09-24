@@ -55,3 +55,30 @@ stages, and counts independent provenance roots rather than search-result
 quantity.
 
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
+
+## Full operational remediator quick path
+
+If you need the full approval-gated remediator (sync, approve, dispatch, verify):
+
+1. Install orchestrator dependencies:
+
+```powershell
+python -m pip install -r requirements\orchestrator.txt
+```
+
+2. Create `.env` from `.env.example`, then replace every placeholder.
+
+3. Preflight readiness:
+
+```powershell
+python run_preflight.py --inventory example_asset_inventory.json --strict
+```
+
+4. Start the remediator API:
+
+```powershell
+python -m vessell.app.remediation_orchestrator --host 127.0.0.1 --port 8000
+```
+
+5. Follow the operator runbook for sync/approve/verify request flow:
+`docs/operations/remediator_runbook.md`.
