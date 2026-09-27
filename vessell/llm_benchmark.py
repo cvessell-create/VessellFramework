@@ -94,6 +94,10 @@ SECRET_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "github_pat": re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}\b"),
     "aws_access_key_id": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
     "slack_token": re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
+    "private_key_block": re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----"),
+    "jwt_like_token": re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
+    "stripe_live_key": re.compile(r"\bsk_live_[0-9A-Za-z]{16,}\b"),
+    "secret_scan_checkphrase": re.compile(r"(?i)\bmother secret scan check\b"),
     "generic_secret_assignment": re.compile(
         r"(?i)\b(api[_-]?key|token|password|secret)\b\s*[:=]\s*['\"][^'\"]{8,}['\"]"
     ),
@@ -810,45 +814,44 @@ def run_empirical_secret_scan(
     run_root.mkdir(parents=True, exist_ok=True)
     findings: list[SecretFinding] = []
     files_scanned = 0
+    matched_detectors: set[str] = set()
+    detector_counts: dict[str, int] = {}
     for current_root, dirnames, filenames in os.walk(root):
         dirnames[:] = [name for name in dirnames if name not in SECRET_SCAN_EXCLUDED_DIRS]
         for filename in sorted(filenames):
             path = Path(current_root) / filename
             if _should_exclude_from_secret_scan(path, root):
                 continue
+            files_scanned += 1
             try:
-                with path.open("r", encoding="utf-8") as handle:
-                    files_scanned += 1
+                with path.open("r", encoding="utf-8", errors="replace") as handle:
                     relative = path.relative_to(root).as_posix()
                     for line_number, line in enumerate(handle, start=1):
                         for detector, pattern in SECRET_PATTERNS.items():
                             if pattern.search(line):
-                                findings.append(
-                                    SecretFinding(
-                                        file=relative,
-                                        line=line_number,
-                                        detector=detector,
-                                        excerpt=_safe_excerpt(_redact_match(line, pattern)),
+                                matched_detectors.add(detector)
+                                detector_counts[detector] = detector_counts.get(detector, 0) + 1
+                                if len(findings) < max_findings:
+                                    findings.append(
+                                        SecretFinding(
+                                            file=relative,
+                                            line=line_number,
+                                            detector=detector,
+                                            excerpt=_safe_excerpt(_redact_match(line, pattern)),
+                                        )
                                     )
-                                )
-                                break
-                        if len(findings) >= max_findings:
-                            break
             except (OSError, UnicodeDecodeError):
                 continue
-            if len(findings) >= max_findings:
-                break
-        if len(findings) >= max_findings:
-            break
-    detector_counts: dict[str, int] = {}
-    for finding in findings:
-        detector_counts[finding.detector] = detector_counts.get(finding.detector, 0) + 1
+    detector_hit_rate = round(len(matched_detectors) / len(SECRET_PATTERNS), 4) if SECRET_PATTERNS else 0.0
     payload = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "scan_root": str(root),
         "files_scanned": files_scanned,
+        "matches_total": sum(detector_counts.values()),
         "findings_count": len(findings),
         "max_findings": max_findings,
+        "detectors_configured": len(SECRET_PATTERNS),
+        "detector_hit_rate": detector_hit_rate,
         "detector_counts": detector_counts,
         "findings": [
             {
@@ -869,7 +872,10 @@ def run_empirical_secret_scan(
         f"- Generated at: {payload['generated_at_utc']}",
         f"- Scan root: `{payload['scan_root']}`",
         f"- Files scanned: {files_scanned}",
+        f"- Total matches: {sum(detector_counts.values())}",
         f"- Findings: {len(findings)}",
+        f"- Detectors configured: {len(SECRET_PATTERNS)}",
+        f"- Detector hit rate: {detector_hit_rate}",
         "",
         "## Detector counts",
         "",

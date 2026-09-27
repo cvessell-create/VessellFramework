@@ -354,7 +354,10 @@ def test_empirical_secret_scan_detects_pattern_and_writes_reports(tmp_path) -> N
         max_findings=10,
     )
     assert payload["files_scanned"] >= 1
+    assert payload["matches_total"] >= payload["findings_count"]
     assert payload["findings_count"] >= 1
+    assert payload["detectors_configured"] >= 1
+    assert 0.0 <= payload["detector_hit_rate"] <= 1.0
     assert payload["findings"][0]["excerpt"].find("[REDACTED]") >= 0
     assert payload["summary_json"]
     assert payload["summary_md"]
@@ -376,6 +379,7 @@ def test_empirical_secret_scan_redacts_multiple_tokens_on_same_line(tmp_path) ->
         max_findings=10,
     )
     assert payload["findings_count"] >= 1
+    assert payload["matches_total"] >= payload["findings_count"]
     excerpts = [item["excerpt"] for item in payload["findings"]]
     assert all("sk-" not in excerpt for excerpt in excerpts)
     assert all("github_pat_" not in excerpt for excerpt in excerpts)
@@ -402,3 +406,35 @@ def test_empirical_secret_scan_skips_nested_excluded_paths(tmp_path) -> None:
         max_findings=10,
     )
     assert payload["findings_count"] == 0
+
+
+def test_empirical_secret_scan_detects_checkphrase(tmp_path) -> None:
+    scan_root = tmp_path / "repo"
+    target = scan_root / "src" / "checkphrase.txt"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("this line includes mother secret scan check marker\n", encoding="utf-8")
+    payload = llm_benchmark.run_empirical_secret_scan(
+        scan_root=scan_root,
+        output_root=tmp_path / "reports",
+        max_findings=10,
+    )
+    detectors = {item["detector"] for item in payload["findings"]}
+    assert "secret_scan_checkphrase" in detectors
+
+
+def test_empirical_secret_scan_metrics_continue_after_findings_cap(tmp_path) -> None:
+    scan_root = tmp_path / "repo"
+    first = scan_root / "src" / "a.py"
+    second = scan_root / "src" / "b.py"
+    second.parent.mkdir(parents=True, exist_ok=True)
+    first.write_text('token = "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ123456"\n', encoding="utf-8")
+    second.write_text('aws = "AKIAABCDEFGHIJKLMNOP"\n', encoding="utf-8")
+    payload = llm_benchmark.run_empirical_secret_scan(
+        scan_root=scan_root,
+        output_root=tmp_path / "reports",
+        max_findings=1,
+    )
+    assert payload["findings_count"] == 1
+    assert payload["matches_total"] >= 2
+    expected_rate = round(2 / len(llm_benchmark.SECRET_PATTERNS), 4)
+    assert payload["detector_hit_rate"] >= expected_rate

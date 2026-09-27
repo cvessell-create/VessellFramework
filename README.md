@@ -140,4 +140,9 @@ Secret scan output artifacts are written under:
 - `outputs/security_scans/<timestamp>/secret_scan_report.json`
 - `outputs/security_scans/<timestamp>/secret_scan_report.md`
 
+The empirical scan includes detector coverage metrics and supports a canary
+validation phrase for detection checks.
+By default, scan traversal excludes operational/cache directories (for example:
+`.git/`, `.venv/`, `outputs/`, and `tests/`) and binary document/media types.
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
