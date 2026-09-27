@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -439,9 +440,110 @@ def _to_jsonable(results: list[ProviderResult], prompt: str) -> dict[str, object
     }
 
 
+def _write_benchmark_outputs(
+    prompt: str, results: list[ProviderResult], json_path: Path, md_path: Path
+) -> None:
+    json_payload = _to_jsonable(results, prompt)
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    json_path.write_text(json.dumps(json_payload, indent=2), encoding="utf-8")
+    md_path.write_text(_format_markdown(results, prompt), encoding="utf-8")
+
+
+def _parse_queue_prompt(line: str, field: str) -> str | None:
+    stripped = line.strip()
+    if not stripped:
+        return None
+    if stripped.startswith("{"):
+        parsed = json.loads(stripped)
+        if not isinstance(parsed, dict):
+            return None
+        value = parsed.get(field)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        return None
+    return stripped
+
+
+def _load_offset(offset_path: Path) -> int:
+    if not offset_path.exists():
+        return 0
+    raw = offset_path.read_text(encoding="utf-8").strip()
+    if not raw:
+        return 0
+    try:
+        value = int(raw)
+    except ValueError:
+        return 0
+    return max(0, value)
+
+
+def _save_offset(offset_path: Path, offset: int) -> None:
+    offset_path.parent.mkdir(parents=True, exist_ok=True)
+    offset_path.write_text(str(max(0, offset)), encoding="utf-8")
+
+
+def enqueue_prompt(queue_path: Path, prompt: str, *, field: str = "q") -> None:
+    if not prompt.strip():
+        raise ValueError("prompt must be non-empty.")
+    queue_path.parent.mkdir(parents=True, exist_ok=True)
+    record = {field: prompt.strip()}
+    with queue_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False))
+        handle.write("\n")
+
+
+def run_queue(
+    queue_path: Path,
+    offset_path: Path,
+    output_dir: Path,
+    providers: list[str],
+    model_map: dict[str, str],
+    *,
+    queue_field: str = "q",
+    dry_run: bool = False,
+    timeout: int = 45,
+    once: bool = False,
+    poll_seconds: float = 1.0,
+) -> int:
+    if poll_seconds <= 0:
+        raise ValueError("poll_seconds must be a positive number.")
+    queue_path.parent.mkdir(parents=True, exist_ok=True)
+    queue_path.touch(exist_ok=True)
+    offset = _load_offset(offset_path)
+    processed_prompts = 0
+    while True:
+        lines = queue_path.read_text(encoding="utf-8").splitlines()
+        total = len(lines)
+        if total > offset:
+            for line_number in range(offset + 1, total + 1):
+                prompt = _parse_queue_prompt(lines[line_number - 1], queue_field)
+                if prompt is None:
+                    continue
+                results = run_benchmark(
+                    prompt,
+                    providers,
+                    model_map,
+                    dry_run=dry_run,
+                    timeout=timeout,
+                )
+                json_path = output_dir / f"q_{line_number:06d}.json"
+                md_path = output_dir / f"q_{line_number:06d}.md"
+                _write_benchmark_outputs(prompt, results, json_path, md_path)
+                processed_prompts += 1
+                print(
+                    f"Processed queue line {line_number}: wrote {json_path} and {md_path}"
+                )
+            offset = total
+            _save_offset(offset_path, offset)
+        if once:
+            return processed_prompts
+        time.sleep(poll_seconds)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="vf-benchmark")
-    parser.add_argument("--prompt", required=True, help="Prompt to benchmark across providers.")
+    parser.add_argument("--prompt", help="Prompt to benchmark across providers.")
     parser.add_argument(
         "--providers",
         default="gpt,claude,grok,other",
@@ -454,6 +556,42 @@ def main() -> int:
     )
     parser.add_argument("--dry-run", action="store_true", help="Use built-in response examples.")
     parser.add_argument("--timeout", type=int, default=45, help="API timeout per provider in seconds.")
+    parser.add_argument(
+        "--queue-path",
+        default=None,
+        help="Queue file path (JSONL or plain text); when set, run queue-processing mode.",
+    )
+    parser.add_argument(
+        "--offset-path",
+        default=".state/q.offset",
+        help="Offset file used by queue mode.",
+    )
+    parser.add_argument(
+        "--queue-output-dir",
+        default="outputs/model_benchmarks/hurricane",
+        help="Output directory for queue mode artifacts.",
+    )
+    parser.add_argument(
+        "--queue-field",
+        default="q",
+        help="Field name used when queue lines are JSON objects.",
+    )
+    parser.add_argument(
+        "--enqueue",
+        default=None,
+        help="Append a prompt to queue and exit.",
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="In queue mode, process current queue once and exit.",
+    )
+    parser.add_argument(
+        "--poll-seconds",
+        type=float,
+        default=1.0,
+        help="Queue polling interval in seconds for continuous queue mode.",
+    )
     parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
@@ -471,15 +609,36 @@ def main() -> int:
         parser.error(f"Unsupported providers: {unknown}. Allowed: {sorted(SUPPORTED_PROVIDERS)}")
     if args.timeout <= 0:
         parser.error("--timeout must be a positive integer.")
+    if args.poll_seconds <= 0:
+        parser.error("--poll-seconds must be a positive number.")
     model_map = _parse_model_map(args.model_map, providers)
+    queue_path = Path(args.queue_path) if args.queue_path else None
+    if args.enqueue is not None:
+        target_queue = queue_path if queue_path is not None else Path("q.jsonl")
+        enqueue_prompt(target_queue, args.enqueue, field=args.queue_field)
+        print(f"Queued prompt in {target_queue}")
+        return 0
+    if queue_path is not None:
+        processed = run_queue(
+            queue_path,
+            Path(args.offset_path),
+            Path(args.queue_output_dir),
+            providers,
+            model_map,
+            queue_field=args.queue_field,
+            dry_run=args.dry_run,
+            timeout=args.timeout,
+            once=args.once,
+            poll_seconds=args.poll_seconds,
+        )
+        print(f"Queue mode complete. Processed {processed} prompt(s).")
+        return 0
+    if not args.prompt:
+        parser.error("--prompt is required unless --queue-path or --enqueue is used.")
     results = run_benchmark(args.prompt, providers, model_map, dry_run=args.dry_run, timeout=args.timeout)
-    json_payload = _to_jsonable(results, args.prompt)
     json_path = Path(args.json_out)
     md_path = Path(args.md_out)
-    json_path.parent.mkdir(parents=True, exist_ok=True)
-    md_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(json_payload, indent=2), encoding="utf-8")
-    md_path.write_text(_format_markdown(results, args.prompt), encoding="utf-8")
+    _write_benchmark_outputs(args.prompt, results, json_path, md_path)
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")
     for result in sorted(results, key=lambda item: item.weighted_score, reverse=True):

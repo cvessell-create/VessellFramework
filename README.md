@@ -83,4 +83,27 @@ Outputs are written to:
 - `outputs/model_benchmarks/latest_benchmark.json`
 - `outputs/model_benchmarks/latest_benchmark.md`
 
+Queue/swarm mode lets you process prompts continuously while adding new prompts
+to the same queue:
+
+```powershell
+# Start queue worker (continuous)
+vf-benchmark --queue-path q.jsonl --dry-run
+
+# Append a prompt while worker is running
+vf-benchmark --queue-path q.jsonl --enqueue "Your prompt here"
+```
+
+Queue mode defaults:
+
+- queue field name: `q` (for JSONL rows like `{"q":"...prompt..."}`)
+- offset tracking: `.state/q.offset`
+- queue outputs: `outputs/model_benchmarks/hurricane/q_000001.{json,md}`
+
+Process queue once and exit:
+
+```powershell
+vf-benchmark --queue-path q.jsonl --once --dry-run
+```
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.

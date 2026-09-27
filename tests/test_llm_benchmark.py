@@ -102,3 +102,36 @@ def test_markdown_and_json_output_escape_and_serialize() -> None:
     assert serialized["provider"] == "gpt|pipe#md"
     assert serialized["weighted_score"] == 77.7
     assert serialized["error"] == "bad|error\nwith#md"
+
+
+def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    llm_benchmark.enqueue_prompt(queue_path, "first prompt")
+    lines = queue_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    assert llm_benchmark._parse_queue_prompt(lines[0], "q") == "first prompt"
+    assert llm_benchmark._parse_queue_prompt("plain text prompt", "q") == "plain text prompt"
+    assert llm_benchmark._parse_queue_prompt('{"x":"nope"}', "q") is None
+
+
+def test_run_queue_once_processes_new_prompts(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\nsecond\n{"x":"skip"}\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    processed = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    assert processed == 2
+    assert offset_path.read_text(encoding="utf-8").strip() == "3"
+    assert (output_dir / "q_000001.json").exists()
+    assert (output_dir / "q_000001.md").exists()
+    assert (output_dir / "q_000002.json").exists()
+    assert (output_dir / "q_000002.md").exists()
+    assert not (output_dir / "q_000003.json").exists()
