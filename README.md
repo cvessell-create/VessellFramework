@@ -129,4 +129,15 @@ Probe output artifacts are written under:
 - `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.json`
 - `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.md`
 
+Run an empirical secret scan across the full package and emit reports:
+
+```powershell
+vf-benchmark --empirical-secret-scan --scan-root . --scan-output-dir outputs/security_scans
+```
+
+Secret scan output artifacts are written under:
+
+- `outputs/security_scans/<timestamp>/secret_scan_report.json`
+- `outputs/security_scans/<timestamp>/secret_scan_report.md`
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.

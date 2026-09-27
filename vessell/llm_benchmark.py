@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
+import os
 import re
 import threading
 import time
@@ -56,6 +58,46 @@ RUNTIME_PROFILES: Final[dict[str, dict[str, float | int | None]]] = {
         "time_budget_seconds": 240.0,
     },
 }
+SECRET_SCAN_EXCLUDE_GLOBS: Final[tuple[str, ...]] = (
+    ".git/*",
+    ".venv/*",
+    ".pytest_cache/*",
+    ".mypy_cache/*",
+    ".ruff_cache/*",
+    "__pycache__/*",
+    "outputs/*",
+    "tests/*",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.gif",
+    "*.pdf",
+    "*.docx",
+    "*.pptx",
+    "*.xlsx",
+    "*.ttf",
+    "*.zip",
+    "*.pyc",
+)
+SECRET_SCAN_EXCLUDED_DIRS: Final[set[str]] = {
+    ".git",
+    ".venv",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "tests",
+    "outputs",
+}
+SECRET_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
+    "openai_api_key": re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"),
+    "github_pat": re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}\b"),
+    "aws_access_key_id": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    "slack_token": re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
+    "generic_secret_assignment": re.compile(
+        r"(?i)\b(api[_-]?key|token|password|secret)\b\s*[:=]\s*['\"][^'\"]{8,}['\"]"
+    ),
+}
 
 EXAMPLE_RESPONSES: Final[dict[str, str]] = {
     "gpt": (
@@ -100,6 +142,14 @@ class QueueRunSummary:
     end_offset: int
     exit_condition: str
     time_budget_seconds: float | None
+
+
+@dataclass(frozen=True)
+class SecretFinding:
+    file: str
+    line: int
+    detector: str
+    excerpt: str
 
 
 def _format_http_error(error: urllib.error.HTTPError) -> str:
@@ -723,6 +773,136 @@ def _estimate_operating_budgets(probes: list[dict[str, object]]) -> dict[str, ob
     }
 
 
+def _should_exclude_from_secret_scan(path: Path, root: Path) -> bool:
+    relative = path.relative_to(root).as_posix()
+    if any(part in SECRET_SCAN_EXCLUDED_DIRS for part in path.relative_to(root).parts):
+        return True
+    return any(fnmatch.fnmatch(relative, pattern) for pattern in SECRET_SCAN_EXCLUDE_GLOBS)
+
+
+def _safe_excerpt(line: str, max_length: int = 160) -> str:
+    stripped = line.strip()
+    if len(stripped) <= max_length:
+        return stripped
+    return stripped[: max_length - 3] + "..."
+
+
+def _redact_match(line: str, pattern: re.Pattern[str]) -> str:
+    redacted = pattern.sub("[REDACTED]", line)
+    for other_pattern in SECRET_PATTERNS.values():
+        redacted = other_pattern.sub("[REDACTED]", redacted)
+    return redacted
+
+
+def run_empirical_secret_scan(
+    *,
+    scan_root: Path,
+    output_root: Path,
+    max_findings: int = 200,
+) -> dict[str, object]:
+    if max_findings <= 0:
+        raise ValueError("max_findings must be a positive integer.")
+    root = scan_root.resolve()
+    if not root.exists():
+        raise ValueError(f"scan_root does not exist: {scan_root}")
+    scan_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_root = output_root / scan_stamp
+    run_root.mkdir(parents=True, exist_ok=True)
+    findings: list[SecretFinding] = []
+    files_scanned = 0
+    for current_root, dirnames, filenames in os.walk(root):
+        dirnames[:] = [name for name in dirnames if name not in SECRET_SCAN_EXCLUDED_DIRS]
+        for filename in sorted(filenames):
+            path = Path(current_root) / filename
+            if _should_exclude_from_secret_scan(path, root):
+                continue
+            try:
+                with path.open("r", encoding="utf-8") as handle:
+                    files_scanned += 1
+                    relative = path.relative_to(root).as_posix()
+                    for line_number, line in enumerate(handle, start=1):
+                        for detector, pattern in SECRET_PATTERNS.items():
+                            if pattern.search(line):
+                                findings.append(
+                                    SecretFinding(
+                                        file=relative,
+                                        line=line_number,
+                                        detector=detector,
+                                        excerpt=_safe_excerpt(_redact_match(line, pattern)),
+                                    )
+                                )
+                                break
+                        if len(findings) >= max_findings:
+                            break
+            except (OSError, UnicodeDecodeError):
+                continue
+            if len(findings) >= max_findings:
+                break
+        if len(findings) >= max_findings:
+            break
+    detector_counts: dict[str, int] = {}
+    for finding in findings:
+        detector_counts[finding.detector] = detector_counts.get(finding.detector, 0) + 1
+    payload = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "scan_root": str(root),
+        "files_scanned": files_scanned,
+        "findings_count": len(findings),
+        "max_findings": max_findings,
+        "detector_counts": detector_counts,
+        "findings": [
+            {
+                "file": finding.file,
+                "line": finding.line,
+                "detector": finding.detector,
+                "excerpt": finding.excerpt,
+            }
+            for finding in findings
+        ],
+    }
+    json_path = run_root / "secret_scan_report.json"
+    md_path = run_root / "secret_scan_report.md"
+    json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    md_lines = [
+        "# Empirical Secret Scan Report",
+        "",
+        f"- Generated at: {payload['generated_at_utc']}",
+        f"- Scan root: `{payload['scan_root']}`",
+        f"- Files scanned: {files_scanned}",
+        f"- Findings: {len(findings)}",
+        "",
+        "## Detector counts",
+        "",
+    ]
+    if detector_counts:
+        for detector, count in sorted(detector_counts.items()):
+            md_lines.append(f"- {detector}: {count}")
+    else:
+        md_lines.append("- none")
+    md_lines.extend(
+        [
+            "",
+            "## Findings",
+            "",
+            "| File | Line | Detector | Excerpt |",
+            "|---|---:|---|---|",
+        ]
+    )
+    if findings:
+        for finding in findings:
+            safe_excerpt = finding.excerpt.replace("|", "\\|")
+            md_lines.append(
+                f"| {finding.file} | {finding.line} | {finding.detector} | {safe_excerpt} |"
+            )
+    else:
+        md_lines.append("| none | 0 | none | no matching patterns found |")
+    md_lines.append("")
+    md_path.write_text("\n".join(md_lines), encoding="utf-8")
+    payload["summary_json"] = str(json_path)
+    payload["summary_md"] = str(md_path)
+    return payload
+
+
 def run_probe_matrix(
     *,
     providers: list[str],
@@ -959,6 +1139,27 @@ def main() -> int:
         help="Feeder enqueue interval during probe runs.",
     )
     parser.add_argument(
+        "--empirical-secret-scan",
+        action="store_true",
+        help="Run empirical secret scan and write report artifacts.",
+    )
+    parser.add_argument(
+        "--scan-root",
+        default=".",
+        help="Root path for empirical secret scanning.",
+    )
+    parser.add_argument(
+        "--scan-output-dir",
+        default="outputs/security_scans",
+        help="Directory for empirical secret scan reports.",
+    )
+    parser.add_argument(
+        "--scan-max-findings",
+        type=int,
+        default=200,
+        help="Maximum number of findings to record in one empirical scan run.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -990,6 +1191,24 @@ def main() -> int:
         parser.error(
             "--probe-session-limit cannot be combined with --queue-path, --enqueue, or --prompt."
         )
+    if args.empirical_secret_scan and (
+        args.probe_session_limit or args.queue_path is not None or args.enqueue is not None or args.prompt
+    ):
+        parser.error(
+            "--empirical-secret-scan cannot be combined with prompt/queue/probe execution modes."
+        )
+    if args.empirical_secret_scan:
+        try:
+            payload = run_empirical_secret_scan(
+                scan_root=Path(args.scan_root),
+                output_root=Path(args.scan_output_dir),
+                max_findings=args.scan_max_findings,
+            )
+        except ValueError as error:
+            parser.error(str(error))
+        print("Empirical secret scan complete.")
+        print("Report artifacts written under the configured scan output directory.")
+        return 0
     if args.probe_session_limit:
         try:
             budgets = _parse_probe_budgets(args.probe_budgets)

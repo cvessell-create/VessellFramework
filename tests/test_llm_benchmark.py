@@ -340,3 +340,65 @@ def test_main_rejects_malformed_model_map(monkeypatch) -> None:
     )
     with pytest.raises(SystemExit):
         llm_benchmark.main()
+
+
+def test_empirical_secret_scan_detects_pattern_and_writes_reports(tmp_path) -> None:
+    scan_root = tmp_path / "repo"
+    scan_root.mkdir(parents=True, exist_ok=True)
+    target = scan_root / "src" / "file.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text('token = "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ123456"\n', encoding="utf-8")
+    payload = llm_benchmark.run_empirical_secret_scan(
+        scan_root=scan_root,
+        output_root=tmp_path / "reports",
+        max_findings=10,
+    )
+    assert payload["files_scanned"] >= 1
+    assert payload["findings_count"] >= 1
+    assert payload["findings"][0]["excerpt"].find("[REDACTED]") >= 0
+    assert payload["summary_json"]
+    assert payload["summary_md"]
+    assert (tmp_path / "reports").exists()
+
+
+def test_empirical_secret_scan_redacts_multiple_tokens_on_same_line(tmp_path) -> None:
+    scan_root = tmp_path / "repo"
+    scan_root.mkdir(parents=True, exist_ok=True)
+    target = scan_root / "src" / "combo.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        'token = "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ123456" github_pat_abcdefghijklmnoqrstuvwxyz12345\n',
+        encoding="utf-8",
+    )
+    payload = llm_benchmark.run_empirical_secret_scan(
+        scan_root=scan_root,
+        output_root=tmp_path / "reports",
+        max_findings=10,
+    )
+    assert payload["findings_count"] >= 1
+    excerpts = [item["excerpt"] for item in payload["findings"]]
+    assert all("sk-" not in excerpt for excerpt in excerpts)
+    assert all("github_pat_" not in excerpt for excerpt in excerpts)
+    assert any("[REDACTED]" in excerpt for excerpt in excerpts)
+
+
+def test_empirical_secret_scan_rejects_invalid_max_findings(tmp_path) -> None:
+    with pytest.raises(ValueError, match="max_findings must be a positive integer"):
+        llm_benchmark.run_empirical_secret_scan(
+            scan_root=tmp_path,
+            output_root=tmp_path / "reports",
+            max_findings=0,
+        )
+
+
+def test_empirical_secret_scan_skips_nested_excluded_paths(tmp_path) -> None:
+    scan_root = tmp_path / "repo"
+    nested = scan_root / "tests" / "unit" / "sample.py"
+    nested.parent.mkdir(parents=True, exist_ok=True)
+    nested.write_text('token = "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ123456"\n', encoding="utf-8")
+    payload = llm_benchmark.run_empirical_secret_scan(
+        scan_root=scan_root,
+        output_root=tmp_path / "reports",
+        max_findings=10,
+    )
+    assert payload["findings_count"] == 0
