@@ -97,8 +97,8 @@ vf-benchmark --queue-path q.jsonl --enqueue "Your prompt here"
 Queue mode defaults:
 
 - queue field name: `q` (for JSONL rows like `{"q":"...prompt..."}`)
-- offset tracking: `.state/q.offset`
-- queue outputs: `outputs/model_benchmarks/hurricane/q_000001.{json,md}`
+- offset tracking: `.state/q.offset` (stream offset of the last successfully handled queue line; successful benchmark writes and intentionally skipped malformed lines are acknowledged)
+- queue outputs: `outputs/model_benchmarks/hurricane/q_<offset>.{json,md}`
 
 Process queue once and exit:
 

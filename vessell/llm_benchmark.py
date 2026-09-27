@@ -454,8 +454,11 @@ def _parse_queue_prompt(line: str, field: str) -> str | None:
     stripped = line.strip()
     if not stripped:
         return None
-    if stripped.startswith("{"):
-        parsed = json.loads(stripped)
+    if stripped.startswith("{") or stripped.startswith("["):
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError:
+            return None
         if not isinstance(parsed, dict):
             return None
         value = parsed.get(field)
@@ -510,15 +513,25 @@ def run_queue(
         raise ValueError("poll_seconds must be a positive number.")
     queue_path.parent.mkdir(parents=True, exist_ok=True)
     queue_path.touch(exist_ok=True)
-    offset = _load_offset(offset_path)
+    offset_token = _load_offset(offset_path)
     processed_prompts = 0
     while True:
-        lines = queue_path.read_text(encoding="utf-8").splitlines()
-        total = len(lines)
-        if total > offset:
-            for line_number in range(offset + 1, total + 1):
-                prompt = _parse_queue_prompt(lines[line_number - 1], queue_field)
+        with queue_path.open("r", encoding="utf-8") as handle:
+            handle.seek(0, 2)
+            end_of_file = handle.tell()
+            if offset_token > end_of_file:
+                offset_token = 0
+                _save_offset(offset_path, offset_token)
+            handle.seek(offset_token)
+            while True:
+                line = handle.readline()
+                if not line:
+                    break
+                next_offset = handle.tell()
+                prompt = _parse_queue_prompt(line, queue_field)
                 if prompt is None:
+                    offset_token = next_offset
+                    _save_offset(offset_path, offset_token)
                     continue
                 results = run_benchmark(
                     prompt,
@@ -527,15 +540,15 @@ def run_queue(
                     dry_run=dry_run,
                     timeout=timeout,
                 )
-                json_path = output_dir / f"q_{line_number:06d}.json"
-                md_path = output_dir / f"q_{line_number:06d}.md"
+                json_path = output_dir / f"q_{next_offset:010d}.json"
+                md_path = output_dir / f"q_{next_offset:010d}.md"
                 _write_benchmark_outputs(prompt, results, json_path, md_path)
+                offset_token = next_offset
+                _save_offset(offset_path, offset_token)
                 processed_prompts += 1
                 print(
-                    f"Processed queue line {line_number}: wrote {json_path} and {md_path}"
+                    f"Processed queue offset {offset_token}: wrote {json_path} and {md_path}"
                 )
-            offset = total
-            _save_offset(offset_path, offset)
         if once:
             return processed_prompts
         time.sleep(poll_seconds)

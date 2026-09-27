@@ -129,9 +129,58 @@ def test_run_queue_once_processes_new_prompts(tmp_path) -> None:
         once=True,
     )
     assert processed == 2
-    assert offset_path.read_text(encoding="utf-8").strip() == "3"
-    assert (output_dir / "q_000001.json").exists()
-    assert (output_dir / "q_000001.md").exists()
-    assert (output_dir / "q_000002.json").exists()
-    assert (output_dir / "q_000002.md").exists()
-    assert not (output_dir / "q_000003.json").exists()
+    assert int(offset_path.read_text(encoding="utf-8").strip()) > 0
+    assert len(list(output_dir.glob("*.json"))) == 2
+    assert len(list(output_dir.glob("*.md"))) == 2
+
+
+def test_run_queue_skips_malformed_json_and_advances_offset(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\n{"q":"broken"\n[1,\nsecond\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    processed = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    assert processed == 2
+    assert int(offset_path.read_text(encoding="utf-8").strip()) > 0
+    assert len(list(output_dir.glob("*.json"))) == 2
+    assert len(list(output_dir.glob("*.md"))) == 2
+
+
+def test_run_queue_resume_from_saved_offset(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\n{"q":"second"}\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    first_processed = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    assert first_processed == 2
+    original_offset = int(offset_path.read_text(encoding="utf-8").strip())
+    with queue_path.open("a", encoding="utf-8") as handle:
+        handle.write('{"q":"third"}\n')
+    second_processed = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    assert second_processed == 1
+    assert int(offset_path.read_text(encoding="utf-8").strip()) > original_offset
+    assert len(list(output_dir.glob("*.json"))) == 3
