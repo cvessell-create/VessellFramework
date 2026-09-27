@@ -2,7 +2,9 @@
 
 ## Prompt
 
+```text
 I’m not stuck on one error—I’m trying to improve my workflow. For those doing A6, what’s your step-by-step checklist to decide: (1) paired vs independent design, (2) which test to run, and (3) how to avoid object/column-name errors in R before analysis? What’s the one habit that saves you the most time?
+```
 
 ## Weighted results
 
@@ -15,26 +17,42 @@ I’m not stuck on one error—I’m trying to improve my workflow. For those do
 
 ## Response examples
 
-### gpt (gpt-4.1-mini)
+### Response sample
 
+- Provider: gpt
+- Model: gpt-4.1-mini
+```text
 Use a checklist: first classify design (paired vs independent), then pick the test (paired t/Wilcoxon for paired, independent t/Mann-Whitney for independent), then run R safety checks (`names()`, `str()`, object existence, numeric types).
+```
 
 - Rubric: intent=4, stats=4, r_safety=5, actionability=4, noise=5
 
-### claude (claude-3-5-sonnet-latest)
+### Response sample
 
+- Provider: claude
+- Model: claude-3-5-sonnet-latest
+```text
 I would run this in three gates: design gate, test-selection gate, and data-integrity gate. Design gate asks whether repeated measures are on the same participants. Test gate maps normal paired data to dependent t-tests and non-normal to Wilcoxon; independent data maps to independent t-test or Mann-Whitney. Data-integrity gate confirms column names and types.
+```
 
 - Rubric: intent=1, stats=5, r_safety=2, actionability=2, noise=5
 
-### grok (grok-4-latest)
+### Response sample
 
+- Provider: grok
+- Model: grok-4-latest
+```text
 Fast workflow: 1) identify unit and pairing, 2) inspect distribution and outliers, 3) choose test, 4) run `names(df)` and `str(df)` before coding, 5) execute and report p-value + effect size.
+```
 
 - Rubric: intent=3, stats=0, r_safety=4, actionability=2, noise=5
 
-### other (openrouter/auto)
+### Response sample
 
+- Provider: other
+- Model: openrouter/auto
+```text
 Treat this as process optimization. Build a reusable preflight block in R that checks column names, missing values, object existence, and numeric coercion before any inferential test.
+```
 
 - Rubric: intent=3, stats=0, r_safety=2, actionability=1, noise=5

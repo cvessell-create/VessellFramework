@@ -25,6 +25,7 @@ DEFAULT_MODEL_MAP: Final[dict[str, str]] = {
     "grok": "grok-4-latest",
     "other": "openrouter/auto",
 }
+SUPPORTED_PROVIDERS: Final[set[str]] = {"gpt", "claude", "grok", "other"}
 
 DEFAULT_BASE_URLS: Final[dict[str, str]] = {
     "gpt": "https://api.openai.com/v1/chat/completions",
@@ -70,6 +71,15 @@ class ProviderResult:
     rubric: dict[str, int]
     weighted_score: float
     error: str | None = None
+
+
+def _format_http_error(error: urllib.error.HTTPError) -> str:
+    try:
+        body = error.read().decode("utf-8", errors="replace").strip()
+    except OSError:
+        body = ""
+    detail = body if body else str(error)
+    return f"HTTP {error.code}: {detail}"
 
 
 def _clip(value: int) -> int:
@@ -217,9 +227,12 @@ def _provider_key_env(provider: str) -> str:
 def _call_provider(provider: str, model: str, prompt: str, timeout: int) -> str:
     import os
 
-    api_key = os.environ.get(_provider_key_env(provider))
+    env_name = _provider_key_env(provider)
+    api_key = os.environ.get(env_name)
     if not api_key:
-        raise RuntimeError(f"Missing API key environment variable for provider '{provider}'.")
+        raise RuntimeError(
+            f"Missing API key environment variable '{env_name}' for provider '{provider}'."
+        )
     if provider == "claude":
         response_json = _http_json_post(
             url=DEFAULT_ANTHROPIC_URL,
@@ -267,6 +280,11 @@ def run_benchmark(
     """Run the prompt against selected providers and score each response."""
     if not prompt.strip():
         raise ValueError("prompt must be non-empty.")
+    if timeout <= 0:
+        raise ValueError("timeout must be a positive integer.")
+    unknown = [provider for provider in providers if provider not in SUPPORTED_PROVIDERS]
+    if unknown:
+        raise ValueError(f"Unsupported providers: {unknown}. Allowed: {sorted(SUPPORTED_PROVIDERS)}")
     results: list[ProviderResult] = []
     for provider in providers:
         if provider not in model_map:
@@ -300,6 +318,17 @@ def run_benchmark(
                     weighted_score=weighted_score,
                 )
             )
+        except urllib.error.HTTPError as error:
+            results.append(
+                ProviderResult(
+                    provider=provider,
+                    model=model,
+                    response="",
+                    rubric={key: 0 for key in RUBRIC_WEIGHTS},
+                    weighted_score=0.0,
+                    error=_format_http_error(error),
+                )
+            )
         except (RuntimeError, OSError, ValueError, urllib.error.URLError) as error:
             results.append(
                 ProviderResult(
@@ -315,12 +344,28 @@ def run_benchmark(
 
 
 def _format_markdown(results: list[ProviderResult], prompt: str) -> str:
+    def _cell(value: str) -> str:
+        return value.replace("|", "\\|").replace("\n", "<br>")
+
+    def _safe_inline(value: str) -> str:
+        cleaned = value.replace("\n", " ").replace("\r", " ")
+        for token in ("\\", "`", "*", "_", "[", "]", "(", ")", "#", "|"):
+            cleaned = cleaned.replace(token, f"\\{token}")
+        return cleaned
+
+    def _fenced_lines(value: str) -> list[str]:
+        runs = [len(match.group(0)) for match in re.finditer(r"`+", value)]
+        fence = "`" * (max(runs, default=2) + 1)
+        if len(fence) < 3:
+            fence = "```"
+        return [fence + "text", value, fence]
+
     lines = [
         "# LLM Prompt Benchmark",
         "",
         "## Prompt",
         "",
-        prompt,
+        *_fenced_lines(prompt),
         "",
         "## Weighted results",
         "",
@@ -330,18 +375,20 @@ def _format_markdown(results: list[ProviderResult], prompt: str) -> str:
     for result in sorted(results, key=lambda item: item.weighted_score, reverse=True):
         error_value = result.error if result.error else ""
         lines.append(
-            f"| {result.provider} | {result.model} | {result.weighted_score:.2f} | {error_value} |"
+            f"| {_cell(result.provider)} | {_cell(result.model)} | {result.weighted_score:.2f} | {_cell(error_value)} |"
         )
     lines.append("")
     lines.append("## Response examples")
     lines.append("")
     for result in results:
-        lines.append(f"### {result.provider} ({result.model})")
+        lines.append("### Response sample")
         lines.append("")
+        lines.append(f"- Provider: {_safe_inline(result.provider)}")
+        lines.append(f"- Model: {_safe_inline(result.model)}")
         if result.error:
-            lines.append(f"- Error: {result.error}")
+            lines.append(f"- Error: {_safe_inline(result.error)}")
         else:
-            lines.append(result.response)
+            lines.extend(_fenced_lines(result.response))
         lines.append("")
         lines.append(
             f"- Rubric: intent={result.rubric['intent_detection']}, "
@@ -363,6 +410,10 @@ def _parse_model_map(model_map_arg: str | None, providers: list[str]) -> dict[st
         for provider, model in parsed.items():
             if not isinstance(provider, str) or not isinstance(model, str):
                 raise ValueError("--model-map entries must be string:string.")
+            if provider.strip() not in SUPPORTED_PROVIDERS:
+                raise ValueError(
+                    f"--model-map only supports providers {sorted(SUPPORTED_PROVIDERS)}."
+                )
             model_map[provider.strip()] = model.strip()
     missing = [provider for provider in providers if provider not in model_map]
     if missing:
@@ -415,6 +466,11 @@ def main() -> int:
     )
     args = parser.parse_args()
     providers = [part.strip() for part in args.providers.split(",") if part.strip()]
+    unknown = [provider for provider in providers if provider not in SUPPORTED_PROVIDERS]
+    if unknown:
+        parser.error(f"Unsupported providers: {unknown}. Allowed: {sorted(SUPPORTED_PROVIDERS)}")
+    if args.timeout <= 0:
+        parser.error("--timeout must be a positive integer.")
     model_map = _parse_model_map(args.model_map, providers)
     results = run_benchmark(args.prompt, providers, model_map, dry_run=args.dry_run, timeout=args.timeout)
     json_payload = _to_jsonable(results, args.prompt)
