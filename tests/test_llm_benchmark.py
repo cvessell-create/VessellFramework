@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 import vessell.llm_benchmark as llm_benchmark
@@ -277,3 +279,40 @@ def test_probe_matrix_outputs_artifacts(tmp_path) -> None:
     assert payload["summary_json"]
     assert payload["summary_md"]
     assert (tmp_path / "probes").exists()
+
+
+def test_run_queue_does_not_rewind_after_truncation(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    queue_path.write_text("", encoding="utf-8")
+    processed = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    assert processed == 0
+
+
+def test_main_rejects_probe_mode_conflicting_arguments(monkeypatch) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["vf-benchmark", "--probe-session-limit", "--prompt", "conflict", "--dry-run"],
+    )
+    with pytest.raises(SystemExit):
+        llm_benchmark.main()

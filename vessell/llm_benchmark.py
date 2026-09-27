@@ -594,7 +594,7 @@ def run_queue(
             handle.seek(0, 2)
             end_of_file = handle.tell()
             if offset_token > end_of_file:
-                offset_token = 0
+                offset_token = end_of_file
                 _save_offset(offset_path, offset_token)
             handle.seek(offset_token)
             while True:
@@ -980,6 +980,10 @@ def main() -> int:
     except ValueError as error:
         parser.error(str(error))
     model_map = _parse_model_map(args.model_map, providers)
+    if args.probe_session_limit and (args.queue_path is not None or args.enqueue is not None or args.prompt):
+        parser.error(
+            "--probe-session-limit cannot be combined with --queue-path, --enqueue, or --prompt."
+        )
     if args.probe_session_limit:
         try:
             budgets = _parse_probe_budgets(args.probe_budgets)
