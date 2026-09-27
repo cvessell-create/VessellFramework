@@ -184,3 +184,46 @@ def test_run_queue_resume_from_saved_offset(tmp_path) -> None:
     assert second_processed == 1
     assert int(offset_path.read_text(encoding="utf-8").strip()) > original_offset
     assert len(list(output_dir.glob("*.json"))) == 3
+
+
+def test_run_queue_rejects_non_positive_time_budget(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    with pytest.raises(ValueError, match="time_budget_seconds must be a positive number"):
+        llm_benchmark.run_queue(
+            queue_path,
+            offset_path,
+            output_dir,
+            ["gpt"],
+            DEFAULT_MODEL_MAP,
+            dry_run=True,
+            once=True,
+            time_budget_seconds=0.0,
+        )
+
+
+def test_run_queue_stops_at_time_budget(tmp_path, monkeypatch) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\n{"q":"second"}\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    ticks = iter([0.0, 0.0, 0.0, 2.0, 2.0, 2.0])
+
+    def _fake_monotonic() -> float:
+        return next(ticks, 2.0)
+
+    monkeypatch.setattr(llm_benchmark.time, "monotonic", _fake_monotonic)
+    processed = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+        time_budget_seconds=1.0,
+    )
+    assert processed == 1
+    assert len(list(output_dir.glob("*.json"))) == 1

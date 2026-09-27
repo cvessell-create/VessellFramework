@@ -508,14 +508,28 @@ def run_queue(
     timeout: int = 45,
     once: bool = False,
     poll_seconds: float = 1.0,
+    time_budget_seconds: float | None = None,
 ) -> int:
     if poll_seconds <= 0:
         raise ValueError("poll_seconds must be a positive number.")
+    if time_budget_seconds is not None and time_budget_seconds <= 0:
+        raise ValueError("time_budget_seconds must be a positive number.")
     queue_path.parent.mkdir(parents=True, exist_ok=True)
     queue_path.touch(exist_ok=True)
     offset_token = _load_offset(offset_path)
     processed_prompts = 0
+    deadline = (
+        time.monotonic() + time_budget_seconds
+        if time_budget_seconds is not None
+        else None
+    )
+
+    def budget_reached() -> bool:
+        return deadline is not None and time.monotonic() >= deadline
+
     while True:
+        if budget_reached():
+            return processed_prompts
         with queue_path.open("r", encoding="utf-8") as handle:
             handle.seek(0, 2)
             end_of_file = handle.tell()
@@ -524,6 +538,8 @@ def run_queue(
                 _save_offset(offset_path, offset_token)
             handle.seek(offset_token)
             while True:
+                if budget_reached():
+                    return processed_prompts
                 line = handle.readline()
                 if not line:
                     break
@@ -543,13 +559,22 @@ def run_queue(
                 json_path = output_dir / f"q_{next_offset:010d}.json"
                 md_path = output_dir / f"q_{next_offset:010d}.md"
                 _write_benchmark_outputs(prompt, results, json_path, md_path)
-                offset_token = next_offset
-                _save_offset(offset_path, offset_token)
-                processed_prompts += 1
-                print(
-                    f"Processed queue offset {offset_token}: wrote {json_path} and {md_path}"
-                )
+                has_success = any(result.error is None for result in results)
+                if has_success:
+                    offset_token = next_offset
+                    _save_offset(offset_path, offset_token)
+                    processed_prompts += 1
+                    print(
+                        f"Processed queue offset {offset_token}: wrote {json_path} and {md_path}"
+                    )
+                else:
+                    print(
+                        "Queue offset "
+                        f"{next_offset} had only provider errors; leaving offset unchanged for retry."
+                    )
         if once:
+            return processed_prompts
+        if budget_reached():
             return processed_prompts
         time.sleep(poll_seconds)
 
@@ -606,6 +631,12 @@ def main() -> int:
         help="Queue polling interval in seconds for continuous queue mode.",
     )
     parser.add_argument(
+        "--time-budget-seconds",
+        type=float,
+        default=None,
+        help="Optional wall-clock budget for queue mode; worker exits when reached.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -624,6 +655,8 @@ def main() -> int:
         parser.error("--timeout must be a positive integer.")
     if args.poll_seconds <= 0:
         parser.error("--poll-seconds must be a positive number.")
+    if args.time_budget_seconds is not None and args.time_budget_seconds <= 0:
+        parser.error("--time-budget-seconds must be a positive number.")
     model_map = _parse_model_map(args.model_map, providers)
     queue_path = Path(args.queue_path) if args.queue_path else None
     if args.enqueue is not None:
@@ -643,6 +676,7 @@ def main() -> int:
             timeout=args.timeout,
             once=args.once,
             poll_seconds=args.poll_seconds,
+            time_budget_seconds=args.time_budget_seconds,
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         return 0

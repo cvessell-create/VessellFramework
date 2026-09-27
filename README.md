@@ -106,4 +106,10 @@ Process queue once and exit:
 vf-benchmark --queue-path q.jsonl --once --dry-run
 ```
 
+Apply a fixed wall-clock budget in queue mode:
+
+```powershell
+vf-benchmark --queue-path q.jsonl --dry-run --time-budget-seconds 300
+```
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
