@@ -433,7 +433,10 @@ def _format_markdown(results: list[ProviderResult], prompt: str) -> str:
 def _parse_model_map(model_map_arg: str | None, providers: list[str]) -> dict[str, str]:
     model_map = dict(DEFAULT_MODEL_MAP)
     if model_map_arg:
-        parsed = json.loads(model_map_arg)
+        try:
+            parsed = json.loads(model_map_arg)
+        except json.JSONDecodeError as error:
+            raise ValueError("--model-map must be valid JSON.") from error
         if not isinstance(parsed, dict):
             raise ValueError("--model-map must decode to a JSON object.")
         for provider, model in parsed.items():
@@ -594,7 +597,7 @@ def run_queue(
             handle.seek(0, 2)
             end_of_file = handle.tell()
             if offset_token > end_of_file:
-                offset_token = end_of_file
+                offset_token = 0
                 _save_offset(offset_path, offset_token)
             handle.seek(offset_token)
             while True:
@@ -979,7 +982,10 @@ def main() -> int:
         )
     except ValueError as error:
         parser.error(str(error))
-    model_map = _parse_model_map(args.model_map, providers)
+    try:
+        model_map = _parse_model_map(args.model_map, providers)
+    except ValueError as error:
+        parser.error(str(error))
     if args.probe_session_limit and (args.queue_path is not None or args.enqueue is not None or args.prompt):
         parser.error(
             "--probe-session-limit cannot be combined with --queue-path, --enqueue, or --prompt."

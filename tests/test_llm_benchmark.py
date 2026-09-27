@@ -281,7 +281,7 @@ def test_probe_matrix_outputs_artifacts(tmp_path) -> None:
     assert (tmp_path / "probes").exists()
 
 
-def test_run_queue_does_not_rewind_after_truncation(tmp_path) -> None:
+def test_run_queue_rebases_after_truncation(tmp_path) -> None:
     queue_path = tmp_path / "q.jsonl"
     queue_path.write_text('{"q":"first"}\n', encoding="utf-8")
     offset_path = tmp_path / ".state" / "q.offset"
@@ -306,6 +306,20 @@ def test_run_queue_does_not_rewind_after_truncation(tmp_path) -> None:
         once=True,
     )
     assert processed == 0
+    assert int(offset_path.read_text(encoding="utf-8").strip()) == 0
+    with queue_path.open("a", encoding="utf-8") as handle:
+        handle.write('{"q":"second"}\n')
+    processed_after_append = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+    )
+    assert processed_after_append == 1
+    assert int(offset_path.read_text(encoding="utf-8").strip()) > 0
 
 
 def test_main_rejects_probe_mode_conflicting_arguments(monkeypatch) -> None:
@@ -313,6 +327,16 @@ def test_main_rejects_probe_mode_conflicting_arguments(monkeypatch) -> None:
         sys,
         "argv",
         ["vf-benchmark", "--probe-session-limit", "--prompt", "conflict", "--dry-run"],
+    )
+    with pytest.raises(SystemExit):
+        llm_benchmark.main()
+
+
+def test_main_rejects_malformed_model_map(monkeypatch) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["vf-benchmark", "--prompt", "ok", "--model-map", "{not-json", "--dry-run"],
     )
     with pytest.raises(SystemExit):
         llm_benchmark.main()

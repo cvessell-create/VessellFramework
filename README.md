@@ -97,7 +97,7 @@ vf-benchmark --queue-path q.jsonl --enqueue "Your prompt here"
 Queue mode defaults:
 
 - queue field name: `q` (for JSONL rows like `{"q":"...prompt..."}`)
-- offset tracking: `.state/q.offset` (stream offset of the last successfully handled queue line; successful benchmark writes and intentionally skipped malformed lines are acknowledged)
+- offset tracking: `.state/q.offset` (stream offset of the last successfully handled queue line; successful benchmark writes and intentionally skipped malformed lines are acknowledged, and offset rebases if queue file is truncated)
 - queue outputs: `outputs/model_benchmarks/hurricane/q_<offset>.{json,md}`
 
 Process queue once and exit:
@@ -129,4 +129,4 @@ Probe output artifacts are written under:
 - `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.json`
 - `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.md`
 
-The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
+The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
