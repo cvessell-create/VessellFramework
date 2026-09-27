@@ -112,4 +112,21 @@ Apply a fixed wall-clock budget in queue mode:
 vf-benchmark --queue-path q.jsonl --dry-run --time-budget-seconds 300
 ```
 
+Use the full package runtime profile defaults (defensible swarm settings):
+
+```powershell
+vf-benchmark --runtime-profile full-package --queue-path q.jsonl --dry-run
+```
+
+Empirically probe session/runtime limits in full package mode:
+
+```powershell
+vf-benchmark --probe-session-limit --runtime-profile full-package --dry-run
+```
+
+Probe output artifacts are written under:
+
+- `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.json`
+- `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.md`
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.

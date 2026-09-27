@@ -227,3 +227,53 @@ def test_run_queue_stops_at_time_budget(tmp_path, monkeypatch) -> None:
     )
     assert processed == 1
     assert len(list(output_dir.glob("*.json"))) == 1
+
+
+def test_run_queue_return_summary(tmp_path) -> None:
+    queue_path = tmp_path / "q.jsonl"
+    queue_path.write_text('{"q":"first"}\n', encoding="utf-8")
+    offset_path = tmp_path / ".state" / "q.offset"
+    output_dir = tmp_path / "out"
+    summary = llm_benchmark.run_queue(
+        queue_path,
+        offset_path,
+        output_dir,
+        ["gpt"],
+        DEFAULT_MODEL_MAP,
+        dry_run=True,
+        once=True,
+        return_summary=True,
+    )
+    assert isinstance(summary, llm_benchmark.QueueRunSummary)
+    assert summary.processed_prompts == 1
+    assert summary.exit_condition == "once_completed"
+    assert summary.end_offset >= summary.start_offset
+
+
+def test_runtime_controls_and_probe_budgets_parsing() -> None:
+    timeout, poll, budget = llm_benchmark._resolve_runtime_controls(
+        "full-package", None, None, None
+    )
+    assert timeout == 30
+    assert poll == 0.5
+    assert budget == 240.0
+    assert llm_benchmark._parse_probe_budgets("1,2.5") == [1.0, 2.5]
+
+
+def test_probe_matrix_outputs_artifacts(tmp_path) -> None:
+    payload = llm_benchmark.run_probe_matrix(
+        providers=["gpt"],
+        model_map=DEFAULT_MODEL_MAP,
+        budgets=[0.05],
+        output_root=tmp_path / "probes",
+        timeout=5,
+        poll_seconds=0.01,
+        queue_field="q",
+        dry_run=True,
+        seed_prompts=2,
+        enqueue_interval_seconds=0.01,
+    )
+    assert payload["runs"]
+    assert payload["summary_json"]
+    assert payload["summary_md"]
+    assert (tmp_path / "probes").exists()
