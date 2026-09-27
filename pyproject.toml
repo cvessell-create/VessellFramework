@@ -26,6 +26,7 @@ vessell-remediator = "vessell.app.remediation_orchestrator:main"
 vf = "vessell.cli:main"
 vf-program = "vessell.app.main:main"
 vf-remediator = "vessell.app.remediation_orchestrator:main"
+vf-benchmark = "vessell.llm_benchmark:main"
 
 [tool.setuptools.packages.find]
 include = ["vessell*", "vessel*"]

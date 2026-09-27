@@ -54,4 +54,33 @@ The recognition gate quarantines name-only matches, classifies recognition
 stages, and counts independent provenance roots rather than search-result
 quantity.
 
+## Cross-model benchmark runner
+
+Use `vf-benchmark` to run one prompt across GPT/Claude/Grok/other providers,
+capture raw responses, and score each response with weighted rubric criteria:
+
+- intent detection (25%)
+- statistical correctness (30%)
+- R safety checks (20%)
+- actionability (15%)
+- noise control (10%)
+
+Dry-run mode gives built-in example responses and scoring without API keys:
+
+```powershell
+vf-benchmark --prompt "I’m trying to improve my workflow..." --dry-run
+```
+
+Live mode requires provider keys:
+
+- `OPENAI_API_KEY` (gpt)
+- `ANTHROPIC_API_KEY` (claude)
+- `XAI_API_KEY` (grok)
+- `OTHER_API_KEY` (other openai-compatible endpoint, optional `OTHER_BASE_URL`)
+
+Outputs are written to:
+
+- `outputs/model_benchmarks/latest_benchmark.json`
+- `outputs/model_benchmarks/latest_benchmark.md`
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
