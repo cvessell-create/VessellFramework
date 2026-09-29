@@ -189,6 +189,13 @@ Replay all historical prompts (from session artifacts) and regenerate benchmark 
 vf-benchmark --redo-prompts-from-history --dry-run --history-root outputs --redo-prompt-limit 2000
 ```
 
+Repository autoload defaults are now supported through:
+
+- `.vf_benchmark_autoload.json`
+
+This lets queue/history/oath/human-loop settings auto-load without manually
+providing every flag. Use `--no-autoload` to bypass repo defaults.
+
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.
 By default, scan traversal excludes operational/cache directories (for example:

@@ -1,5 +1,6 @@
 import sys
 import json
+import argparse
 from pathlib import Path
 
 import pytest
@@ -131,7 +132,12 @@ def test_build_history_index_aggregates_metadata(tmp_path) -> None:
     report = root / "security_scans" / "x" / "secret_scan_report.json"
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text("{}", encoding="utf-8")
-    payload = llm_benchmark._build_history_index(root, 10, oath_attestor="analyst")
+    payload = llm_benchmark._build_history_index(
+        root,
+        10,
+        oath_attestor="analyst",
+        environment={"python_version": "x"},
+    )
     assert payload["artifacts_total"] == 3
     analytics = payload["analytics"]
     assert analytics["artifacts_by_type"]["benchmark"] >= 1
@@ -142,6 +148,7 @@ def test_build_history_index_aggregates_metadata(tmp_path) -> None:
     hitl_policy = payload["constitutional_oath_framework"]["human_in_the_loop_policy"]
     assert hitl_policy["owner"] == llm_benchmark.DEFAULT_HUMAN_LOOP_OWNER
     assert hitl_policy["outside_human_review_allowed"] is False
+    assert payload["environment"]["python_version"] == "x"
 
 
 def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
@@ -235,6 +242,45 @@ def test_run_prompt_redo_from_history_emits_summary(tmp_path) -> None:
     assert payload["prompts_replayed"] == 1
     assert Path(payload["summary_json"]).exists()
     assert Path(payload["summary_md"]).exists()
+
+
+def test_apply_autoload_overrides_from_repo_config(tmp_path, monkeypatch) -> None:
+    config = tmp_path / ".vf_benchmark_autoload.json"
+    config.write_text(
+        json.dumps(
+            {
+                "queue_path": "q.jsonl",
+                "history_all_branches": True,
+                "history_export_csv": True,
+                "human_loop_owner": "@cvessell-create",
+            }
+        ),
+        encoding="utf-8",
+    )
+    args = argparse.Namespace(
+        no_autoload=False,
+        autoload_config=".vf_benchmark_autoload.json",
+        queue_path=None,
+        history_all_branches=False,
+        history_export_csv=False,
+        runtime_profile="default",
+        history_root="outputs",
+        history_limit=2000,
+        history_parallel_workers=4,
+        redo_output_dir="outputs/model_benchmarks/history_redo",
+        redo_prompt_limit=2000,
+        oath_attestor=None,
+        human_loop_owner=llm_benchmark.DEFAULT_HUMAN_LOOP_OWNER,
+        queue_field="q",
+        queue_output_dir="outputs/model_benchmarks/hurricane",
+        offset_path=".state/q.offset",
+    )
+    monkeypatch.delenv("VF_BENCHMARK_HUMAN_LOOP_OWNER", raising=False)
+    updated = llm_benchmark._apply_autoload_overrides(args, tmp_path)
+    assert updated.queue_path == "q.jsonl"
+    assert updated.history_all_branches is True
+    assert updated.history_export_csv is True
+    assert updated.human_loop_owner == "@cvessell-create"
 
 
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:

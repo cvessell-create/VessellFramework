@@ -1,0 +1,16 @@
+{
+  "runtime_profile": "full-package",
+  "queue_path": "q.jsonl",
+  "queue_field": "q",
+  "offset_path": ".state/q.offset",
+  "queue_output_dir": "outputs/model_benchmarks/hurricane",
+  "history_root": "outputs",
+  "history_limit": 50000,
+  "history_export_csv": true,
+  "history_all_branches": true,
+  "history_parallel_workers": 8,
+  "redo_output_dir": "outputs/model_benchmarks/history_redo",
+  "redo_prompt_limit": 50000,
+  "oath_attestor": "framework-governance",
+  "human_loop_owner": "@cvessell-create"
+}

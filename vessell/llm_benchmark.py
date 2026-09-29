@@ -7,6 +7,7 @@ import csv
 import fnmatch
 import json
 import os
+import platform
 import re
 import subprocess
 import threading
@@ -108,6 +109,7 @@ SECRET_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
 
 CONSTITUTION_PACKET_PATH: Final[str] = "docs/governance/US_CONSTITUTION_AND_OATH_FRAMEWORK.md"
 DEFAULT_HUMAN_LOOP_OWNER: Final[str] = "@cvessell-create"
+DEFAULT_AUTOLOAD_CONFIG: Final[str] = ".vf_benchmark_autoload.json"
 FEDERAL_CIVIL_OATH_5_USC_3331: Final[str] = (
     "I, [name], do solemnly swear (or affirm) that I will support and defend the Constitution "
     "of the United States against all enemies, foreign and domestic; that I will bear true faith "
@@ -198,6 +200,74 @@ def _record_upstream_step(meta: dict[str, object], step: str, **details: object)
     if details:
         payload["details"] = details
     steps.append(payload)
+
+
+def _environment_metadata(repo_root: Path) -> dict[str, object]:
+    return {
+        "repo_root": str(repo_root.resolve()),
+        "cwd": str(Path.cwd().resolve()),
+        "python_version": platform.python_version(),
+        "platform": platform.platform(),
+    }
+
+
+def _load_autoload_config(path: Path) -> dict[str, object]:
+    if not path.exists():
+        return {}
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(loaded, dict):
+        return {}
+    return loaded
+
+
+def _apply_autoload_overrides(args: argparse.Namespace, repo_root: Path) -> argparse.Namespace:
+    if getattr(args, "no_autoload", False):
+        return args
+    config_path = Path(getattr(args, "autoload_config", DEFAULT_AUTOLOAD_CONFIG))
+    if not config_path.is_absolute():
+        config_path = repo_root / config_path
+    config = _load_autoload_config(config_path)
+    if not config:
+        return args
+
+    def _set_if_unset(name: str, value: object) -> None:
+        current = getattr(args, name)
+        if isinstance(current, bool):
+            if current is False:
+                setattr(args, name, bool(value))
+            return
+        if current is None:
+            setattr(args, name, value)
+            return
+        if isinstance(current, str) and current == "":
+            setattr(args, name, str(value))
+
+    _set_if_unset("runtime_profile", config.get("runtime_profile"))
+    _set_if_unset("queue_path", config.get("queue_path"))
+    _set_if_unset("history_root", config.get("history_root"))
+    _set_if_unset("history_limit", config.get("history_limit"))
+    _set_if_unset("history_export_csv", config.get("history_export_csv"))
+    _set_if_unset("history_all_branches", config.get("history_all_branches"))
+    _set_if_unset("history_parallel_workers", config.get("history_parallel_workers"))
+    _set_if_unset("redo_output_dir", config.get("redo_output_dir"))
+    _set_if_unset("redo_prompt_limit", config.get("redo_prompt_limit"))
+    _set_if_unset("oath_attestor", config.get("oath_attestor"))
+    _set_if_unset("human_loop_owner", config.get("human_loop_owner"))
+    _set_if_unset("queue_field", config.get("queue_field"))
+    _set_if_unset("queue_output_dir", config.get("queue_output_dir"))
+    _set_if_unset("offset_path", config.get("offset_path"))
+
+    # Environment variables have highest precedence for owner/attestor.
+    env_owner = os.environ.get("VF_BENCHMARK_HUMAN_LOOP_OWNER")
+    if env_owner:
+        args.human_loop_owner = env_owner
+    env_attestor = os.environ.get("VF_BENCHMARK_OATH_ATTESTOR")
+    if env_attestor:
+        args.oath_attestor = env_attestor
+    return args
 
 
 def _constitutional_oath_metadata(attestor: str | None, human_loop_owner: str | None) -> dict[str, object]:
@@ -310,6 +380,7 @@ def _build_history_index(
     parallel_workers: int = 4,
     oath_attestor: str | None = None,
     human_loop_owner: str | None = None,
+    environment: dict[str, object] | None = None,
 ) -> dict[str, object]:
     root = history_root.resolve()
     if history_limit <= 0:
@@ -328,6 +399,7 @@ def _build_history_index(
                 "branches_scanned": 0,
                 "branch_jobs_completed": 0,
             },
+            "environment": environment or {},
             "constitutional_oath_framework": _constitutional_oath_metadata(
                 oath_attestor, human_loop_owner
             ),
@@ -444,6 +516,7 @@ def _build_history_index(
             "branches_scanned": branches_scanned,
             "branch_jobs_completed": branch_jobs_completed,
         },
+        "environment": environment or {},
         "constitutional_oath_framework": _constitutional_oath_metadata(
             oath_attestor, human_loop_owner
         ),
@@ -463,6 +536,7 @@ def _write_history_exports(
     parallel_workers: int = 4,
     oath_attestor: str | None = None,
     human_loop_owner: str | None = None,
+    environment: dict[str, object] | None = None,
 ) -> dict[str, str | int]:
     payload = _build_history_index(
         history_root,
@@ -472,6 +546,7 @@ def _write_history_exports(
         parallel_workers=parallel_workers,
         oath_attestor=oath_attestor,
         human_loop_owner=human_loop_owner,
+        environment=environment,
     )
     root = history_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -1725,6 +1800,7 @@ def run_probe_matrix(
 
 
 def main() -> int:
+    repo_root = Path.cwd()
     parser = argparse.ArgumentParser(prog="vf-benchmark")
     parser.add_argument("--prompt", help="Prompt to benchmark across providers.")
     parser.add_argument(
@@ -1889,6 +1965,16 @@ def main() -> int:
         help="Designated owner for human-in-the-loop escalation in metadata exports.",
     )
     parser.add_argument(
+        "--autoload-config",
+        default=DEFAULT_AUTOLOAD_CONFIG,
+        help="Repository config file for automatic default loading.",
+    )
+    parser.add_argument(
+        "--no-autoload",
+        action="store_true",
+        help="Disable repository autoload defaults and use CLI flags only.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -1899,6 +1985,8 @@ def main() -> int:
         help="Path for markdown output.",
     )
     args = parser.parse_args()
+    args = _apply_autoload_overrides(args, repo_root)
+    env_meta = _environment_metadata(repo_root)
     providers = [part.strip() for part in args.providers.split(",") if part.strip()]
     unknown = [provider for provider in providers if provider not in SUPPORTED_PROVIDERS]
     if unknown:
@@ -1957,10 +2045,11 @@ def main() -> int:
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
-            repo_root=Path.cwd(),
+            repo_root=repo_root,
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
             human_loop_owner=args.human_loop_owner,
+            environment=env_meta,
         )
         print("Empirical secret scan complete.")
         print("Report artifacts written under the configured scan output directory.")
@@ -1992,10 +2081,11 @@ def main() -> int:
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
-            repo_root=Path.cwd(),
+            repo_root=repo_root,
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
             human_loop_owner=args.human_loop_owner,
+            environment=env_meta,
         )
         print(f"Probe summary JSON: {payload['summary_json']}")
         print(f"Probe summary markdown: {payload['summary_md']}")
@@ -2028,10 +2118,11 @@ def main() -> int:
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
-            repo_root=Path.cwd(),
+            repo_root=repo_root,
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
             human_loop_owner=args.human_loop_owner,
+            environment=env_meta,
         )
         print(f"Redo summary JSON: {payload['summary_json']}")
         print(f"Redo summary markdown: {payload['summary_md']}")
@@ -2067,10 +2158,11 @@ def main() -> int:
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
-            repo_root=Path.cwd(),
+            repo_root=repo_root,
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
             human_loop_owner=args.human_loop_owner,
+            environment=env_meta,
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         print(f"History index JSON: {history_export['history_index_json']}")
@@ -2114,10 +2206,11 @@ def main() -> int:
         history_limit=args.history_limit,
         export_csv=args.history_export_csv,
         include_all_branches=args.history_all_branches,
-        repo_root=Path.cwd(),
+        repo_root=repo_root,
         parallel_workers=args.history_parallel_workers,
         oath_attestor=args.oath_attestor,
         human_loop_owner=args.human_loop_owner,
+        environment=env_meta,
     )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")
