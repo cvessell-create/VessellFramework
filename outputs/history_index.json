@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-29T01:11:52.815101+00:00",
+  "generated_at_utc": "2026-09-29T01:21:46.165617+00:00",
   "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
   "history_limit": 50000,
   "include_all_branches": true,
@@ -8,6 +8,14 @@
     "workers": 8,
     "branches_scanned": 1,
     "branch_jobs_completed": 1
+  },
+  "constitutional_oath_framework": {
+    "required": true,
+    "packet_path": "docs/governance/US_CONSTITUTION_AND_OATH_FRAMEWORK.md",
+    "article_vi_clause_3_required": true,
+    "federal_civil_oath_5_usc_3331": "I, [name], do solemnly swear (or affirm) that I will support and defend the Constitution of the United States against all enemies, foreign and domestic; that I will bear true faith and allegiance to the same; that I take this obligation freely, without any mental reservation or purpose of evasion; and that I will well and faithfully discharge the duties of the office on which I am about to enter. So help me God.",
+    "military_oath_10_usc_502": "I, [name], do solemnly swear (or affirm) that I will support and defend the Constitution of the United States against all enemies, foreign and domestic; that I will bear true faith and allegiance to the same; and that I will obey the orders of the President of the United States and the orders of the officers appointed over me, according to regulations and the Uniform Code of Military Justice. So help me God.",
+    "attestor": "framework-governance"
   },
   "artifacts_total": 24,
   "artifacts": [
@@ -224,8 +232,8 @@
       "generated_at_utc": null,
       "branch": "copilot/meta-level-response-sep-26",
       "source": "git_branch",
-      "size_bytes": 2815,
-      "blob_sha": "7c5c796441e6232a5337cc502f686ad26c8c1384"
+      "size_bytes": 5601,
+      "blob_sha": "b890b801c6d86b5875ff4816d86423d355184a93"
     }
   ],
   "analytics": {

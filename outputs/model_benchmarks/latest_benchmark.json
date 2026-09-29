@@ -1,5 +1,5 @@
 {
-  "prompt": "history refresh",
+  "prompt": "meta pull redo",
   "weights": {
     "intent_detection": 0.25,
     "statistical_correctness": 0.3,
@@ -67,7 +67,7 @@
   ],
   "upstream_meta": {
     "mode": "single_prompt_benchmark",
-    "generated_at_utc": "2026-09-29T01:11:52.802648+00:00",
+    "generated_at_utc": "2026-09-29T01:21:46.153848+00:00",
     "parameters": {
       "providers": [
         "gpt",
@@ -76,20 +76,20 @@
         "other"
       ],
       "dry_run": true,
-      "timeout": 45,
+      "timeout": 30,
       "json_out": "outputs/model_benchmarks/latest_benchmark.json",
       "md_out": "outputs/model_benchmarks/latest_benchmark.md"
     },
     "steps": [
       {
-        "time_utc": "2026-09-29T01:11:52.804764+00:00",
+        "time_utc": "2026-09-29T01:21:46.156108+00:00",
         "step": "benchmark_completed",
         "details": {
           "providers": 4
         }
       },
       {
-        "time_utc": "2026-09-29T01:11:52.804773+00:00",
+        "time_utc": "2026-09-29T01:21:46.156118+00:00",
         "step": "pre_output_write",
         "details": {
           "json_path": "outputs/model_benchmarks/latest_benchmark.json",
@@ -108,7 +108,7 @@
     },
     "global_pull_history": {
       "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
-      "artifact_count": 24,
+      "artifact_count": 25,
       "artifacts": [
         "case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
         "case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.json",
@@ -131,6 +131,7 @@
         "defense_plans/20260923T032526Z_active-defense-plan.json",
         "defense_plans/20260923T032658Z_active-defense-plan.json",
         "defense_plans/20260923T040550Z_operational-master-plan.json",
+        "history_index.json",
         "model_benchmarks/hurricane/q_000001.json",
         "model_benchmarks/hurricane/q_000002.json",
         "model_benchmarks/latest_benchmark.json"

@@ -3,7 +3,7 @@
 ## Prompt
 
 ```text
-history refresh
+meta pull redo
 ```
 
 ## Weighted results
@@ -60,6 +60,6 @@ Treat this as process optimization. Build a reusable preflight block in R that c
 ## Upstream process meta
 
 - Mode: single_prompt_benchmark
-- Generated at: 2026-09-29T01:11:52.802648+00:00
+- Generated at: 2026-09-29T01:21:46.153848+00:00
 - Steps recorded: 2
 - Pull history artifacts: 3
