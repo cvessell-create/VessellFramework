@@ -431,50 +431,40 @@ def _write_history_exports(
     index_json = root / "history_index.json"
     index_md = root / "history_index.md"
     index_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    md_lines = [
-        "# History Index",
-        "",
-        f"- Generated at: {payload['generated_at_utc']}",
-        f"- History root: `{payload['history_root']}`",
-        f"- Artifacts total: {payload['artifacts_total']}",
-        f"- Include all branches: {payload['include_all_branches']}",
-        f"- Parallel workers: {payload['parallel_collection']['workers']}",
-        f"- Branch jobs completed: {payload['parallel_collection']['branch_jobs_completed']}",
-        "",
-        "## Analytics",
-        "",
-    ]
-    analytics = payload["analytics"]
-    if isinstance(analytics, dict):
-        by_type = analytics.get("artifacts_by_type", {})
-        if isinstance(by_type, dict):
-            for key in sorted(by_type):
-                md_lines.append(f"- {key}: {by_type[key]}")
-        score_summary = analytics.get("benchmark_weighted_score_summary", {})
-        if isinstance(score_summary, dict):
-            md_lines.append(
-                "- benchmark weighted scores: "
-                f"count={score_summary.get('count')}, "
-                f"avg={score_summary.get('avg')}, "
-                f"min={score_summary.get('min')}, "
-                f"max={score_summary.get('max')}"
-            )
-        md_lines.append(f"- secret matches total: {analytics.get('secret_matches_total')}")
-        md_lines.append(f"- probe runs total: {analytics.get('probe_runs_total')}")
-    md_lines.extend(
-        [
-            "",
-            "## Artifacts",
-            "",
-            f"- Total indexed artifacts: {payload['artifacts_total']}",
-            "- Detailed artifact rows are kept in JSON/CSV exports.",
-            "",
-        ]
+    index_md.write_text(
+        "# History Index\n\nSee history_index.json and history dump files for full metadata.\n",
+        encoding="utf-8",
     )
-    index_md.write_text("\n".join(md_lines), encoding="utf-8")
+
+    dump_jsonl_path = root / "history_dump.jsonl"
+    with dump_jsonl_path.open("w", encoding="utf-8") as handle:
+        for item in payload["artifacts"]:
+            if isinstance(item, dict):
+                handle.write(json.dumps(item, separators=(",", ":")) + "\n")
+
+    dump_csv_path = root / "history_dump.csv"
+    with dump_csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["branch", "path", "type", "source", "size_bytes", "blob_sha", "generated_at_utc"],
+        )
+        writer.writeheader()
+        for item in payload["artifacts"]:
+            if isinstance(item, dict):
+                writer.writerow(
+                    {
+                        "branch": item.get("branch"),
+                        "path": item.get("path"),
+                        "type": item.get("type"),
+                        "source": item.get("source"),
+                        "size_bytes": item.get("size_bytes"),
+                        "blob_sha": item.get("blob_sha"),
+                        "generated_at_utc": item.get("generated_at_utc"),
+                    }
+                )
 
     benchmark_csv = ""
-    artifacts_csv = ""
+    artifacts_csv = str(dump_csv_path)
     if export_csv:
         artifacts_csv_path = root / "history_artifacts.csv"
         with artifacts_csv_path.open("w", encoding="utf-8", newline="") as handle:
@@ -533,6 +523,8 @@ def _write_history_exports(
     return {
         "history_index_json": str(index_json),
         "history_index_md": str(index_md),
+        "history_dump_jsonl": str(dump_jsonl_path),
+        "history_dump_csv": str(dump_csv_path),
         "history_artifacts_csv": artifacts_csv,
         "history_benchmark_scores_csv": benchmark_csv,
         "artifacts_total": int(payload["artifacts_total"]),
@@ -1791,6 +1783,8 @@ def main() -> int:
         print("Report artifacts written under the configured scan output directory.")
         print(f"History index JSON: {history_export['history_index_json']}")
         print(f"History index markdown: {history_export['history_index_md']}")
+        print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
+        print(f"History dump CSV: {history_export['history_dump_csv']}")
         return 0
     if args.probe_session_limit:
         try:
@@ -1822,6 +1816,8 @@ def main() -> int:
         print(f"Probe summary markdown: {payload['summary_md']}")
         print(f"History index JSON: {history_export['history_index_json']}")
         print(f"History index markdown: {history_export['history_index_md']}")
+        print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
+        print(f"History dump CSV: {history_export['history_dump_csv']}")
         estimates = payload["estimates"]
         print(
             "Estimated hard ceiling (seconds): "
@@ -1864,6 +1860,8 @@ def main() -> int:
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         print(f"History index JSON: {history_export['history_index_json']}")
         print(f"History index markdown: {history_export['history_index_md']}")
+        print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
+        print(f"History dump CSV: {history_export['history_dump_csv']}")
         return 0
     if not args.prompt:
         parser.error("--prompt is required unless --queue-path or --enqueue is used.")
@@ -1908,6 +1906,8 @@ def main() -> int:
     print(f"Wrote benchmark markdown: {md_path}")
     print(f"History index JSON: {history_export['history_index_json']}")
     print(f"History index markdown: {history_export['history_index_md']}")
+    print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
+    print(f"History dump CSV: {history_export['history_dump_csv']}")
     for result in sorted(results, key=lambda item: item.weighted_score, reverse=True):
         suffix = f" ERROR: {result.error}" if result.error else ""
         print(f"{result.provider:>7} {result.weighted_score:>6.2f} ({result.model}){suffix}")

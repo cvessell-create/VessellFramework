@@ -87,7 +87,8 @@ Each JSON artifact now includes an `upstream_meta` envelope captured before outp
 write, including mode, timestamp, step timeline, and pull-history inventory for
 prior JSON artifacts in the same output root.
 All modes also refresh a global history index under `outputs/history_index.json`
-and `outputs/history_index.md` (configurable with `--history-root`).
+and `outputs/history_index.md` (configurable with `--history-root`), plus full
+data dump artifacts under `outputs/history_dump.jsonl` and `outputs/history_dump.csv`.
 
 Queue/swarm mode lets you process prompts continuously while adding new prompts
 to the same queue:

@@ -155,6 +155,8 @@ def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
     exported = llm_benchmark._write_history_exports(root, history_limit=20, export_csv=True)
     assert Path(exported["history_index_json"]).exists()
     assert Path(exported["history_index_md"]).exists()
+    assert Path(exported["history_dump_jsonl"]).exists()
+    assert Path(exported["history_dump_csv"]).exists()
     assert Path(exported["history_artifacts_csv"]).exists()
     assert Path(exported["history_benchmark_scores_csv"]).exists()
 
