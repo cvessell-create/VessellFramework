@@ -86,6 +86,8 @@ Outputs are written to:
 Each JSON artifact now includes an `upstream_meta` envelope captured before output
 write, including mode, timestamp, step timeline, and pull-history inventory for
 prior JSON artifacts in the same output root.
+All modes also refresh a global history index under `outputs/history_index.json`
+and `outputs/history_index.md` (configurable with `--history-root`).
 
 Queue/swarm mode lets you process prompts continuously while adding new prompts
 to the same queue:
@@ -149,6 +151,17 @@ Secret scan output artifacts are written under:
 
 Secret scan report JSON includes `upstream_meta.pull_history` for all prior
 `secret_scan_report.json` artifacts under the scan output root.
+
+History export options for full metadata pull-through:
+
+```powershell
+vf-benchmark --prompt "..." --dry-run --history-root outputs --history-limit 2000 --history-export-csv
+```
+
+- `--history-root`: aggregation root for all historical JSON pull artifacts
+- `--history-limit`: cap how many artifacts are ingested into the meta index
+- `--history-export-csv`: also emit `history_artifacts.csv` and
+  `history_benchmark_scores.csv` for R/Python analysis
 
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.

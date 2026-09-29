@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import fnmatch
 import json
 import os
@@ -193,6 +194,228 @@ def _collect_pull_history(history_root: Path, pattern: str = "*.json") -> dict[s
         "history_root": str(root),
         "artifact_count": len(artifacts),
         "artifacts": artifacts,
+    }
+
+
+def _json_files_by_mtime(root: Path, pattern: str = "*.json") -> list[Path]:
+    files = [path for path in root.rglob(pattern) if path.is_file()]
+    files.sort(key=lambda item: item.stat().st_mtime, reverse=True)
+    return files
+
+
+def _safe_read_json(path: Path) -> dict[str, object] | None:
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return loaded if isinstance(loaded, dict) else None
+
+
+def _classify_history_artifact(payload: dict[str, object], path: Path) -> str:
+    name = path.name
+    if name == "probe_summary.json":
+        return "probe_summary"
+    if name == "secret_scan_report.json":
+        return "secret_scan_report"
+    if name == "latest_benchmark.json" or "results" in payload:
+        return "benchmark"
+    if name.startswith("q_") and name.endswith(".json"):
+        return "queue_benchmark"
+    return "other"
+
+
+def _compute_history_analytics(entries: list[dict[str, object]]) -> dict[str, object]:
+    by_type: dict[str, int] = {}
+    benchmark_scores: list[float] = []
+    secret_matches_total = 0
+    probe_runs_total = 0
+    for entry in entries:
+        artifact_type = str(entry["type"])
+        by_type[artifact_type] = by_type.get(artifact_type, 0) + 1
+        payload = entry.get("payload")
+        if not isinstance(payload, dict):
+            continue
+        results = payload.get("results")
+        if isinstance(results, list):
+            for item in results:
+                if isinstance(item, dict):
+                    score = item.get("weighted_score")
+                    if isinstance(score, (int, float)):
+                        benchmark_scores.append(float(score))
+        matches_total = payload.get("matches_total")
+        if isinstance(matches_total, int):
+            secret_matches_total += matches_total
+        runs = payload.get("runs")
+        if isinstance(runs, list):
+            probe_runs_total += len(runs)
+    benchmark_summary = {
+        "count": len(benchmark_scores),
+        "avg": round(sum(benchmark_scores) / len(benchmark_scores), 4) if benchmark_scores else None,
+        "min": round(min(benchmark_scores), 4) if benchmark_scores else None,
+        "max": round(max(benchmark_scores), 4) if benchmark_scores else None,
+    }
+    return {
+        "artifacts_by_type": by_type,
+        "benchmark_weighted_score_summary": benchmark_summary,
+        "secret_matches_total": secret_matches_total,
+        "probe_runs_total": probe_runs_total,
+    }
+
+
+def _build_history_index(history_root: Path, history_limit: int) -> dict[str, object]:
+    root = history_root.resolve()
+    if history_limit <= 0:
+        raise ValueError("history_limit must be a positive integer.")
+    if not root.exists():
+        return {
+            "generated_at_utc": _utc_now_iso(),
+            "history_root": str(root),
+            "history_limit": history_limit,
+            "artifacts_total": 0,
+            "artifacts": [],
+            "analytics": {
+                "artifacts_by_type": {},
+                "benchmark_weighted_score_summary": {"count": 0, "avg": None, "min": None, "max": None},
+                "secret_matches_total": 0,
+                "probe_runs_total": 0,
+            },
+        }
+    entries: list[dict[str, object]] = []
+    for path in _json_files_by_mtime(root):
+        if path.name == "history_index.json":
+            continue
+        payload = _safe_read_json(path)
+        if payload is None:
+            continue
+        entries.append(
+            {
+                "path": path.relative_to(root).as_posix(),
+                "type": _classify_history_artifact(payload, path),
+                "generated_at_utc": payload.get("generated_at_utc"),
+                "payload": payload,
+            }
+        )
+        if len(entries) >= history_limit:
+            break
+    analytics = _compute_history_analytics(entries)
+    artifacts = [
+        {
+            "path": item["path"],
+            "type": item["type"],
+            "generated_at_utc": item["generated_at_utc"],
+        }
+        for item in entries
+    ]
+    return {
+        "generated_at_utc": _utc_now_iso(),
+        "history_root": str(root),
+        "history_limit": history_limit,
+        "artifacts_total": len(artifacts),
+        "artifacts": artifacts,
+        "analytics": analytics,
+    }
+
+
+def _write_history_exports(
+    history_root: Path, *, history_limit: int, export_csv: bool
+) -> dict[str, str | int]:
+    payload = _build_history_index(history_root, history_limit)
+    root = history_root.resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    index_json = root / "history_index.json"
+    index_md = root / "history_index.md"
+    index_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    md_lines = [
+        "# History Index",
+        "",
+        f"- Generated at: {payload['generated_at_utc']}",
+        f"- History root: `{payload['history_root']}`",
+        f"- Artifacts total: {payload['artifacts_total']}",
+        "",
+        "## Analytics",
+        "",
+    ]
+    analytics = payload["analytics"]
+    if isinstance(analytics, dict):
+        by_type = analytics.get("artifacts_by_type", {})
+        if isinstance(by_type, dict):
+            for key in sorted(by_type):
+                md_lines.append(f"- {key}: {by_type[key]}")
+        score_summary = analytics.get("benchmark_weighted_score_summary", {})
+        if isinstance(score_summary, dict):
+            md_lines.append(
+                "- benchmark weighted scores: "
+                f"count={score_summary.get('count')}, "
+                f"avg={score_summary.get('avg')}, "
+                f"min={score_summary.get('min')}, "
+                f"max={score_summary.get('max')}"
+            )
+        md_lines.append(f"- secret matches total: {analytics.get('secret_matches_total')}")
+        md_lines.append(f"- probe runs total: {analytics.get('probe_runs_total')}")
+    md_lines.extend(["", "## Artifacts", "", "| Path | Type | Generated At |", "|---|---|---|"])
+    for item in payload["artifacts"]:
+        if isinstance(item, dict):
+            md_lines.append(
+                f"| {item.get('path')} | {item.get('type')} | {item.get('generated_at_utc')} |"
+            )
+    md_lines.append("")
+    index_md.write_text("\n".join(md_lines), encoding="utf-8")
+
+    benchmark_csv = ""
+    artifacts_csv = ""
+    if export_csv:
+        artifacts_csv_path = root / "history_artifacts.csv"
+        with artifacts_csv_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=["path", "type", "generated_at_utc"])
+            writer.writeheader()
+            for item in payload["artifacts"]:
+                if isinstance(item, dict):
+                    writer.writerow(
+                        {
+                            "path": item.get("path"),
+                            "type": item.get("type"),
+                            "generated_at_utc": item.get("generated_at_utc"),
+                        }
+                    )
+        artifacts_csv = str(artifacts_csv_path)
+
+        benchmark_csv_path = root / "history_benchmark_scores.csv"
+        with benchmark_csv_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(
+                handle,
+                fieldnames=["artifact_path", "provider", "model", "weighted_score"],
+            )
+            writer.writeheader()
+            for item in payload["artifacts"]:
+                if not isinstance(item, dict):
+                    continue
+                if item.get("type") not in {"benchmark", "queue_benchmark"}:
+                    continue
+                artifact_path = root / str(item.get("path"))
+                loaded = _safe_read_json(artifact_path)
+                if not isinstance(loaded, dict):
+                    continue
+                results = loaded.get("results")
+                if not isinstance(results, list):
+                    continue
+                for result in results:
+                    if isinstance(result, dict):
+                        writer.writerow(
+                            {
+                                "artifact_path": item.get("path"),
+                                "provider": result.get("provider"),
+                                "model": result.get("model"),
+                                "weighted_score": result.get("weighted_score"),
+                            }
+                        )
+        benchmark_csv = str(benchmark_csv_path)
+
+    return {
+        "history_index_json": str(index_json),
+        "history_index_md": str(index_md),
+        "history_artifacts_csv": artifacts_csv,
+        "history_benchmark_scores_csv": benchmark_csv,
+        "artifacts_total": int(payload["artifacts_total"]),
     }
 
 
@@ -685,6 +908,7 @@ def run_queue(
     poll_seconds: float = 1.0,
     time_budget_seconds: float | None = None,
     return_summary: bool = False,
+    history_root: Path | None = None,
 ) -> int | QueueRunSummary:
     if poll_seconds <= 0:
         raise ValueError("poll_seconds must be a positive number.")
@@ -707,6 +931,8 @@ def run_queue(
         },
     )
     queue_meta["pull_history"] = _collect_pull_history(output_dir, "*.json")
+    if history_root is not None:
+        queue_meta["global_pull_history"] = _collect_pull_history(history_root, "*.json")
     _record_upstream_step(queue_meta, "queue_initialized")
     offset_token = _load_offset(offset_path)
     start_offset = offset_token
@@ -775,6 +1001,8 @@ def run_queue(
                     },
                 )
                 item_meta["pull_history"] = _collect_pull_history(output_dir, "*.json")
+                if history_root is not None:
+                    item_meta["global_pull_history"] = _collect_pull_history(history_root, "*.json")
                 _record_upstream_step(item_meta, "prompt_parsed", prompt_length=len(prompt))
                 results = run_benchmark(
                     prompt,
@@ -926,6 +1154,7 @@ def run_empirical_secret_scan(
     scan_root: Path,
     output_root: Path,
     max_findings: int = 200,
+    history_root: Path | None = None,
 ) -> dict[str, object]:
     if max_findings <= 0:
         raise ValueError("max_findings must be a positive integer.")
@@ -941,6 +1170,8 @@ def run_empirical_secret_scan(
         },
     )
     upstream_meta["pull_history"] = _collect_pull_history(output_root, "secret_scan_report.json")
+    if history_root is not None:
+        upstream_meta["global_pull_history"] = _collect_pull_history(history_root, "*.json")
     _record_upstream_step(upstream_meta, "scan_initialized")
     scan_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_root = output_root / scan_stamp
@@ -1069,6 +1300,7 @@ def run_probe_matrix(
     dry_run: bool,
     seed_prompts: int,
     enqueue_interval_seconds: float,
+    history_root: Path | None = None,
 ) -> dict[str, object]:
     if seed_prompts <= 0:
         raise ValueError("seed_prompts must be a positive integer.")
@@ -1088,6 +1320,8 @@ def run_probe_matrix(
         },
     )
     upstream_meta["pull_history"] = _collect_pull_history(output_root, "probe_summary.json")
+    if history_root is not None:
+        upstream_meta["global_pull_history"] = _collect_pull_history(history_root, "*.json")
     _record_upstream_step(upstream_meta, "probe_initialized")
     run_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_root = output_root / run_stamp
@@ -1144,6 +1378,7 @@ def run_probe_matrix(
                 poll_seconds=poll_seconds,
                 time_budget_seconds=budget,
                 return_summary=True,
+                history_root=history_root,
             )
             if isinstance(summary, QueueRunSummary):
                 exit_condition = summary.exit_condition
@@ -1346,6 +1581,22 @@ def main() -> int:
         help="Maximum number of findings to record in one empirical scan run.",
     )
     parser.add_argument(
+        "--history-root",
+        default="outputs",
+        help="Root directory used to build aggregated history index artifacts.",
+    )
+    parser.add_argument(
+        "--history-limit",
+        type=int,
+        default=2000,
+        help="Maximum number of historical JSON artifacts to include in history aggregation.",
+    )
+    parser.add_argument(
+        "--history-export-csv",
+        action="store_true",
+        help="Also emit CSV history exports for R/Python workflows.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -1360,6 +1611,8 @@ def main() -> int:
     unknown = [provider for provider in providers if provider not in SUPPORTED_PROVIDERS]
     if unknown:
         parser.error(f"Unsupported providers: {unknown}. Allowed: {sorted(SUPPORTED_PROVIDERS)}")
+    if args.history_limit <= 0:
+        parser.error("--history-limit must be a positive integer.")
     try:
         timeout, poll_seconds, time_budget_seconds = _resolve_runtime_controls(
             args.runtime_profile,
@@ -1389,11 +1642,19 @@ def main() -> int:
                 scan_root=Path(args.scan_root),
                 output_root=Path(args.scan_output_dir),
                 max_findings=args.scan_max_findings,
+                history_root=Path(args.history_root),
             )
         except ValueError as error:
             parser.error(str(error))
+        history_export = _write_history_exports(
+            Path(args.history_root),
+            history_limit=args.history_limit,
+            export_csv=args.history_export_csv,
+        )
         print("Empirical secret scan complete.")
         print("Report artifacts written under the configured scan output directory.")
+        print(f"History index JSON: {history_export['history_index_json']}")
+        print(f"History index markdown: {history_export['history_index_md']}")
         return 0
     if args.probe_session_limit:
         try:
@@ -1409,11 +1670,19 @@ def main() -> int:
                 dry_run=args.dry_run,
                 seed_prompts=args.probe_seed_prompts,
                 enqueue_interval_seconds=args.probe_enqueue_interval_seconds,
+                history_root=Path(args.history_root),
             )
         except ValueError as error:
             parser.error(str(error))
+        history_export = _write_history_exports(
+            Path(args.history_root),
+            history_limit=args.history_limit,
+            export_csv=args.history_export_csv,
+        )
         print(f"Probe summary JSON: {payload['summary_json']}")
         print(f"Probe summary markdown: {payload['summary_md']}")
+        print(f"History index JSON: {history_export['history_index_json']}")
+        print(f"History index markdown: {history_export['history_index_md']}")
         estimates = payload["estimates"]
         print(
             "Estimated hard ceiling (seconds): "
@@ -1443,8 +1712,16 @@ def main() -> int:
             once=args.once,
             poll_seconds=poll_seconds,
             time_budget_seconds=time_budget_seconds,
+            history_root=Path(args.history_root),
+        )
+        history_export = _write_history_exports(
+            Path(args.history_root),
+            history_limit=args.history_limit,
+            export_csv=args.history_export_csv,
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
+        print(f"History index JSON: {history_export['history_index_json']}")
+        print(f"History index markdown: {history_export['history_index_md']}")
         return 0
     if not args.prompt:
         parser.error("--prompt is required unless --queue-path or --enqueue is used.")
@@ -1462,6 +1739,7 @@ def main() -> int:
         },
     )
     upstream_meta["pull_history"] = _collect_pull_history(json_path.parent, "*.json")
+    upstream_meta["global_pull_history"] = _collect_pull_history(Path(args.history_root), "*.json")
     _record_upstream_step(upstream_meta, "benchmark_completed", providers=len(results))
     _record_upstream_step(
         upstream_meta,
@@ -1476,8 +1754,15 @@ def main() -> int:
         md_path,
         upstream_meta=upstream_meta,
     )
+    history_export = _write_history_exports(
+        Path(args.history_root),
+        history_limit=args.history_limit,
+        export_csv=args.history_export_csv,
+    )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")
+    print(f"History index JSON: {history_export['history_index_json']}")
+    print(f"History index markdown: {history_export['history_index_md']}")
     for result in sorted(results, key=lambda item: item.weighted_score, reverse=True):
         suffix = f" ERROR: {result.error}" if result.error else ""
         print(f"{result.provider:>7} {result.weighted_score:>6.2f} ({result.model}){suffix}")

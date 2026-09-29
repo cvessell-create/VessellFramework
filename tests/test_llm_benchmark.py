@@ -1,5 +1,6 @@
 import sys
 import json
+from pathlib import Path
 
 import pytest
 
@@ -117,6 +118,69 @@ def test_collect_pull_history_returns_all_matching_artifacts(tmp_path) -> None:
     history = llm_benchmark._collect_pull_history(root, "*.json")
     assert history["artifact_count"] == 2
     assert history["artifacts"] == ["a/first.json", "b/second.json"]
+
+
+def test_build_history_index_aggregates_metadata(tmp_path) -> None:
+    root = tmp_path / "outputs"
+    bench = root / "model_benchmarks" / "latest_benchmark.json"
+    bench.parent.mkdir(parents=True, exist_ok=True)
+    bench.write_text(
+        json.dumps(
+            {
+                "generated_at_utc": "2026-01-01T00:00:00+00:00",
+                "results": [{"provider": "gpt", "model": "m", "weighted_score": 80.0}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    probe = root / "model_benchmarks" / "session_probes" / "x" / "probe_summary.json"
+    probe.parent.mkdir(parents=True, exist_ok=True)
+    probe.write_text(
+        json.dumps(
+            {
+                "generated_at_utc": "2026-01-01T00:00:01+00:00",
+                "runs": [{"budget_seconds": 1.0}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = root / "security_scans" / "x" / "secret_scan_report.json"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(
+        json.dumps(
+            {
+                "generated_at_utc": "2026-01-01T00:00:02+00:00",
+                "matches_total": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    payload = llm_benchmark._build_history_index(root, 10)
+    assert payload["artifacts_total"] == 3
+    analytics = payload["analytics"]
+    assert analytics["probe_runs_total"] == 1
+    assert analytics["secret_matches_total"] == 3
+    assert analytics["benchmark_weighted_score_summary"]["avg"] == 80.0
+
+
+def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
+    root = tmp_path / "outputs"
+    bench = root / "latest_benchmark.json"
+    bench.parent.mkdir(parents=True, exist_ok=True)
+    bench.write_text(
+        json.dumps(
+            {
+                "generated_at_utc": "2026-01-01T00:00:00+00:00",
+                "results": [{"provider": "gpt", "model": "m", "weighted_score": 50.0}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    exported = llm_benchmark._write_history_exports(root, history_limit=20, export_csv=True)
+    assert Path(exported["history_index_json"]).exists()
+    assert Path(exported["history_index_md"]).exists()
+    assert Path(exported["history_artifacts_csv"]).exists()
+    assert Path(exported["history_benchmark_scores_csv"]).exists()
 
 
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:
