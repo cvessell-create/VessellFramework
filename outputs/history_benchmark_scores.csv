@@ -1,0 +1,4 @@
+branch,artifact_path,artifact_type,provider,model,weighted_score
+copilot/meta-level-response-sep-26,model_benchmarks/hurricane/q_000001.json,queue_benchmark,,,
+copilot/meta-level-response-sep-26,model_benchmarks/hurricane/q_000002.json,queue_benchmark,,,
+copilot/meta-level-response-sep-26,model_benchmarks/latest_benchmark.json,benchmark,,,

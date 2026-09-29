@@ -3,7 +3,7 @@
 ## Prompt
 
 ```text
-I’m not stuck on one error—I’m trying to improve my workflow. For those doing A6, what’s your step-by-step checklist to decide: (1) paired vs independent design, (2) which test to run, and (3) how to avoid object/column-name errors in R before analysis? What’s the one habit that saves you the most time?
+history refresh
 ```
 
 ## Weighted results
@@ -56,3 +56,10 @@ Treat this as process optimization. Build a reusable preflight block in R that c
 ```
 
 - Rubric: intent=3, stats=0, r_safety=2, actionability=1, noise=5
+
+## Upstream process meta
+
+- Mode: single_prompt_benchmark
+- Generated at: 2026-09-29T01:11:52.802648+00:00
+- Steps recorded: 2
+- Pull history artifacts: 3

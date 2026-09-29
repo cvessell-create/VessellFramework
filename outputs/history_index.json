@@ -1,0 +1,249 @@
+{
+  "generated_at_utc": "2026-09-29T01:11:52.815101+00:00",
+  "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
+  "history_limit": 50000,
+  "include_all_branches": true,
+  "parallel_collection": {
+    "enabled": true,
+    "workers": 8,
+    "branches_scanned": 1,
+    "branch_jobs_completed": 1
+  },
+  "artifacts_total": 24,
+  "artifacts": [
+    {
+      "path": "case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T010845Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T010949Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T011001Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T011029Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T011343Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T015021Z_live-cisa-kev-case.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 826,
+      "blob_sha": "464aa02bde8143a6a7f000feb3c4981b47e31910"
+    },
+    {
+      "path": "case_runs/20260923T022022Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T032056Z_live-cisa-kev-case.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 829,
+      "blob_sha": "bebad6b392453986d3a0693939bacdcfd8272916"
+    },
+    {
+      "path": "case_runs/20260923T032123Z_live-cisa-kev-case.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 829,
+      "blob_sha": "bebad6b392453986d3a0693939bacdcfd8272916"
+    },
+    {
+      "path": "case_runs/20260923T032723Z_live-cisa-kev-case.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 829,
+      "blob_sha": "bebad6b392453986d3a0693939bacdcfd8272916"
+    },
+    {
+      "path": "case_runs/20260923T034113Z_live-cisa-kev-case.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 829,
+      "blob_sha": "bebad6b392453986d3a0693939bacdcfd8272916"
+    },
+    {
+      "path": "case_runs/20260923T040550Z_operational-master-kev.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 829,
+      "blob_sha": "bebad6b392453986d3a0693939bacdcfd8272916"
+    },
+    {
+      "path": "case_runs/20260923T191113Z_live-cisa-kev-case.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 826,
+      "blob_sha": "464aa02bde8143a6a7f000feb3c4981b47e31910"
+    },
+    {
+      "path": "case_runs/20260923T192008Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T192245Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "case_runs/20260923T192257Z_illustrative-provenance-and-posture-review.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 674,
+      "blob_sha": "dfcbbcf6299b6e225dc981f5755f43d67ac39850"
+    },
+    {
+      "path": "defense_plans/20260923T032526Z_active-defense-plan.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 2755,
+      "blob_sha": "8ca1f3da4a33da4024f145706d13a08261212b5f"
+    },
+    {
+      "path": "defense_plans/20260923T032658Z_active-defense-plan.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 2859,
+      "blob_sha": "db2c09c04135005a806e7bbceeaebb65904f5575"
+    },
+    {
+      "path": "defense_plans/20260923T040550Z_operational-master-plan.json",
+      "type": "other",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 282,
+      "blob_sha": "65570ca472c2b4a3384057c43412092854fb0cc9"
+    },
+    {
+      "path": "model_benchmarks/hurricane/q_000001.json",
+      "type": "queue_benchmark",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 2502,
+      "blob_sha": "77ebd107cf0df02dc7bfc3e81c607e1ade53d509"
+    },
+    {
+      "path": "model_benchmarks/hurricane/q_000002.json",
+      "type": "queue_benchmark",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 2502,
+      "blob_sha": "f72ba980de2a2ec22bc0fc3c2ce934c29362e8e0"
+    },
+    {
+      "path": "model_benchmarks/latest_benchmark.json",
+      "type": "benchmark",
+      "generated_at_utc": null,
+      "branch": "copilot/meta-level-response-sep-26",
+      "source": "git_branch",
+      "size_bytes": 2815,
+      "blob_sha": "7c5c796441e6232a5337cc502f686ad26c8c1384"
+    }
+  ],
+  "analytics": {
+    "artifacts_by_type": {
+      "other": 21,
+      "queue_benchmark": 2,
+      "benchmark": 1
+    },
+    "branch_artifact_counts": {
+      "copilot/meta-level-response-sep-26": 24
+    },
+    "benchmark_weighted_score_summary": {
+      "count": null,
+      "avg": null,
+      "min": null,
+      "max": null
+    },
+    "secret_matches_total": null,
+    "probe_runs_total": null
+  }
+}

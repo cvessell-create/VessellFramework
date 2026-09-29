@@ -1,5 +1,5 @@
 {
-  "prompt": "I\u2019m not stuck on one error\u2014I\u2019m trying to improve my workflow. For those doing A6, what\u2019s your step-by-step checklist to decide: (1) paired vs independent design, (2) which test to run, and (3) how to avoid object/column-name errors in R before analysis? What\u2019s the one habit that saves you the most time?",
+  "prompt": "history refresh",
   "weights": {
     "intent_detection": 0.25,
     "statistical_correctness": 0.3,
@@ -64,5 +64,77 @@
       "error": null,
       "response": "Treat this as process optimization. Build a reusable preflight block in R that checks column names, missing values, object existence, and numeric coercion before any inferential test."
     }
-  ]
+  ],
+  "upstream_meta": {
+    "mode": "single_prompt_benchmark",
+    "generated_at_utc": "2026-09-29T01:11:52.802648+00:00",
+    "parameters": {
+      "providers": [
+        "gpt",
+        "claude",
+        "grok",
+        "other"
+      ],
+      "dry_run": true,
+      "timeout": 45,
+      "json_out": "outputs/model_benchmarks/latest_benchmark.json",
+      "md_out": "outputs/model_benchmarks/latest_benchmark.md"
+    },
+    "steps": [
+      {
+        "time_utc": "2026-09-29T01:11:52.804764+00:00",
+        "step": "benchmark_completed",
+        "details": {
+          "providers": 4
+        }
+      },
+      {
+        "time_utc": "2026-09-29T01:11:52.804773+00:00",
+        "step": "pre_output_write",
+        "details": {
+          "json_path": "outputs/model_benchmarks/latest_benchmark.json",
+          "md_path": "outputs/model_benchmarks/latest_benchmark.md"
+        }
+      }
+    ],
+    "pull_history": {
+      "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs/model_benchmarks",
+      "artifact_count": 3,
+      "artifacts": [
+        "hurricane/q_000001.json",
+        "hurricane/q_000002.json",
+        "latest_benchmark.json"
+      ]
+    },
+    "global_pull_history": {
+      "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
+      "artifact_count": 24,
+      "artifacts": [
+        "case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T010845Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T010949Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T011001Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T011029Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T011343Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T015021Z_live-cisa-kev-case.json",
+        "case_runs/20260923T022022Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T032056Z_live-cisa-kev-case.json",
+        "case_runs/20260923T032123Z_live-cisa-kev-case.json",
+        "case_runs/20260923T032723Z_live-cisa-kev-case.json",
+        "case_runs/20260923T034113Z_live-cisa-kev-case.json",
+        "case_runs/20260923T040550Z_operational-master-kev.json",
+        "case_runs/20260923T191113Z_live-cisa-kev-case.json",
+        "case_runs/20260923T192008Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T192245Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T192257Z_illustrative-provenance-and-posture-review.json",
+        "defense_plans/20260923T032526Z_active-defense-plan.json",
+        "defense_plans/20260923T032658Z_active-defense-plan.json",
+        "defense_plans/20260923T040550Z_operational-master-plan.json",
+        "model_benchmarks/hurricane/q_000001.json",
+        "model_benchmarks/hurricane/q_000002.json",
+        "model_benchmarks/latest_benchmark.json"
+      ]
+    }
+  }
 }
