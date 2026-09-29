@@ -1,0 +1,149 @@
+{
+  "prompt": "the same prompt with all current calls and skill-level meta weighting",
+  "weights": {
+    "intent_detection": 0.25,
+    "statistical_correctness": 0.3,
+    "r_safety_checks": 0.2,
+    "actionability": 0.15,
+    "noise_control": 0.1
+  },
+  "results": [
+    {
+      "provider": "gpt",
+      "model": "gpt-4.1-mini",
+      "weighted_score": 86.0,
+      "rubric": {
+        "intent_detection": 4,
+        "statistical_correctness": 4,
+        "r_safety_checks": 5,
+        "actionability": 4,
+        "noise_control": 5
+      },
+      "error": null,
+      "response": "Use a checklist: first classify design (paired vs independent), then pick the test (paired t/Wilcoxon for paired, independent t/Mann-Whitney for independent), then run R safety checks (`names()`, `str()`, object existence, numeric types)."
+    },
+    {
+      "provider": "claude",
+      "model": "claude-3-5-sonnet-latest",
+      "weighted_score": 59.0,
+      "rubric": {
+        "intent_detection": 1,
+        "statistical_correctness": 5,
+        "r_safety_checks": 2,
+        "actionability": 2,
+        "noise_control": 5
+      },
+      "error": null,
+      "response": "I would run this in three gates: design gate, test-selection gate, and data-integrity gate. Design gate asks whether repeated measures are on the same participants. Test gate maps normal paired data to dependent t-tests and non-normal to Wilcoxon; independent data maps to independent t-test or Mann-Whitney. Data-integrity gate confirms column names and types."
+    },
+    {
+      "provider": "grok",
+      "model": "grok-4-latest",
+      "weighted_score": 47.0,
+      "rubric": {
+        "intent_detection": 3,
+        "statistical_correctness": 0,
+        "r_safety_checks": 4,
+        "actionability": 2,
+        "noise_control": 5
+      },
+      "error": null,
+      "response": "Fast workflow: 1) identify unit and pairing, 2) inspect distribution and outliers, 3) choose test, 4) run `names(df)` and `str(df)` before coding, 5) execute and report p-value + effect size."
+    },
+    {
+      "provider": "other",
+      "model": "openrouter/auto",
+      "weighted_score": 36.0,
+      "rubric": {
+        "intent_detection": 3,
+        "statistical_correctness": 0,
+        "r_safety_checks": 2,
+        "actionability": 1,
+        "noise_control": 5
+      },
+      "error": null,
+      "response": "Treat this as process optimization. Build a reusable preflight block in R that checks column names, missing values, object existence, and numeric coercion before any inferential test."
+    }
+  ],
+  "upstream_meta": {
+    "mode": "queue_item",
+    "generated_at_utc": "2026-09-29T02:03:03.080573+00:00",
+    "parameters": {
+      "queue_path": "q.jsonl",
+      "offset_start": 312,
+      "offset_end": 390,
+      "queue_field": "q"
+    },
+    "steps": [
+      {
+        "time_utc": "2026-09-29T02:03:03.082088+00:00",
+        "step": "prompt_parsed",
+        "details": {
+          "prompt_length": 69
+        }
+      },
+      {
+        "time_utc": "2026-09-29T02:03:03.082195+00:00",
+        "step": "benchmark_completed",
+        "details": {
+          "providers": 4
+        }
+      },
+      {
+        "time_utc": "2026-09-29T02:03:03.082214+00:00",
+        "step": "pre_output_write",
+        "details": {
+          "json_path": "outputs/model_benchmarks/hurricane/q_0000000390.json",
+          "md_path": "outputs/model_benchmarks/hurricane/q_0000000390.md"
+        }
+      }
+    ],
+    "pull_history": {
+      "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs/model_benchmarks/hurricane",
+      "artifact_count": 6,
+      "artifacts": [
+        "q_0000000078.json",
+        "q_0000000156.json",
+        "q_0000000234.json",
+        "q_0000000312.json",
+        "q_000001.json",
+        "q_000002.json"
+      ]
+    },
+    "global_pull_history": {
+      "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
+      "artifact_count": 29,
+      "artifacts": [
+        "case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T010845Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T010949Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T011001Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T011029Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T011343Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T015021Z_live-cisa-kev-case.json",
+        "case_runs/20260923T022022Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T032056Z_live-cisa-kev-case.json",
+        "case_runs/20260923T032123Z_live-cisa-kev-case.json",
+        "case_runs/20260923T032723Z_live-cisa-kev-case.json",
+        "case_runs/20260923T034113Z_live-cisa-kev-case.json",
+        "case_runs/20260923T040550Z_operational-master-kev.json",
+        "case_runs/20260923T191113Z_live-cisa-kev-case.json",
+        "case_runs/20260923T192008Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T192245Z_illustrative-provenance-and-posture-review.json",
+        "case_runs/20260923T192257Z_illustrative-provenance-and-posture-review.json",
+        "defense_plans/20260923T032526Z_active-defense-plan.json",
+        "defense_plans/20260923T032658Z_active-defense-plan.json",
+        "defense_plans/20260923T040550Z_operational-master-plan.json",
+        "history_index.json",
+        "model_benchmarks/hurricane/q_0000000078.json",
+        "model_benchmarks/hurricane/q_0000000156.json",
+        "model_benchmarks/hurricane/q_0000000234.json",
+        "model_benchmarks/hurricane/q_0000000312.json",
+        "model_benchmarks/hurricane/q_000001.json",
+        "model_benchmarks/hurricane/q_000002.json",
+        "model_benchmarks/latest_benchmark.json"
+      ]
+    }
+  }
+}

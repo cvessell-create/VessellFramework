@@ -1,0 +1,38 @@
+{
+  "generated_at_utc": "2026-09-29T02:03:03.418201+00:00",
+  "skill_name": "vf_benchmark_meta_runtime",
+  "agent_profile": {
+    "name": "vf-benchmark",
+    "role": "meta pull, replay, and governance export agent"
+  },
+  "autoload": {
+    "config_path": "/home/runner/work/VessellFramework/VessellFramework/.vf_benchmark_autoload.json",
+    "enabled_by_default": true
+  },
+  "capabilities": [
+    "cross_model_benchmark",
+    "queue_swarm_processing",
+    "session_probe_matrix",
+    "empirical_secret_scan",
+    "history_index_and_dumps",
+    "all_branch_parallel_metadata_pull",
+    "history_prompt_redo",
+    "owner_only_human_in_loop_policy",
+    "constitutional_oath_metadata"
+  ],
+  "current_run": {
+    "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
+    "history_limit": 50000,
+    "export_csv": true,
+    "include_all_branches": true,
+    "parallel_workers": 8,
+    "oath_attestor": "framework-governance",
+    "human_loop_owner": "@cvessell-create"
+  },
+  "environment": {
+    "repo_root": "/home/runner/work/VessellFramework/VessellFramework",
+    "cwd": "/home/runner/work/VessellFramework/VessellFramework",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39"
+  }
+}
