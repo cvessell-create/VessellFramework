@@ -1,5 +1,5 @@
 {
-  "prompt": "meta pull redo",
+  "prompt": "meta local weighted model program",
   "weights": {
     "intent_detection": 0.25,
     "statistical_correctness": 0.3,
@@ -67,7 +67,7 @@
   ],
   "upstream_meta": {
     "mode": "single_prompt_benchmark",
-    "generated_at_utc": "2026-09-29T01:21:46.153848+00:00",
+    "generated_at_utc": "2026-09-29T02:27:18.269662+00:00",
     "parameters": {
       "providers": [
         "gpt",
@@ -76,20 +76,20 @@
         "other"
       ],
       "dry_run": true,
-      "timeout": 30,
+      "timeout": 45,
       "json_out": "outputs/model_benchmarks/latest_benchmark.json",
       "md_out": "outputs/model_benchmarks/latest_benchmark.md"
     },
     "steps": [
       {
-        "time_utc": "2026-09-29T01:21:46.156108+00:00",
+        "time_utc": "2026-09-29T02:27:18.274270+00:00",
         "step": "benchmark_completed",
         "details": {
           "providers": 4
         }
       },
       {
-        "time_utc": "2026-09-29T01:21:46.156118+00:00",
+        "time_utc": "2026-09-29T02:27:18.274294+00:00",
         "step": "pre_output_write",
         "details": {
           "json_path": "outputs/model_benchmarks/latest_benchmark.json",
@@ -99,8 +99,18 @@
     ],
     "pull_history": {
       "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs/model_benchmarks",
-      "artifact_count": 3,
+      "artifact_count": 13,
       "artifacts": [
+        "hurricane/q_0000000078.json",
+        "hurricane/q_0000000156.json",
+        "hurricane/q_0000000234.json",
+        "hurricane/q_0000000312.json",
+        "hurricane/q_0000000390.json",
+        "hurricane/q_0000000468.json",
+        "hurricane/q_0000000546.json",
+        "hurricane/q_0000000624.json",
+        "hurricane/q_0000000702.json",
+        "hurricane/q_0000000780.json",
         "hurricane/q_000001.json",
         "hurricane/q_000002.json",
         "latest_benchmark.json"
@@ -108,7 +118,7 @@
     },
     "global_pull_history": {
       "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
-      "artifact_count": 25,
+      "artifact_count": 36,
       "artifacts": [
         "case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
         "case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.json",
@@ -132,9 +142,20 @@
         "defense_plans/20260923T032658Z_active-defense-plan.json",
         "defense_plans/20260923T040550Z_operational-master-plan.json",
         "history_index.json",
+        "model_benchmarks/hurricane/q_0000000078.json",
+        "model_benchmarks/hurricane/q_0000000156.json",
+        "model_benchmarks/hurricane/q_0000000234.json",
+        "model_benchmarks/hurricane/q_0000000312.json",
+        "model_benchmarks/hurricane/q_0000000390.json",
+        "model_benchmarks/hurricane/q_0000000468.json",
+        "model_benchmarks/hurricane/q_0000000546.json",
+        "model_benchmarks/hurricane/q_0000000624.json",
+        "model_benchmarks/hurricane/q_0000000702.json",
+        "model_benchmarks/hurricane/q_0000000780.json",
         "model_benchmarks/hurricane/q_000001.json",
         "model_benchmarks/hurricane/q_000002.json",
-        "model_benchmarks/latest_benchmark.json"
+        "model_benchmarks/latest_benchmark.json",
+        "runtime_skill.json"
       ]
     }
   }

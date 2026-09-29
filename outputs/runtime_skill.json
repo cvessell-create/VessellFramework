@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-29T02:03:03.418201+00:00",
+  "generated_at_utc": "2026-09-29T02:27:18.282491+00:00",
   "skill_name": "vf_benchmark_meta_runtime",
   "agent_profile": {
     "name": "vf-benchmark",
@@ -22,10 +22,10 @@
   ],
   "current_run": {
     "history_root": "/home/runner/work/VessellFramework/VessellFramework/outputs",
-    "history_limit": 50000,
+    "history_limit": 2000,
     "export_csv": true,
-    "include_all_branches": true,
-    "parallel_workers": 8,
+    "include_all_branches": false,
+    "parallel_workers": 4,
     "oath_attestor": "framework-governance",
     "human_loop_owner": "@cvessell-create"
   },

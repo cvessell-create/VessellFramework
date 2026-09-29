@@ -3,7 +3,7 @@
 ## Prompt
 
 ```text
-meta pull redo
+meta local weighted model program
 ```
 
 ## Weighted results
@@ -60,6 +60,6 @@ Treat this as process optimization. Build a reusable preflight block in R that c
 ## Upstream process meta
 
 - Mode: single_prompt_benchmark
-- Generated at: 2026-09-29T01:21:46.153848+00:00
+- Generated at: 2026-09-29T02:27:18.269662+00:00
 - Steps recorded: 2
-- Pull history artifacts: 3
+- Pull history artifacts: 13
