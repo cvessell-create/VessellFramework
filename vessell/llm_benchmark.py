@@ -156,6 +156,30 @@ class SecretFinding:
     excerpt: str
 
 
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _new_upstream_meta(mode: str, parameters: dict[str, object] | None = None) -> dict[str, object]:
+    return {
+        "mode": mode,
+        "generated_at_utc": _utc_now_iso(),
+        "parameters": parameters or {},
+        "steps": [],
+    }
+
+
+def _record_upstream_step(meta: dict[str, object], step: str, **details: object) -> None:
+    steps = meta.setdefault("steps", [])
+    if not isinstance(steps, list):
+        meta["steps"] = []
+        steps = meta["steps"]
+    payload = {"time_utc": _utc_now_iso(), "step": step}
+    if details:
+        payload["details"] = details
+    steps.append(payload)
+
+
 def _format_http_error(error: urllib.error.HTTPError) -> str:
     try:
         body = error.read().decode("utf-8", errors="replace").strip()
@@ -426,7 +450,9 @@ def run_benchmark(
     return results
 
 
-def _format_markdown(results: list[ProviderResult], prompt: str) -> str:
+def _format_markdown(
+    results: list[ProviderResult], prompt: str, upstream_meta: dict[str, object] | None = None
+) -> str:
     def _cell(value: str) -> str:
         return value.replace("|", "\\|").replace("\n", "<br>")
 
@@ -481,6 +507,17 @@ def _format_markdown(results: list[ProviderResult], prompt: str) -> str:
             f"noise={result.rubric['noise_control']}"
         )
         lines.append("")
+    if upstream_meta:
+        lines.extend(
+            [
+                "## Upstream process meta",
+                "",
+                f"- Mode: {upstream_meta.get('mode')}",
+                f"- Generated at: {upstream_meta.get('generated_at_utc')}",
+                f"- Steps recorded: {len(upstream_meta.get('steps', []))}",
+                "",
+            ]
+        )
     return "\n".join(lines).strip() + "\n"
 
 
@@ -507,8 +544,10 @@ def _parse_model_map(model_map_arg: str | None, providers: list[str]) -> dict[st
     return model_map
 
 
-def _to_jsonable(results: list[ProviderResult], prompt: str) -> dict[str, object]:
-    return {
+def _to_jsonable(
+    results: list[ProviderResult], prompt: str, upstream_meta: dict[str, object] | None = None
+) -> dict[str, object]:
+    payload = {
         "prompt": prompt,
         "weights": RUBRIC_WEIGHTS,
         "results": [
@@ -523,16 +562,23 @@ def _to_jsonable(results: list[ProviderResult], prompt: str) -> dict[str, object
             for result in results
         ],
     }
+    if upstream_meta is not None:
+        payload["upstream_meta"] = upstream_meta
+    return payload
 
 
 def _write_benchmark_outputs(
-    prompt: str, results: list[ProviderResult], json_path: Path, md_path: Path
+    prompt: str,
+    results: list[ProviderResult],
+    json_path: Path,
+    md_path: Path,
+    upstream_meta: dict[str, object] | None = None,
 ) -> None:
-    json_payload = _to_jsonable(results, prompt)
+    json_payload = _to_jsonable(results, prompt, upstream_meta=upstream_meta)
     json_path.parent.mkdir(parents=True, exist_ok=True)
     md_path.parent.mkdir(parents=True, exist_ok=True)
     json_path.write_text(json.dumps(json_payload, indent=2), encoding="utf-8")
-    md_path.write_text(_format_markdown(results, prompt), encoding="utf-8")
+    md_path.write_text(_format_markdown(results, prompt, upstream_meta=upstream_meta), encoding="utf-8")
 
 
 def _parse_queue_prompt(line: str, field: str) -> str | None:
@@ -623,6 +669,21 @@ def run_queue(
         raise ValueError("time_budget_seconds must be a positive number.")
     queue_path.parent.mkdir(parents=True, exist_ok=True)
     queue_path.touch(exist_ok=True)
+    queue_meta = _new_upstream_meta(
+        "queue",
+        {
+            "queue_path": str(queue_path),
+            "offset_path": str(offset_path),
+            "output_dir": str(output_dir),
+            "queue_field": queue_field,
+            "dry_run": dry_run,
+            "timeout": timeout,
+            "once": once,
+            "poll_seconds": poll_seconds,
+            "time_budget_seconds": time_budget_seconds,
+        },
+    )
+    _record_upstream_step(queue_meta, "queue_initialized")
     offset_token = _load_offset(offset_path)
     start_offset = offset_token
     started_at = datetime.now(timezone.utc)
@@ -671,9 +732,25 @@ def run_queue(
                 next_offset = handle.tell()
                 prompt = _parse_queue_prompt(line, queue_field)
                 if prompt is None:
+                    _record_upstream_step(
+                        queue_meta,
+                        "queue_line_skipped",
+                        next_offset=next_offset,
+                        reason="unparseable_prompt",
+                    )
                     offset_token = next_offset
                     _save_offset(offset_path, offset_token)
                     continue
+                item_meta = _new_upstream_meta(
+                    "queue_item",
+                    {
+                        "queue_path": str(queue_path),
+                        "offset_start": offset_token,
+                        "offset_end": next_offset,
+                        "queue_field": queue_field,
+                    },
+                )
+                _record_upstream_step(item_meta, "prompt_parsed", prompt_length=len(prompt))
                 results = run_benchmark(
                     prompt,
                     providers,
@@ -681,18 +758,39 @@ def run_queue(
                     dry_run=dry_run,
                     timeout=timeout,
                 )
+                _record_upstream_step(item_meta, "benchmark_completed", providers=len(results))
                 json_path = output_dir / f"q_{next_offset:010d}.json"
                 md_path = output_dir / f"q_{next_offset:010d}.md"
-                _write_benchmark_outputs(prompt, results, json_path, md_path)
+                _record_upstream_step(
+                    item_meta,
+                    "pre_output_write",
+                    json_path=str(json_path),
+                    md_path=str(md_path),
+                )
+                _write_benchmark_outputs(
+                    prompt,
+                    results,
+                    json_path,
+                    md_path,
+                    upstream_meta=item_meta,
+                )
                 has_success = any(result.error is None for result in results)
                 if has_success:
                     offset_token = next_offset
                     _save_offset(offset_path, offset_token)
                     processed_prompts += 1
+                    _record_upstream_step(
+                        queue_meta, "queue_item_committed", offset_token=offset_token
+                    )
                     print(
                         f"Processed queue offset {offset_token}: wrote {json_path} and {md_path}"
                     )
                 else:
+                    _record_upstream_step(
+                        queue_meta,
+                        "queue_item_retry_retained",
+                        failed_offset=next_offset,
+                    )
                     print(
                         "Queue offset "
                         f"{next_offset} had only provider errors; leaving offset unchanged for retry."
@@ -809,6 +907,15 @@ def run_empirical_secret_scan(
     root = scan_root.resolve()
     if not root.exists():
         raise ValueError(f"scan_root does not exist: {scan_root}")
+    upstream_meta = _new_upstream_meta(
+        "empirical_secret_scan",
+        {
+            "scan_root": str(root),
+            "output_root": str(output_root),
+            "max_findings": max_findings,
+        },
+    )
+    _record_upstream_step(upstream_meta, "scan_initialized")
     scan_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_root = output_root / scan_stamp
     run_root.mkdir(parents=True, exist_ok=True)
@@ -843,6 +950,13 @@ def run_empirical_secret_scan(
             except (OSError, UnicodeDecodeError):
                 continue
     detector_hit_rate = round(len(matched_detectors) / len(SECRET_PATTERNS), 4) if SECRET_PATTERNS else 0.0
+    _record_upstream_step(
+        upstream_meta,
+        "scan_completed",
+        files_scanned=files_scanned,
+        matches_total=sum(detector_counts.values()),
+        findings_count=len(findings),
+    )
     payload = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "scan_root": str(root),
@@ -862,6 +976,7 @@ def run_empirical_secret_scan(
             }
             for finding in findings
         ],
+        "upstream_meta": upstream_meta,
     }
     json_path = run_root / "secret_scan_report.json"
     md_path = run_root / "secret_scan_report.md"
@@ -876,6 +991,7 @@ def run_empirical_secret_scan(
         f"- Findings: {len(findings)}",
         f"- Detectors configured: {len(SECRET_PATTERNS)}",
         f"- Detector hit rate: {detector_hit_rate}",
+        f"- Upstream steps recorded: {len(upstream_meta.get('steps', []))}",
         "",
         "## Detector counts",
         "",
@@ -887,6 +1003,11 @@ def run_empirical_secret_scan(
         md_lines.append("- none")
     md_lines.extend(
         [
+            "",
+            "## Upstream process meta",
+            "",
+            f"- Mode: {upstream_meta['mode']}",
+            f"- Generated at: {upstream_meta['generated_at_utc']}",
             "",
             "## Findings",
             "",
@@ -926,11 +1047,26 @@ def run_probe_matrix(
         raise ValueError("seed_prompts must be a positive integer.")
     if enqueue_interval_seconds <= 0:
         raise ValueError("enqueue_interval_seconds must be a positive number.")
+    upstream_meta = _new_upstream_meta(
+        "probe_session_limit",
+        {
+            "providers": providers,
+            "budgets": budgets,
+            "timeout": timeout,
+            "poll_seconds": poll_seconds,
+            "queue_field": queue_field,
+            "dry_run": dry_run,
+            "seed_prompts": seed_prompts,
+            "enqueue_interval_seconds": enqueue_interval_seconds,
+        },
+    )
+    _record_upstream_step(upstream_meta, "probe_initialized")
     run_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_root = output_root / run_stamp
     run_root.mkdir(parents=True, exist_ok=True)
     probe_runs: list[dict[str, object]] = []
     for budget in budgets:
+        _record_upstream_step(upstream_meta, "probe_budget_started", budget_seconds=budget)
         budget_tag = str(int(budget)) if float(budget).is_integer() else str(budget).replace(".", "p")
         budget_root = run_root / f"budget_{budget_tag}s"
         queue_path = budget_root / "q.jsonl"
@@ -1004,8 +1140,16 @@ def run_probe_matrix(
             "output_dir": str(output_dir),
         }
         probe_runs.append(run_record)
+        _record_upstream_step(
+            upstream_meta,
+            "probe_budget_completed",
+            budget_seconds=budget,
+            processed_prompts=run_record["processed_prompts"],
+            exit_condition=run_record["exit_condition"],
+        )
 
     estimates = _estimate_operating_budgets(probe_runs)
+    _record_upstream_step(upstream_meta, "probe_estimates_computed", estimates=estimates)
     payload = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "probe_type": "global_session_limit_exploration",
@@ -1020,6 +1164,7 @@ def run_probe_matrix(
         },
         "runs": probe_runs,
         "estimates": estimates,
+        "upstream_meta": upstream_meta,
     }
     json_path = run_root / "probe_summary.json"
     md_path = run_root / "probe_summary.md"
@@ -1029,6 +1174,7 @@ def run_probe_matrix(
         "",
         f"- Generated at: {payload['generated_at_utc']}",
         f"- Budgets tested (s): {', '.join(str(x) for x in budgets)}",
+        f"- Upstream steps recorded: {len(upstream_meta.get('steps', []))}",
         "",
         "| Budget (s) | Start UTC | End UTC | Processed | Enqueued | Offset Growth | Exit |",
         "|---:|---|---|---:|---:|---:|---|",
@@ -1040,6 +1186,11 @@ def run_probe_matrix(
         )
     md_lines.extend(
         [
+            "",
+            "## Upstream process meta",
+            "",
+            f"- Mode: {upstream_meta['mode']}",
+            f"- Generated at: {upstream_meta['generated_at_utc']}",
             "",
             "## Estimates",
             "",
