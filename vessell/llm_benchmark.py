@@ -585,6 +585,63 @@ def _write_history_exports(
                     }
                 )
 
+    runtime_skill = {
+        "generated_at_utc": _utc_now_iso(),
+        "skill_name": "vf_benchmark_meta_runtime",
+        "agent_profile": {
+            "name": "vf-benchmark",
+            "role": "meta pull, replay, and governance export agent",
+        },
+        "autoload": {
+            "config_path": str(
+                (repo_root / DEFAULT_AUTOLOAD_CONFIG).resolve()
+                if repo_root is not None
+                else (Path.cwd() / DEFAULT_AUTOLOAD_CONFIG).resolve()
+            ),
+            "enabled_by_default": True,
+        },
+        "capabilities": [
+            "cross_model_benchmark",
+            "queue_swarm_processing",
+            "session_probe_matrix",
+            "empirical_secret_scan",
+            "history_index_and_dumps",
+            "all_branch_parallel_metadata_pull",
+            "history_prompt_redo",
+            "owner_only_human_in_loop_policy",
+            "constitutional_oath_metadata",
+        ],
+        "current_run": {
+            "history_root": str(history_root.resolve()),
+            "history_limit": history_limit,
+            "export_csv": export_csv,
+            "include_all_branches": include_all_branches,
+            "parallel_workers": parallel_workers,
+            "oath_attestor": oath_attestor if oath_attestor else "UNSPECIFIED",
+            "human_loop_owner": human_loop_owner if human_loop_owner else DEFAULT_HUMAN_LOOP_OWNER,
+        },
+        "environment": environment or {},
+    }
+    runtime_skill_json = root / "runtime_skill.json"
+    runtime_skill_md = root / "runtime_skill.md"
+    runtime_skill_json.write_text(json.dumps(runtime_skill, indent=2), encoding="utf-8")
+    runtime_skill_md.write_text(
+        "\n".join(
+            [
+                "# Runtime Skill Snapshot",
+                "",
+                f"- Generated at: {runtime_skill['generated_at_utc']}",
+                f"- Agent: {runtime_skill['agent_profile']['name']}",
+                f"- Role: {runtime_skill['agent_profile']['role']}",
+                f"- Human loop owner: {runtime_skill['current_run']['human_loop_owner']}",
+                f"- Include all branches: {runtime_skill['current_run']['include_all_branches']}",
+                f"- Parallel workers: {runtime_skill['current_run']['parallel_workers']}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
     benchmark_csv = ""
     artifacts_csv = str(dump_csv_path)
     if export_csv:
@@ -647,6 +704,8 @@ def _write_history_exports(
         "history_index_md": str(index_md),
         "history_dump_jsonl": str(dump_jsonl_path),
         "history_dump_csv": str(dump_csv_path),
+        "runtime_skill_json": str(runtime_skill_json),
+        "runtime_skill_md": str(runtime_skill_md),
         "history_artifacts_csv": artifacts_csv,
         "history_benchmark_scores_csv": benchmark_csv,
         "artifacts_total": int(payload["artifacts_total"]),
@@ -2057,6 +2116,8 @@ def main() -> int:
         print(f"History index markdown: {history_export['history_index_md']}")
         print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
         print(f"History dump CSV: {history_export['history_dump_csv']}")
+        print(f"Runtime skill JSON: {history_export['runtime_skill_json']}")
+        print(f"Runtime skill markdown: {history_export['runtime_skill_md']}")
         return 0
     if args.probe_session_limit:
         try:
@@ -2093,6 +2154,8 @@ def main() -> int:
         print(f"History index markdown: {history_export['history_index_md']}")
         print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
         print(f"History dump CSV: {history_export['history_dump_csv']}")
+        print(f"Runtime skill JSON: {history_export['runtime_skill_json']}")
+        print(f"Runtime skill markdown: {history_export['runtime_skill_md']}")
         estimates = payload["estimates"]
         print(
             "Estimated hard ceiling (seconds): "
@@ -2131,6 +2194,8 @@ def main() -> int:
         print(f"History index markdown: {history_export['history_index_md']}")
         print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
         print(f"History dump CSV: {history_export['history_dump_csv']}")
+        print(f"Runtime skill JSON: {history_export['runtime_skill_json']}")
+        print(f"Runtime skill markdown: {history_export['runtime_skill_md']}")
         return 0
     queue_path = Path(args.queue_path) if args.queue_path else None
     if args.enqueue is not None:
@@ -2169,6 +2234,8 @@ def main() -> int:
         print(f"History index markdown: {history_export['history_index_md']}")
         print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
         print(f"History dump CSV: {history_export['history_dump_csv']}")
+        print(f"Runtime skill JSON: {history_export['runtime_skill_json']}")
+        print(f"Runtime skill markdown: {history_export['runtime_skill_md']}")
         return 0
     if not args.prompt:
         parser.error("--prompt is required unless --queue-path or --enqueue is used.")
@@ -2218,6 +2285,8 @@ def main() -> int:
     print(f"History index markdown: {history_export['history_index_md']}")
     print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
     print(f"History dump CSV: {history_export['history_dump_csv']}")
+    print(f"Runtime skill JSON: {history_export['runtime_skill_json']}")
+    print(f"Runtime skill markdown: {history_export['runtime_skill_md']}")
     for result in sorted(results, key=lambda item: item.weighted_score, reverse=True):
         suffix = f" ERROR: {result.error}" if result.error else ""
         print(f"{result.provider:>7} {result.weighted_score:>6.2f} ({result.model}){suffix}")

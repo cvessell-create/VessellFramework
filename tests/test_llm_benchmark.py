@@ -171,6 +171,8 @@ def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
     assert Path(exported["history_index_md"]).exists()
     assert Path(exported["history_dump_jsonl"]).exists()
     assert Path(exported["history_dump_csv"]).exists()
+    assert Path(exported["runtime_skill_json"]).exists()
+    assert Path(exported["runtime_skill_md"]).exists()
     assert Path(exported["history_artifacts_csv"]).exists()
     assert Path(exported["history_benchmark_scores_csv"]).exists()
 

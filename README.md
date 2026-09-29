@@ -196,6 +196,11 @@ Repository autoload defaults are now supported through:
 This lets queue/history/oath/human-loop settings auto-load without manually
 providing every flag. Use `--no-autoload` to bypass repo defaults.
 
+Each history export run also auto-generates a runtime skill snapshot:
+
+- `outputs/runtime_skill.json`
+- `outputs/runtime_skill.md`
+
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.
 By default, scan traversal excludes operational/cache directories (for example:
