@@ -63,8 +63,11 @@ The framework now includes a constitutional/oath governance packet at:
 History exports can include attestation metadata with:
 
 ```powershell
-vf-benchmark --prompt "..." --dry-run --history-all-branches --oath-attestor "NAME/ROLE"
+vf-benchmark --prompt "..." --dry-run --history-all-branches --oath-attestor "NAME/ROLE" --human-loop-owner "@cvessell-create"
 ```
+
+The export metadata records a human-in-the-loop policy where only the designated
+owner may receive external escalation decisions.
 
 ## Cross-model benchmark runner
 

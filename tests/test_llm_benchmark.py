@@ -139,6 +139,9 @@ def test_build_history_index_aggregates_metadata(tmp_path) -> None:
     assert analytics["artifacts_by_type"]["secret_scan_report"] >= 1
     assert payload["constitutional_oath_framework"]["required"] is True
     assert payload["constitutional_oath_framework"]["attestor"] == "analyst"
+    hitl_policy = payload["constitutional_oath_framework"]["human_in_the_loop_policy"]
+    assert hitl_policy["owner"] == llm_benchmark.DEFAULT_HUMAN_LOOP_OWNER
+    assert hitl_policy["outside_human_review_allowed"] is False
 
 
 def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
@@ -188,6 +191,7 @@ def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> 
         repo_root=tmp_path,
         parallel_workers=2,
         oath_attestor="branch-attestor",
+        human_loop_owner="@owner",
     )
     assert payload["include_all_branches"] is True
     assert payload["artifacts_total"] == 2
@@ -196,6 +200,7 @@ def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> 
     assert payload["parallel_collection"]["enabled"] is True
     assert payload["parallel_collection"]["workers"] == 2
     assert payload["constitutional_oath_framework"]["attestor"] == "branch-attestor"
+    assert payload["constitutional_oath_framework"]["human_in_the_loop_policy"]["owner"] == "@owner"
 
 
 def test_collect_prompts_from_history_returns_unique_prompts(tmp_path) -> None:

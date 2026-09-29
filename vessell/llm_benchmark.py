@@ -107,6 +107,7 @@ SECRET_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
 }
 
 CONSTITUTION_PACKET_PATH: Final[str] = "docs/governance/US_CONSTITUTION_AND_OATH_FRAMEWORK.md"
+DEFAULT_HUMAN_LOOP_OWNER: Final[str] = "@cvessell-create"
 FEDERAL_CIVIL_OATH_5_USC_3331: Final[str] = (
     "I, [name], do solemnly swear (or affirm) that I will support and defend the Constitution "
     "of the United States against all enemies, foreign and domestic; that I will bear true faith "
@@ -199,7 +200,8 @@ def _record_upstream_step(meta: dict[str, object], step: str, **details: object)
     steps.append(payload)
 
 
-def _constitutional_oath_metadata(attestor: str | None) -> dict[str, object]:
+def _constitutional_oath_metadata(attestor: str | None, human_loop_owner: str | None) -> dict[str, object]:
+    owner = (human_loop_owner or DEFAULT_HUMAN_LOOP_OWNER).strip() or DEFAULT_HUMAN_LOOP_OWNER
     return {
         "required": True,
         "packet_path": CONSTITUTION_PACKET_PATH,
@@ -207,6 +209,12 @@ def _constitutional_oath_metadata(attestor: str | None) -> dict[str, object]:
         "federal_civil_oath_5_usc_3331": FEDERAL_CIVIL_OATH_5_USC_3331,
         "military_oath_10_usc_502": MILITARY_OATH_10_USC_502,
         "attestor": attestor if attestor else "UNSPECIFIED",
+        "human_in_the_loop_policy": {
+            "owner": owner,
+            "owner_is_only_authorized_external_human": True,
+            "outside_human_review_allowed": False,
+            "outside_human_review_instruction": "Escalate decisions only to the designated owner.",
+        },
     }
 
 
@@ -301,6 +309,7 @@ def _build_history_index(
     repo_root: Path | None = None,
     parallel_workers: int = 4,
     oath_attestor: str | None = None,
+    human_loop_owner: str | None = None,
 ) -> dict[str, object]:
     root = history_root.resolve()
     if history_limit <= 0:
@@ -319,7 +328,9 @@ def _build_history_index(
                 "branches_scanned": 0,
                 "branch_jobs_completed": 0,
             },
-            "constitutional_oath_framework": _constitutional_oath_metadata(oath_attestor),
+            "constitutional_oath_framework": _constitutional_oath_metadata(
+                oath_attestor, human_loop_owner
+            ),
             "artifacts_total": 0,
             "artifacts": [],
             "analytics": {
@@ -433,7 +444,9 @@ def _build_history_index(
             "branches_scanned": branches_scanned,
             "branch_jobs_completed": branch_jobs_completed,
         },
-        "constitutional_oath_framework": _constitutional_oath_metadata(oath_attestor),
+        "constitutional_oath_framework": _constitutional_oath_metadata(
+            oath_attestor, human_loop_owner
+        ),
         "artifacts_total": len(artifacts),
         "artifacts": artifacts,
         "analytics": analytics,
@@ -449,6 +462,7 @@ def _write_history_exports(
     repo_root: Path | None = None,
     parallel_workers: int = 4,
     oath_attestor: str | None = None,
+    human_loop_owner: str | None = None,
 ) -> dict[str, str | int]:
     payload = _build_history_index(
         history_root,
@@ -457,6 +471,7 @@ def _write_history_exports(
         repo_root=repo_root,
         parallel_workers=parallel_workers,
         oath_attestor=oath_attestor,
+        human_loop_owner=human_loop_owner,
     )
     root = history_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -1869,6 +1884,11 @@ def main() -> int:
         help="Name or identifier attesting constitutional oath requirement in history exports.",
     )
     parser.add_argument(
+        "--human-loop-owner",
+        default=DEFAULT_HUMAN_LOOP_OWNER,
+        help="Designated owner for human-in-the-loop escalation in metadata exports.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -1940,6 +1960,7 @@ def main() -> int:
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
+            human_loop_owner=args.human_loop_owner,
         )
         print("Empirical secret scan complete.")
         print("Report artifacts written under the configured scan output directory.")
@@ -1974,6 +1995,7 @@ def main() -> int:
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
+            human_loop_owner=args.human_loop_owner,
         )
         print(f"Probe summary JSON: {payload['summary_json']}")
         print(f"Probe summary markdown: {payload['summary_md']}")
@@ -2009,6 +2031,7 @@ def main() -> int:
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
+            human_loop_owner=args.human_loop_owner,
         )
         print(f"Redo summary JSON: {payload['summary_json']}")
         print(f"Redo summary markdown: {payload['summary_md']}")
@@ -2047,6 +2070,7 @@ def main() -> int:
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
             oath_attestor=args.oath_attestor,
+            human_loop_owner=args.human_loop_owner,
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         print(f"History index JSON: {history_export['history_index_json']}")
@@ -2093,6 +2117,7 @@ def main() -> int:
         repo_root=Path.cwd(),
         parallel_workers=args.history_parallel_workers,
         oath_attestor=args.oath_attestor,
+        human_loop_owner=args.human_loop_owner,
     )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")
