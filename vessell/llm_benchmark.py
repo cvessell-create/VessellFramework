@@ -224,44 +224,6 @@ def _classify_history_artifact(payload: dict[str, object], path: Path) -> str:
     return "other"
 
 
-def _compute_history_analytics(entries: list[dict[str, object]]) -> dict[str, object]:
-    by_type: dict[str, int] = {}
-    benchmark_scores: list[float] = []
-    secret_matches_total = 0
-    probe_runs_total = 0
-    for entry in entries:
-        artifact_type = str(entry["type"])
-        by_type[artifact_type] = by_type.get(artifact_type, 0) + 1
-        payload = entry.get("payload")
-        if not isinstance(payload, dict):
-            continue
-        results = payload.get("results")
-        if isinstance(results, list):
-            for item in results:
-                if isinstance(item, dict):
-                    score = item.get("weighted_score")
-                    if isinstance(score, (int, float)):
-                        benchmark_scores.append(float(score))
-        matches_total = payload.get("matches_total")
-        if isinstance(matches_total, int):
-            secret_matches_total += matches_total
-        runs = payload.get("runs")
-        if isinstance(runs, list):
-            probe_runs_total += len(runs)
-    benchmark_summary = {
-        "count": len(benchmark_scores),
-        "avg": round(sum(benchmark_scores) / len(benchmark_scores), 4) if benchmark_scores else None,
-        "min": round(min(benchmark_scores), 4) if benchmark_scores else None,
-        "max": round(max(benchmark_scores), 4) if benchmark_scores else None,
-    }
-    return {
-        "artifacts_by_type": by_type,
-        "benchmark_weighted_score_summary": benchmark_summary,
-        "secret_matches_total": secret_matches_total,
-        "probe_runs_total": probe_runs_total,
-    }
-
-
 def _build_history_index(history_root: Path, history_limit: int) -> dict[str, object]:
     root = history_root.resolve()
     if history_limit <= 0:
@@ -280,32 +242,52 @@ def _build_history_index(history_root: Path, history_limit: int) -> dict[str, ob
                 "probe_runs_total": 0,
             },
         }
-    entries: list[dict[str, object]] = []
+    artifacts: list[dict[str, object]] = []
+    by_type: dict[str, int] = {}
+    benchmark_scores: list[float] = []
+    secret_matches_total = 0
+    probe_runs_total = 0
     for path in _json_files_by_mtime(root):
         if path.name == "history_index.json":
             continue
-        payload = _safe_read_json(path)
-        if payload is None:
+        loaded = _safe_read_json(path)
+        if loaded is None:
             continue
-        entries.append(
+        artifact_type = _classify_history_artifact(loaded, path)
+        by_type[artifact_type] = by_type.get(artifact_type, 0) + 1
+        results = loaded.get("results")
+        if isinstance(results, list):
+            for item in results:
+                if isinstance(item, dict):
+                    score = item.get("weighted_score")
+                    if isinstance(score, (int, float)):
+                        benchmark_scores.append(float(score))
+        matches_total = loaded.get("matches_total")
+        if isinstance(matches_total, int):
+            secret_matches_total += matches_total
+        runs = loaded.get("runs")
+        if isinstance(runs, list):
+            probe_runs_total += len(runs)
+        artifacts.append(
             {
                 "path": path.relative_to(root).as_posix(),
-                "type": _classify_history_artifact(payload, path),
-                "generated_at_utc": payload.get("generated_at_utc"),
-                "payload": payload,
+                "type": artifact_type,
+                "generated_at_utc": loaded.get("generated_at_utc"),
             }
         )
-        if len(entries) >= history_limit:
+        if len(artifacts) >= history_limit:
             break
-    analytics = _compute_history_analytics(entries)
-    artifacts = [
-        {
-            "path": item["path"],
-            "type": item["type"],
-            "generated_at_utc": item["generated_at_utc"],
-        }
-        for item in entries
-    ]
+    analytics = {
+        "artifacts_by_type": by_type,
+        "benchmark_weighted_score_summary": {
+            "count": len(benchmark_scores),
+            "avg": round(sum(benchmark_scores) / len(benchmark_scores), 4) if benchmark_scores else None,
+            "min": round(min(benchmark_scores), 4) if benchmark_scores else None,
+            "max": round(max(benchmark_scores), 4) if benchmark_scores else None,
+        },
+        "secret_matches_total": secret_matches_total,
+        "probe_runs_total": probe_runs_total,
+    }
     return {
         "generated_at_utc": _utc_now_iso(),
         "history_root": str(root),
