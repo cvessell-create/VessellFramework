@@ -83,6 +83,10 @@ Outputs are written to:
 - `outputs/model_benchmarks/latest_benchmark.json`
 - `outputs/model_benchmarks/latest_benchmark.md`
 
+Each JSON artifact now includes an `upstream_meta` envelope captured before output
+write, including mode, timestamp, step timeline, and pull-history inventory for
+prior JSON artifacts in the same output root.
+
 Queue/swarm mode lets you process prompts continuously while adding new prompts
 to the same queue:
 
@@ -129,6 +133,9 @@ Probe output artifacts are written under:
 - `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.json`
 - `outputs/model_benchmarks/session_probes/<timestamp>/probe_summary.md`
 
+Probe summary JSON also includes `upstream_meta.pull_history` for all previously
+written `probe_summary.json` artifacts under the probe output root.
+
 Run an empirical secret scan across the full package and emit reports:
 
 ```powershell
@@ -139,6 +146,9 @@ Secret scan output artifacts are written under:
 
 - `outputs/security_scans/<timestamp>/secret_scan_report.json`
 - `outputs/security_scans/<timestamp>/secret_scan_report.md`
+
+Secret scan report JSON includes `upstream_meta.pull_history` for all prior
+`secret_scan_report.json` artifacts under the scan output root.
 
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.

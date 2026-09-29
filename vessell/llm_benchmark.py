@@ -180,6 +180,22 @@ def _record_upstream_step(meta: dict[str, object], step: str, **details: object)
     steps.append(payload)
 
 
+def _collect_pull_history(history_root: Path, pattern: str = "*.json") -> dict[str, object]:
+    root = history_root.resolve()
+    if not root.exists():
+        return {"history_root": str(root), "artifact_count": 0, "artifacts": []}
+    artifacts = sorted(
+        path.relative_to(root).as_posix()
+        for path in root.rglob(pattern)
+        if path.is_file()
+    )
+    return {
+        "history_root": str(root),
+        "artifact_count": len(artifacts),
+        "artifacts": artifacts,
+    }
+
+
 def _format_http_error(error: urllib.error.HTTPError) -> str:
     try:
         body = error.read().decode("utf-8", errors="replace").strip()
@@ -508,6 +524,12 @@ def _format_markdown(
         )
         lines.append("")
     if upstream_meta:
+        pull_history = upstream_meta.get("pull_history")
+        pull_count = (
+            pull_history.get("artifact_count")
+            if isinstance(pull_history, dict)
+            else "n/a"
+        )
         lines.extend(
             [
                 "## Upstream process meta",
@@ -515,6 +537,7 @@ def _format_markdown(
                 f"- Mode: {upstream_meta.get('mode')}",
                 f"- Generated at: {upstream_meta.get('generated_at_utc')}",
                 f"- Steps recorded: {len(upstream_meta.get('steps', []))}",
+                f"- Pull history artifacts: {pull_count}",
                 "",
             ]
         )
@@ -683,6 +706,7 @@ def run_queue(
             "time_budget_seconds": time_budget_seconds,
         },
     )
+    queue_meta["pull_history"] = _collect_pull_history(output_dir, "*.json")
     _record_upstream_step(queue_meta, "queue_initialized")
     offset_token = _load_offset(offset_path)
     start_offset = offset_token
@@ -750,6 +774,7 @@ def run_queue(
                         "queue_field": queue_field,
                     },
                 )
+                item_meta["pull_history"] = _collect_pull_history(output_dir, "*.json")
                 _record_upstream_step(item_meta, "prompt_parsed", prompt_length=len(prompt))
                 results = run_benchmark(
                     prompt,
@@ -915,6 +940,7 @@ def run_empirical_secret_scan(
             "max_findings": max_findings,
         },
     )
+    upstream_meta["pull_history"] = _collect_pull_history(output_root, "secret_scan_report.json")
     _record_upstream_step(upstream_meta, "scan_initialized")
     scan_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_root = output_root / scan_stamp
@@ -992,6 +1018,7 @@ def run_empirical_secret_scan(
         f"- Detectors configured: {len(SECRET_PATTERNS)}",
         f"- Detector hit rate: {detector_hit_rate}",
         f"- Upstream steps recorded: {len(upstream_meta.get('steps', []))}",
+        f"- Pull history artifacts: {upstream_meta['pull_history']['artifact_count']}",
         "",
         "## Detector counts",
         "",
@@ -1060,6 +1087,7 @@ def run_probe_matrix(
             "enqueue_interval_seconds": enqueue_interval_seconds,
         },
     )
+    upstream_meta["pull_history"] = _collect_pull_history(output_root, "probe_summary.json")
     _record_upstream_step(upstream_meta, "probe_initialized")
     run_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_root = output_root / run_stamp
@@ -1175,6 +1203,7 @@ def run_probe_matrix(
         f"- Generated at: {payload['generated_at_utc']}",
         f"- Budgets tested (s): {', '.join(str(x) for x in budgets)}",
         f"- Upstream steps recorded: {len(upstream_meta.get('steps', []))}",
+        f"- Pull history artifacts: {upstream_meta['pull_history']['artifact_count']}",
         "",
         "| Budget (s) | Start UTC | End UTC | Processed | Enqueued | Offset Growth | Exit |",
         "|---:|---|---|---:|---:|---:|---|",
@@ -1422,7 +1451,31 @@ def main() -> int:
     results = run_benchmark(args.prompt, providers, model_map, dry_run=args.dry_run, timeout=timeout)
     json_path = Path(args.json_out)
     md_path = Path(args.md_out)
-    _write_benchmark_outputs(args.prompt, results, json_path, md_path)
+    upstream_meta = _new_upstream_meta(
+        "single_prompt_benchmark",
+        {
+            "providers": providers,
+            "dry_run": args.dry_run,
+            "timeout": timeout,
+            "json_out": str(json_path),
+            "md_out": str(md_path),
+        },
+    )
+    upstream_meta["pull_history"] = _collect_pull_history(json_path.parent, "*.json")
+    _record_upstream_step(upstream_meta, "benchmark_completed", providers=len(results))
+    _record_upstream_step(
+        upstream_meta,
+        "pre_output_write",
+        json_path=str(json_path),
+        md_path=str(md_path),
+    )
+    _write_benchmark_outputs(
+        args.prompt,
+        results,
+        json_path,
+        md_path,
+        upstream_meta=upstream_meta,
+    )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")
     for result in sorted(results, key=lambda item: item.weighted_score, reverse=True):

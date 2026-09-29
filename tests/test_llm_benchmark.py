@@ -1,4 +1,5 @@
 import sys
+import json
 
 import pytest
 
@@ -106,6 +107,18 @@ def test_markdown_and_json_output_escape_and_serialize() -> None:
     assert serialized["error"] == "bad|error\nwith#md"
 
 
+def test_collect_pull_history_returns_all_matching_artifacts(tmp_path) -> None:
+    root = tmp_path / "history"
+    (root / "a").mkdir(parents=True)
+    (root / "a" / "first.json").write_text("{}", encoding="utf-8")
+    (root / "a" / "skip.md").write_text("x", encoding="utf-8")
+    (root / "b").mkdir(parents=True)
+    (root / "b" / "second.json").write_text("{}", encoding="utf-8")
+    history = llm_benchmark._collect_pull_history(root, "*.json")
+    assert history["artifact_count"] == 2
+    assert history["artifacts"] == ["a/first.json", "b/second.json"]
+
+
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:
     queue_path = tmp_path / "q.jsonl"
     llm_benchmark.enqueue_prompt(queue_path, "first prompt")
@@ -132,8 +145,12 @@ def test_run_queue_once_processes_new_prompts(tmp_path) -> None:
     )
     assert processed == 2
     assert int(offset_path.read_text(encoding="utf-8").strip()) > 0
-    assert len(list(output_dir.glob("*.json"))) == 2
+    json_files = list(output_dir.glob("*.json"))
+    assert len(json_files) == 2
     assert len(list(output_dir.glob("*.md"))) == 2
+    payload = json.loads(json_files[0].read_text(encoding="utf-8"))
+    assert payload["upstream_meta"]["mode"] == "queue_item"
+    assert "pull_history" in payload["upstream_meta"]
 
 
 def test_run_queue_skips_malformed_json_and_advances_offset(tmp_path) -> None:
@@ -278,6 +295,7 @@ def test_probe_matrix_outputs_artifacts(tmp_path) -> None:
     assert payload["runs"]
     assert payload["summary_json"]
     assert payload["summary_md"]
+    assert payload["upstream_meta"]["pull_history"]["artifact_count"] >= 0
     assert (tmp_path / "probes").exists()
 
 
@@ -359,6 +377,7 @@ def test_empirical_secret_scan_detects_pattern_and_writes_reports(tmp_path) -> N
     assert payload["detectors_configured"] >= 1
     assert 0.0 <= payload["detector_hit_rate"] <= 1.0
     assert payload["findings"][0]["excerpt"].find("[REDACTED]") >= 0
+    assert payload["upstream_meta"]["pull_history"]["artifact_count"] >= 0
     assert payload["summary_json"]
     assert payload["summary_md"]
     assert (tmp_path / "reports").exists()
