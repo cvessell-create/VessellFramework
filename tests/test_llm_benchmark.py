@@ -198,6 +198,40 @@ def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> 
     assert payload["constitutional_oath_framework"]["attestor"] == "branch-attestor"
 
 
+def test_collect_prompts_from_history_returns_unique_prompts(tmp_path) -> None:
+    root = tmp_path / "outputs"
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "a.json").write_text(json.dumps({"prompt": "first prompt"}), encoding="utf-8")
+    (root / "b.json").write_text(json.dumps({"prompt": "first prompt"}), encoding="utf-8")
+    (root / "c.json").write_text(json.dumps({"prompt": "second prompt"}), encoding="utf-8")
+    prompts = llm_benchmark._collect_prompts_from_history(root, 10)
+    assert prompts == ["first prompt", "second prompt"] or prompts == [
+        "second prompt",
+        "first prompt",
+    ]
+
+
+def test_run_prompt_redo_from_history_emits_summary(tmp_path) -> None:
+    history_root = tmp_path / "outputs"
+    history_root.mkdir(parents=True, exist_ok=True)
+    (history_root / "latest_benchmark.json").write_text(
+        json.dumps({"prompt": "redo this prompt"}),
+        encoding="utf-8",
+    )
+    payload = llm_benchmark.run_prompt_redo_from_history(
+        history_root=history_root,
+        providers=["gpt"],
+        model_map=DEFAULT_MODEL_MAP,
+        output_root=tmp_path / "redo",
+        dry_run=True,
+        timeout=5,
+        prompt_limit=5,
+    )
+    assert payload["prompts_replayed"] == 1
+    assert Path(payload["summary_json"]).exists()
+    assert Path(payload["summary_md"]).exists()
+
+
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:
     queue_path = tmp_path / "q.jsonl"
     llm_benchmark.enqueue_prompt(queue_path, "first prompt")

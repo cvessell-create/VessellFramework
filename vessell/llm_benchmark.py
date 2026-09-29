@@ -563,6 +563,102 @@ def _write_history_exports(
     }
 
 
+def _collect_prompts_from_history(history_root: Path, prompt_limit: int) -> list[str]:
+    if prompt_limit <= 0:
+        raise ValueError("prompt_limit must be a positive integer.")
+    root = history_root.resolve()
+    if not root.exists():
+        return []
+    prompts: list[str] = []
+    seen: set[str] = set()
+    for path in _json_files_by_mtime(root):
+        if path.name in {"history_index.json"}:
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        prompt = payload.get("prompt")
+        if isinstance(prompt, str):
+            normalized = prompt.strip()
+            if normalized and normalized not in seen:
+                seen.add(normalized)
+                prompts.append(normalized)
+                if len(prompts) >= prompt_limit:
+                    break
+    return prompts
+
+
+def run_prompt_redo_from_history(
+    *,
+    history_root: Path,
+    providers: list[str],
+    model_map: dict[str, str],
+    output_root: Path,
+    dry_run: bool,
+    timeout: int,
+    prompt_limit: int,
+) -> dict[str, object]:
+    prompts = _collect_prompts_from_history(history_root, prompt_limit)
+    run_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_root = output_root / run_stamp
+    run_root.mkdir(parents=True, exist_ok=True)
+    artifacts: list[dict[str, object]] = []
+    for index, prompt in enumerate(prompts, start=1):
+        results = run_benchmark(
+            prompt,
+            providers,
+            model_map,
+            dry_run=dry_run,
+            timeout=timeout,
+        )
+        json_path = run_root / f"redo_{index:05d}.json"
+        md_path = run_root / f"redo_{index:05d}.md"
+        upstream_meta = _new_upstream_meta(
+            "history_prompt_redo",
+            {
+                "history_root": str(history_root.resolve()),
+                "prompt_index": index,
+                "prompt_count": len(prompts),
+            },
+        )
+        _record_upstream_step(
+            upstream_meta,
+            "history_prompt_replayed",
+            prompt_length=len(prompt),
+            json_path=str(json_path),
+            md_path=str(md_path),
+        )
+        _write_benchmark_outputs(prompt, results, json_path, md_path, upstream_meta=upstream_meta)
+        artifacts.append({"prompt_index": index, "json": str(json_path), "md": str(md_path)})
+    summary = {
+        "generated_at_utc": _utc_now_iso(),
+        "history_root": str(history_root.resolve()),
+        "prompt_limit": prompt_limit,
+        "prompts_replayed": len(prompts),
+        "output_root": str(run_root),
+        "artifacts": artifacts,
+    }
+    summary_json = run_root / "redo_summary.json"
+    summary_md = run_root / "redo_summary.md"
+    summary_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    md_lines = [
+        "# History Prompt Redo Summary",
+        "",
+        f"- Generated at: {summary['generated_at_utc']}",
+        f"- Prompts replayed: {summary['prompts_replayed']}",
+        f"- History root: `{summary['history_root']}`",
+        f"- Output root: `{summary['output_root']}`",
+        "",
+    ]
+    summary_md.write_text("\n".join(md_lines), encoding="utf-8")
+    summary["summary_json"] = str(summary_json)
+    summary["summary_md"] = str(summary_md)
+    return summary
+
+
 def _format_http_error(error: urllib.error.HTTPError) -> str:
     try:
         body = error.read().decode("utf-8", errors="replace").strip()
@@ -1752,6 +1848,22 @@ def main() -> int:
         help="Parallel worker count used for all-branches metadata pull collection.",
     )
     parser.add_argument(
+        "--redo-prompts-from-history",
+        action="store_true",
+        help="Re-run benchmark prompts discovered in historical output artifacts.",
+    )
+    parser.add_argument(
+        "--redo-output-dir",
+        default="outputs/model_benchmarks/history_redo",
+        help="Output directory for history prompt redo artifacts.",
+    )
+    parser.add_argument(
+        "--redo-prompt-limit",
+        type=int,
+        default=2000,
+        help="Maximum number of unique historical prompts to replay.",
+    )
+    parser.add_argument(
         "--oath-attestor",
         default=None,
         help="Name or identifier attesting constitutional oath requirement in history exports.",
@@ -1775,6 +1887,8 @@ def main() -> int:
         parser.error("--history-limit must be a positive integer.")
     if args.history_parallel_workers <= 0:
         parser.error("--history-parallel-workers must be a positive integer.")
+    if args.redo_prompt_limit <= 0:
+        parser.error("--redo-prompt-limit must be a positive integer.")
     try:
         timeout, poll_seconds, time_budget_seconds = _resolve_runtime_controls(
             args.runtime_profile,
@@ -1797,6 +1911,16 @@ def main() -> int:
     ):
         parser.error(
             "--empirical-secret-scan cannot be combined with prompt/queue/probe execution modes."
+        )
+    if args.redo_prompts_from_history and (
+        args.empirical_secret_scan
+        or args.probe_session_limit
+        or args.queue_path is not None
+        or args.enqueue is not None
+        or args.prompt
+    ):
+        parser.error(
+            "--redo-prompts-from-history cannot be combined with prompt/queue/probe/scan execution modes."
         )
     if args.empirical_secret_scan:
         try:
@@ -1866,6 +1990,33 @@ def main() -> int:
             "Recommended safe budget (seconds): "
             f"{estimates['recommended_safe_budget_seconds']}"
         )
+        return 0
+    if args.redo_prompts_from_history:
+        payload = run_prompt_redo_from_history(
+            history_root=Path(args.history_root),
+            providers=providers,
+            model_map=model_map,
+            output_root=Path(args.redo_output_dir),
+            dry_run=args.dry_run,
+            timeout=timeout,
+            prompt_limit=args.redo_prompt_limit,
+        )
+        history_export = _write_history_exports(
+            Path(args.history_root),
+            history_limit=args.history_limit,
+            export_csv=args.history_export_csv,
+            include_all_branches=args.history_all_branches,
+            repo_root=Path.cwd(),
+            parallel_workers=args.history_parallel_workers,
+            oath_attestor=args.oath_attestor,
+        )
+        print(f"Redo summary JSON: {payload['summary_json']}")
+        print(f"Redo summary markdown: {payload['summary_md']}")
+        print(f"Prompts replayed: {payload['prompts_replayed']}")
+        print(f"History index JSON: {history_export['history_index_json']}")
+        print(f"History index markdown: {history_export['history_index_md']}")
+        print(f"History dump JSONL: {history_export['history_dump_jsonl']}")
+        print(f"History dump CSV: {history_export['history_dump_csv']}")
         return 0
     queue_path = Path(args.queue_path) if args.queue_path else None
     if args.enqueue is not None:

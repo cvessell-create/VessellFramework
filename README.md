@@ -180,6 +180,12 @@ vf-benchmark --prompt "..." --dry-run --history-root outputs --history-limit 200
 - `--history-parallel-workers`: parallel worker count for all-branches metadata
   pull collection
 
+Replay all historical prompts (from session artifacts) and regenerate benchmark outputs:
+
+```powershell
+vf-benchmark --redo-prompts-from-history --dry-run --history-root outputs --redo-prompt-limit 2000
+```
+
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.
 By default, scan traversal excludes operational/cache directories (for example:
