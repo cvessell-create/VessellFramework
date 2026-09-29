@@ -387,14 +387,15 @@ def _write_history_exports(
         md_lines.append(f"- secret matches total: {analytics.get('secret_matches_total')}")
         md_lines.append(f"- probe runs total: {analytics.get('probe_runs_total')}")
     md_lines.extend(
-        ["", "## Artifacts", "", "| Branch | Path | Type | Generated At |", "|---|---|---|---|"]
+        [
+            "",
+            "## Artifacts",
+            "",
+            f"- Total indexed artifacts: {payload['artifacts_total']}",
+            "- Detailed artifact rows are kept in JSON/CSV exports.",
+            "",
+        ]
     )
-    for item in payload["artifacts"]:
-        if isinstance(item, dict):
-            md_lines.append(
-                f"| {item.get('branch')} | {item.get('path')} | {item.get('type')} | {item.get('generated_at_utc')} |"
-            )
-    md_lines.append("")
     index_md.write_text("\n".join(md_lines), encoding="utf-8")
 
     benchmark_csv = ""
