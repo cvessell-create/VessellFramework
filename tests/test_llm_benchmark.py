@@ -183,6 +183,36 @@ def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
     assert Path(exported["history_benchmark_scores_csv"]).exists()
 
 
+def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> None:
+    root = tmp_path / "outputs"
+    root.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(llm_benchmark, "_git_local_branches", lambda _: ["main", "feature"])
+    monkeypatch.setattr(llm_benchmark, "_git_current_branch", lambda _: "main")
+    monkeypatch.setattr(
+        llm_benchmark,
+        "_git_branch_json_files",
+        lambda _repo, branch, _root_rel: [f"outputs/{branch}/latest_benchmark.json"],
+    )
+    monkeypatch.setattr(
+        llm_benchmark,
+        "_git_read_json_at_path",
+        lambda _repo, branch, _path: {
+            "generated_at_utc": "2026-01-01T00:00:00+00:00",
+            "results": [{"provider": branch, "model": "m", "weighted_score": 90.0}],
+        },
+    )
+    payload = llm_benchmark._build_history_index(
+        root,
+        10,
+        include_all_branches=True,
+        repo_root=tmp_path,
+    )
+    assert payload["include_all_branches"] is True
+    assert payload["artifacts_total"] == 2
+    branches = {item["branch"] for item in payload["artifacts"]}
+    assert branches == {"main", "feature"}
+
+
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:
     queue_path = tmp_path / "q.jsonl"
     llm_benchmark.enqueue_prompt(queue_path, "first prompt")

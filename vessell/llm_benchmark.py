@@ -8,6 +8,7 @@ import fnmatch
 import json
 import os
 import re
+import subprocess
 import threading
 import time
 import urllib.error
@@ -211,6 +212,62 @@ def _safe_read_json(path: Path) -> dict[str, object] | None:
     return loaded if isinstance(loaded, dict) else None
 
 
+def _safe_read_json_text(text: str) -> dict[str, object] | None:
+    try:
+        loaded = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return loaded if isinstance(loaded, dict) else None
+
+
+def _git_current_branch(repo_root: Path) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    branch = result.stdout.strip()
+    return branch if branch else "unknown"
+
+
+def _git_local_branches(repo_root: Path) -> list[str]:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "for-each-ref", "--format=%(refname:short)", "refs/heads"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def _git_branch_json_files(repo_root: Path, branch: str, root_rel: str) -> list[str]:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-tree", "-r", "--name-only", branch, "--", root_rel],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    files = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return [path for path in files if path.endswith(".json") and not path.endswith("history_index.json")]
+
+
+def _git_read_json_at_path(repo_root: Path, branch: str, path: str) -> dict[str, object] | None:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "show", f"{branch}:{path}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return _safe_read_json_text(result.stdout)
+
+
 def _classify_history_artifact(payload: dict[str, object], path: Path) -> str:
     name = path.name
     if name == "probe_summary.json":
@@ -224,7 +281,13 @@ def _classify_history_artifact(payload: dict[str, object], path: Path) -> str:
     return "other"
 
 
-def _build_history_index(history_root: Path, history_limit: int) -> dict[str, object]:
+def _build_history_index(
+    history_root: Path,
+    history_limit: int,
+    *,
+    include_all_branches: bool = False,
+    repo_root: Path | None = None,
+) -> dict[str, object]:
     root = history_root.resolve()
     if history_limit <= 0:
         raise ValueError("history_limit must be a positive integer.")
@@ -247,13 +310,9 @@ def _build_history_index(history_root: Path, history_limit: int) -> dict[str, ob
     benchmark_scores: list[float] = []
     secret_matches_total = 0
     probe_runs_total = 0
-    for path in _json_files_by_mtime(root):
-        if path.name == "history_index.json":
-            continue
-        loaded = _safe_read_json(path)
-        if loaded is None:
-            continue
-        artifact_type = _classify_history_artifact(loaded, path)
+    def _consume_loaded(loaded: dict[str, object], rel_path: str, branch: str) -> None:
+        nonlocal secret_matches_total, probe_runs_total
+        artifact_type = _classify_history_artifact(loaded, Path(rel_path))
         by_type[artifact_type] = by_type.get(artifact_type, 0) + 1
         results = loaded.get("results")
         if isinstance(results, list):
@@ -270,13 +329,46 @@ def _build_history_index(history_root: Path, history_limit: int) -> dict[str, ob
             probe_runs_total += len(runs)
         artifacts.append(
             {
-                "path": path.relative_to(root).as_posix(),
+                "path": rel_path,
                 "type": artifact_type,
                 "generated_at_utc": loaded.get("generated_at_utc"),
+                "branch": branch,
             }
         )
-        if len(artifacts) >= history_limit:
-            break
+
+    if include_all_branches and repo_root is not None:
+        resolved_repo = repo_root.resolve()
+        current_branch = _git_current_branch(resolved_repo)
+        branches = _git_local_branches(resolved_repo)
+        if current_branch and current_branch in branches:
+            branches = [current_branch] + [item for item in branches if item != current_branch]
+        try:
+            root_rel = root.relative_to(resolved_repo).as_posix()
+        except ValueError:
+            root_rel = root.as_posix()
+        for branch in branches:
+            for path_str in _git_branch_json_files(resolved_repo, branch, root_rel):
+                loaded = _git_read_json_at_path(resolved_repo, branch, path_str)
+                if loaded is None:
+                    continue
+                rel_path = path_str[len(root_rel) + 1 :] if path_str.startswith(f"{root_rel}/") else path_str
+                _consume_loaded(loaded, rel_path, branch)
+                if len(artifacts) >= history_limit:
+                    break
+            if len(artifacts) >= history_limit:
+                break
+    else:
+        branch_root = repo_root.resolve() if repo_root is not None else Path.cwd()
+        current_branch = _git_current_branch(branch_root)
+        for path in _json_files_by_mtime(root):
+            if path.name == "history_index.json":
+                continue
+            loaded = _safe_read_json(path)
+            if loaded is None:
+                continue
+            _consume_loaded(loaded, path.relative_to(root).as_posix(), current_branch)
+            if len(artifacts) >= history_limit:
+                break
     analytics = {
         "artifacts_by_type": by_type,
         "benchmark_weighted_score_summary": {
@@ -292,6 +384,7 @@ def _build_history_index(history_root: Path, history_limit: int) -> dict[str, ob
         "generated_at_utc": _utc_now_iso(),
         "history_root": str(root),
         "history_limit": history_limit,
+        "include_all_branches": include_all_branches,
         "artifacts_total": len(artifacts),
         "artifacts": artifacts,
         "analytics": analytics,
@@ -299,9 +392,19 @@ def _build_history_index(history_root: Path, history_limit: int) -> dict[str, ob
 
 
 def _write_history_exports(
-    history_root: Path, *, history_limit: int, export_csv: bool
+    history_root: Path,
+    *,
+    history_limit: int,
+    export_csv: bool,
+    include_all_branches: bool = False,
+    repo_root: Path | None = None,
 ) -> dict[str, str | int]:
-    payload = _build_history_index(history_root, history_limit)
+    payload = _build_history_index(
+        history_root,
+        history_limit,
+        include_all_branches=include_all_branches,
+        repo_root=repo_root,
+    )
     root = history_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
     index_json = root / "history_index.json"
@@ -313,6 +416,7 @@ def _write_history_exports(
         f"- Generated at: {payload['generated_at_utc']}",
         f"- History root: `{payload['history_root']}`",
         f"- Artifacts total: {payload['artifacts_total']}",
+        f"- Include all branches: {payload['include_all_branches']}",
         "",
         "## Analytics",
         "",
@@ -334,11 +438,13 @@ def _write_history_exports(
             )
         md_lines.append(f"- secret matches total: {analytics.get('secret_matches_total')}")
         md_lines.append(f"- probe runs total: {analytics.get('probe_runs_total')}")
-    md_lines.extend(["", "## Artifacts", "", "| Path | Type | Generated At |", "|---|---|---|"])
+    md_lines.extend(
+        ["", "## Artifacts", "", "| Branch | Path | Type | Generated At |", "|---|---|---|---|"]
+    )
     for item in payload["artifacts"]:
         if isinstance(item, dict):
             md_lines.append(
-                f"| {item.get('path')} | {item.get('type')} | {item.get('generated_at_utc')} |"
+                f"| {item.get('branch')} | {item.get('path')} | {item.get('type')} | {item.get('generated_at_utc')} |"
             )
     md_lines.append("")
     index_md.write_text("\n".join(md_lines), encoding="utf-8")
@@ -348,12 +454,15 @@ def _write_history_exports(
     if export_csv:
         artifacts_csv_path = root / "history_artifacts.csv"
         with artifacts_csv_path.open("w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=["path", "type", "generated_at_utc"])
+            writer = csv.DictWriter(
+                handle, fieldnames=["branch", "path", "type", "generated_at_utc"]
+            )
             writer.writeheader()
             for item in payload["artifacts"]:
                 if isinstance(item, dict):
                     writer.writerow(
                         {
+                            "branch": item.get("branch"),
                             "path": item.get("path"),
                             "type": item.get("type"),
                             "generated_at_utc": item.get("generated_at_utc"),
@@ -1579,6 +1688,11 @@ def main() -> int:
         help="Also emit CSV history exports for R/Python workflows.",
     )
     parser.add_argument(
+        "--history-all-branches",
+        action="store_true",
+        help="Aggregate history artifacts from all local git branches into one index.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -1632,6 +1746,8 @@ def main() -> int:
             Path(args.history_root),
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
+            include_all_branches=args.history_all_branches,
+            repo_root=Path.cwd(),
         )
         print("Empirical secret scan complete.")
         print("Report artifacts written under the configured scan output directory.")
@@ -1660,6 +1776,8 @@ def main() -> int:
             Path(args.history_root),
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
+            include_all_branches=args.history_all_branches,
+            repo_root=Path.cwd(),
         )
         print(f"Probe summary JSON: {payload['summary_json']}")
         print(f"Probe summary markdown: {payload['summary_md']}")
@@ -1700,6 +1818,8 @@ def main() -> int:
             Path(args.history_root),
             history_limit=args.history_limit,
             export_csv=args.history_export_csv,
+            include_all_branches=args.history_all_branches,
+            repo_root=Path.cwd(),
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         print(f"History index JSON: {history_export['history_index_json']}")
@@ -1740,6 +1860,8 @@ def main() -> int:
         Path(args.history_root),
         history_limit=args.history_limit,
         export_csv=args.history_export_csv,
+        include_all_branches=args.history_all_branches,
+        repo_root=Path.cwd(),
     )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")

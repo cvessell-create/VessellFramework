@@ -162,6 +162,8 @@ vf-benchmark --prompt "..." --dry-run --history-root outputs --history-limit 200
 - `--history-limit`: cap how many artifacts are ingested into the meta index
 - `--history-export-csv`: also emit `history_artifacts.csv` and
   `history_benchmark_scores.csv` for R/Python analysis
+- `--history-all-branches`: merge history artifacts from all local git branches
+  into one aggregated index
 
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.
