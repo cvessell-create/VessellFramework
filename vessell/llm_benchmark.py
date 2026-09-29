@@ -204,22 +204,6 @@ def _json_files_by_mtime(root: Path, pattern: str = "*.json") -> list[Path]:
     return files
 
 
-def _safe_read_json(path: Path) -> dict[str, object] | None:
-    try:
-        loaded = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    return loaded if isinstance(loaded, dict) else None
-
-
-def _safe_read_json_text(text: str) -> dict[str, object] | None:
-    try:
-        loaded = json.loads(text)
-    except json.JSONDecodeError:
-        return None
-    return loaded if isinstance(loaded, dict) else None
-
-
 def _git_current_branch(repo_root: Path) -> str:
     result = subprocess.run(
         ["git", "-C", str(repo_root), "rev-parse", "--abbrev-ref", "HEAD"],
@@ -256,25 +240,13 @@ def _git_branch_json_files(repo_root: Path, branch: str, root_rel: str) -> list[
     return [path for path in files if path.endswith(".json") and not path.endswith("history_index.json")]
 
 
-def _git_read_json_at_path(repo_root: Path, branch: str, path: str) -> dict[str, object] | None:
-    result = subprocess.run(
-        ["git", "-C", str(repo_root), "show", f"{branch}:{path}"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        return None
-    return _safe_read_json_text(result.stdout)
-
-
-def _classify_history_artifact(payload: dict[str, object], path: Path) -> str:
+def _classify_history_artifact(path: Path) -> str:
     name = path.name
     if name == "probe_summary.json":
         return "probe_summary"
     if name == "secret_scan_report.json":
         return "secret_scan_report"
-    if name == "latest_benchmark.json" or "results" in payload:
+    if name == "latest_benchmark.json":
         return "benchmark"
     if name.startswith("q_") and name.endswith(".json"):
         return "queue_benchmark"
@@ -307,31 +279,17 @@ def _build_history_index(
         }
     artifacts: list[dict[str, object]] = []
     by_type: dict[str, int] = {}
-    benchmark_scores: list[float] = []
-    secret_matches_total = 0
-    probe_runs_total = 0
-    def _consume_loaded(loaded: dict[str, object], rel_path: str, branch: str) -> None:
-        nonlocal secret_matches_total, probe_runs_total
-        artifact_type = _classify_history_artifact(loaded, Path(rel_path))
+    branches_seen: dict[str, int] = {}
+
+    def _consume_path(rel_path: str, branch: str) -> None:
+        artifact_type = _classify_history_artifact(Path(rel_path))
         by_type[artifact_type] = by_type.get(artifact_type, 0) + 1
-        results = loaded.get("results")
-        if isinstance(results, list):
-            for item in results:
-                if isinstance(item, dict):
-                    score = item.get("weighted_score")
-                    if isinstance(score, (int, float)):
-                        benchmark_scores.append(float(score))
-        matches_total = loaded.get("matches_total")
-        if isinstance(matches_total, int):
-            secret_matches_total += matches_total
-        runs = loaded.get("runs")
-        if isinstance(runs, list):
-            probe_runs_total += len(runs)
+        branches_seen[branch] = branches_seen.get(branch, 0) + 1
         artifacts.append(
             {
                 "path": rel_path,
                 "type": artifact_type,
-                "generated_at_utc": loaded.get("generated_at_utc"),
+                "generated_at_utc": None,
                 "branch": branch,
             }
         )
@@ -348,11 +306,8 @@ def _build_history_index(
             root_rel = root.as_posix()
         for branch in branches:
             for path_str in _git_branch_json_files(resolved_repo, branch, root_rel):
-                loaded = _git_read_json_at_path(resolved_repo, branch, path_str)
-                if loaded is None:
-                    continue
                 rel_path = path_str[len(root_rel) + 1 :] if path_str.startswith(f"{root_rel}/") else path_str
-                _consume_loaded(loaded, rel_path, branch)
+                _consume_path(rel_path, branch)
                 if len(artifacts) >= history_limit:
                     break
             if len(artifacts) >= history_limit:
@@ -363,22 +318,15 @@ def _build_history_index(
         for path in _json_files_by_mtime(root):
             if path.name == "history_index.json":
                 continue
-            loaded = _safe_read_json(path)
-            if loaded is None:
-                continue
-            _consume_loaded(loaded, path.relative_to(root).as_posix(), current_branch)
+            _consume_path(path.relative_to(root).as_posix(), current_branch)
             if len(artifacts) >= history_limit:
                 break
     analytics = {
         "artifacts_by_type": by_type,
-        "benchmark_weighted_score_summary": {
-            "count": len(benchmark_scores),
-            "avg": round(sum(benchmark_scores) / len(benchmark_scores), 4) if benchmark_scores else None,
-            "min": round(min(benchmark_scores), 4) if benchmark_scores else None,
-            "max": round(max(benchmark_scores), 4) if benchmark_scores else None,
-        },
-        "secret_matches_total": secret_matches_total,
-        "probe_runs_total": probe_runs_total,
+        "branch_artifact_counts": branches_seen,
+        "benchmark_weighted_score_summary": {"count": None, "avg": None, "min": None, "max": None},
+        "secret_matches_total": None,
+        "probe_runs_total": None,
     }
     return {
         "generated_at_utc": _utc_now_iso(),
@@ -474,7 +422,7 @@ def _write_history_exports(
         with benchmark_csv_path.open("w", encoding="utf-8", newline="") as handle:
             writer = csv.DictWriter(
                 handle,
-                fieldnames=["artifact_path", "provider", "model", "weighted_score"],
+                fieldnames=["branch", "artifact_path", "artifact_type", "provider", "model", "weighted_score"],
             )
             writer.writeheader()
             for item in payload["artifacts"]:
@@ -482,23 +430,16 @@ def _write_history_exports(
                     continue
                 if item.get("type") not in {"benchmark", "queue_benchmark"}:
                     continue
-                artifact_path = root / str(item.get("path"))
-                loaded = _safe_read_json(artifact_path)
-                if not isinstance(loaded, dict):
-                    continue
-                results = loaded.get("results")
-                if not isinstance(results, list):
-                    continue
-                for result in results:
-                    if isinstance(result, dict):
-                        writer.writerow(
-                            {
-                                "artifact_path": item.get("path"),
-                                "provider": result.get("provider"),
-                                "model": result.get("model"),
-                                "weighted_score": result.get("weighted_score"),
-                            }
-                        )
+                writer.writerow(
+                    {
+                        "branch": item.get("branch"),
+                        "artifact_path": item.get("path"),
+                        "artifact_type": item.get("type"),
+                        "provider": "",
+                        "model": "",
+                        "weighted_score": "",
+                    }
+                )
         benchmark_csv = str(benchmark_csv_path)
 
     return {
