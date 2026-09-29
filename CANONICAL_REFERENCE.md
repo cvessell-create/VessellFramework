@@ -18,6 +18,7 @@ This package is submitted as a v3.8.1 rough working candidate for graduate revie
 - Installer/synchronization artifacts (`install_vesselframework_v3_8.py`, path-sync logs, managed payload blocks).
 - Single-file compatibility runtime (`VesselFramework_SingleFile_EvilTwin_v0.2.py`).
 - Legacy or superseded references discussed historically in framework text but not required for evaluating this submission.
+- Supplemental governance packet: `docs/governance/US_CONSTITUTION_AND_OATH_FRAMEWORK.md`.
 
 ## Review boundary
 

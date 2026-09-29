@@ -106,6 +106,22 @@ SECRET_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     ),
 }
 
+CONSTITUTION_PACKET_PATH: Final[str] = "docs/governance/US_CONSTITUTION_AND_OATH_FRAMEWORK.md"
+FEDERAL_CIVIL_OATH_5_USC_3331: Final[str] = (
+    "I, [name], do solemnly swear (or affirm) that I will support and defend the Constitution "
+    "of the United States against all enemies, foreign and domestic; that I will bear true faith "
+    "and allegiance to the same; that I take this obligation freely, without any mental reservation "
+    "or purpose of evasion; and that I will well and faithfully discharge the duties of the office "
+    "on which I am about to enter. So help me God."
+)
+MILITARY_OATH_10_USC_502: Final[str] = (
+    "I, [name], do solemnly swear (or affirm) that I will support and defend the Constitution of "
+    "the United States against all enemies, foreign and domestic; that I will bear true faith and "
+    "allegiance to the same; and that I will obey the orders of the President of the United States "
+    "and the orders of the officers appointed over me, according to regulations and the Uniform "
+    "Code of Military Justice. So help me God."
+)
+
 EXAMPLE_RESPONSES: Final[dict[str, str]] = {
     "gpt": (
         "Use a checklist: first classify design (paired vs independent), then pick the test "
@@ -181,6 +197,17 @@ def _record_upstream_step(meta: dict[str, object], step: str, **details: object)
     if details:
         payload["details"] = details
     steps.append(payload)
+
+
+def _constitutional_oath_metadata(attestor: str | None) -> dict[str, object]:
+    return {
+        "required": True,
+        "packet_path": CONSTITUTION_PACKET_PATH,
+        "article_vi_clause_3_required": True,
+        "federal_civil_oath_5_usc_3331": FEDERAL_CIVIL_OATH_5_USC_3331,
+        "military_oath_10_usc_502": MILITARY_OATH_10_USC_502,
+        "attestor": attestor if attestor else "UNSPECIFIED",
+    }
 
 
 def _collect_pull_history(history_root: Path, pattern: str = "*.json") -> dict[str, object]:
@@ -273,6 +300,7 @@ def _build_history_index(
     include_all_branches: bool = False,
     repo_root: Path | None = None,
     parallel_workers: int = 4,
+    oath_attestor: str | None = None,
 ) -> dict[str, object]:
     root = history_root.resolve()
     if history_limit <= 0:
@@ -291,6 +319,7 @@ def _build_history_index(
                 "branches_scanned": 0,
                 "branch_jobs_completed": 0,
             },
+            "constitutional_oath_framework": _constitutional_oath_metadata(oath_attestor),
             "artifacts_total": 0,
             "artifacts": [],
             "analytics": {
@@ -404,6 +433,7 @@ def _build_history_index(
             "branches_scanned": branches_scanned,
             "branch_jobs_completed": branch_jobs_completed,
         },
+        "constitutional_oath_framework": _constitutional_oath_metadata(oath_attestor),
         "artifacts_total": len(artifacts),
         "artifacts": artifacts,
         "analytics": analytics,
@@ -418,6 +448,7 @@ def _write_history_exports(
     include_all_branches: bool = False,
     repo_root: Path | None = None,
     parallel_workers: int = 4,
+    oath_attestor: str | None = None,
 ) -> dict[str, str | int]:
     payload = _build_history_index(
         history_root,
@@ -425,6 +456,7 @@ def _write_history_exports(
         include_all_branches=include_all_branches,
         repo_root=repo_root,
         parallel_workers=parallel_workers,
+        oath_attestor=oath_attestor,
     )
     root = history_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -1720,6 +1752,11 @@ def main() -> int:
         help="Parallel worker count used for all-branches metadata pull collection.",
     )
     parser.add_argument(
+        "--oath-attestor",
+        default=None,
+        help="Name or identifier attesting constitutional oath requirement in history exports.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -1778,6 +1815,7 @@ def main() -> int:
             include_all_branches=args.history_all_branches,
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
+            oath_attestor=args.oath_attestor,
         )
         print("Empirical secret scan complete.")
         print("Report artifacts written under the configured scan output directory.")
@@ -1811,6 +1849,7 @@ def main() -> int:
             include_all_branches=args.history_all_branches,
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
+            oath_attestor=args.oath_attestor,
         )
         print(f"Probe summary JSON: {payload['summary_json']}")
         print(f"Probe summary markdown: {payload['summary_md']}")
@@ -1856,6 +1895,7 @@ def main() -> int:
             include_all_branches=args.history_all_branches,
             repo_root=Path.cwd(),
             parallel_workers=args.history_parallel_workers,
+            oath_attestor=args.oath_attestor,
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         print(f"History index JSON: {history_export['history_index_json']}")
@@ -1901,6 +1941,7 @@ def main() -> int:
         include_all_branches=args.history_all_branches,
         repo_root=Path.cwd(),
         parallel_workers=args.history_parallel_workers,
+        oath_attestor=args.oath_attestor,
     )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")

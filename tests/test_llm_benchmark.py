@@ -131,12 +131,14 @@ def test_build_history_index_aggregates_metadata(tmp_path) -> None:
     report = root / "security_scans" / "x" / "secret_scan_report.json"
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text("{}", encoding="utf-8")
-    payload = llm_benchmark._build_history_index(root, 10)
+    payload = llm_benchmark._build_history_index(root, 10, oath_attestor="analyst")
     assert payload["artifacts_total"] == 3
     analytics = payload["analytics"]
     assert analytics["artifacts_by_type"]["benchmark"] >= 1
     assert analytics["artifacts_by_type"]["probe_summary"] >= 1
     assert analytics["artifacts_by_type"]["secret_scan_report"] >= 1
+    assert payload["constitutional_oath_framework"]["required"] is True
+    assert payload["constitutional_oath_framework"]["attestor"] == "analyst"
 
 
 def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
@@ -152,7 +154,9 @@ def test_write_history_exports_emits_csv_when_enabled(tmp_path) -> None:
         ),
         encoding="utf-8",
     )
-    exported = llm_benchmark._write_history_exports(root, history_limit=20, export_csv=True)
+    exported = llm_benchmark._write_history_exports(
+        root, history_limit=20, export_csv=True, oath_attestor="test-attestor"
+    )
     assert Path(exported["history_index_json"]).exists()
     assert Path(exported["history_index_md"]).exists()
     assert Path(exported["history_dump_jsonl"]).exists()
@@ -183,6 +187,7 @@ def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> 
         include_all_branches=True,
         repo_root=tmp_path,
         parallel_workers=2,
+        oath_attestor="branch-attestor",
     )
     assert payload["include_all_branches"] is True
     assert payload["artifacts_total"] == 2
@@ -190,6 +195,7 @@ def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> 
     assert branches == {"main", "feature"}
     assert payload["parallel_collection"]["enabled"] is True
     assert payload["parallel_collection"]["workers"] == 2
+    assert payload["constitutional_oath_framework"]["attestor"] == "branch-attestor"
 
 
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:

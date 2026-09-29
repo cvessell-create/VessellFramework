@@ -54,6 +54,18 @@ The recognition gate quarantines name-only matches, classifies recognition
 stages, and counts independent provenance roots rather than search-result
 quantity.
 
+## Constitutional governance packet
+
+The framework now includes a constitutional/oath governance packet at:
+
+- `docs/governance/US_CONSTITUTION_AND_OATH_FRAMEWORK.md`
+
+History exports can include attestation metadata with:
+
+```powershell
+vf-benchmark --prompt "..." --dry-run --history-all-branches --oath-attestor "NAME/ROLE"
+```
+
 ## Cross-model benchmark runner
 
 Use `vf-benchmark` to run one prompt across GPT/Claude/Grok/other providers,
