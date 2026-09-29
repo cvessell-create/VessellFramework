@@ -13,6 +13,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -227,17 +228,29 @@ def _git_local_branches(repo_root: Path) -> list[str]:
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
-def _git_branch_json_files(repo_root: Path, branch: str, root_rel: str) -> list[str]:
+def _git_branch_json_metadata(repo_root: Path, branch: str, root_rel: str) -> list[dict[str, object]]:
     result = subprocess.run(
-        ["git", "-C", str(repo_root), "ls-tree", "-r", "--name-only", branch, "--", root_rel],
+        ["git", "-C", str(repo_root), "ls-tree", "-r", "-l", branch, "--", root_rel],
         capture_output=True,
         text=True,
         check=False,
     )
     if result.returncode != 0:
         return []
-    files = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    return [path for path in files if path.endswith(".json") and not path.endswith("history_index.json")]
+    artifacts: list[dict[str, object]] = []
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if not line or "\t" not in line:
+            continue
+        left, path = line.split("\t", 1)
+        if not path.endswith(".json") or path.endswith("history_index.json"):
+            continue
+        parts = left.split()
+        blob_sha = parts[2] if len(parts) >= 3 else None
+        size_token = parts[3] if len(parts) >= 4 else None
+        size_bytes = int(size_token) if size_token and size_token.isdigit() else None
+        artifacts.append({"path": path, "blob_sha": blob_sha, "size_bytes": size_bytes})
+    return artifacts
 
 
 def _classify_history_artifact(path: Path) -> str:
@@ -259,15 +272,25 @@ def _build_history_index(
     *,
     include_all_branches: bool = False,
     repo_root: Path | None = None,
+    parallel_workers: int = 4,
 ) -> dict[str, object]:
     root = history_root.resolve()
     if history_limit <= 0:
         raise ValueError("history_limit must be a positive integer.")
+    if parallel_workers <= 0:
+        raise ValueError("parallel_workers must be a positive integer.")
     if not root.exists():
         return {
             "generated_at_utc": _utc_now_iso(),
             "history_root": str(root),
             "history_limit": history_limit,
+            "include_all_branches": include_all_branches,
+            "parallel_collection": {
+                "enabled": include_all_branches,
+                "workers": parallel_workers,
+                "branches_scanned": 0,
+                "branch_jobs_completed": 0,
+            },
             "artifacts_total": 0,
             "artifacts": [],
             "analytics": {
@@ -280,8 +303,17 @@ def _build_history_index(
     artifacts: list[dict[str, object]] = []
     by_type: dict[str, int] = {}
     branches_seen: dict[str, int] = {}
+    branches_scanned = 0
+    branch_jobs_completed = 0
 
-    def _consume_path(rel_path: str, branch: str) -> None:
+    def _consume_path(
+        rel_path: str,
+        branch: str,
+        *,
+        source: str,
+        size_bytes: int | None = None,
+        blob_sha: str | None = None,
+    ) -> None:
         artifact_type = _classify_history_artifact(Path(rel_path))
         by_type[artifact_type] = by_type.get(artifact_type, 0) + 1
         branches_seen[branch] = branches_seen.get(branch, 0) + 1
@@ -291,6 +323,9 @@ def _build_history_index(
                 "type": artifact_type,
                 "generated_at_utc": None,
                 "branch": branch,
+                "source": source,
+                "size_bytes": size_bytes,
+                "blob_sha": blob_sha,
             }
         )
 
@@ -304,10 +339,31 @@ def _build_history_index(
             root_rel = root.relative_to(resolved_repo).as_posix()
         except ValueError:
             root_rel = root.as_posix()
+        branches_scanned = len(branches)
+        workers = min(parallel_workers, max(1, len(branches)))
+        branch_artifacts: dict[str, list[dict[str, object]]] = {}
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_map = {
+                executor.submit(_git_branch_json_metadata, resolved_repo, branch, root_rel): branch
+                for branch in branches
+            }
+            for future, branch in ((item, future_map[item]) for item in future_map):
+                entries = future.result()
+                branch_artifacts[branch] = entries
+                branch_jobs_completed += 1
         for branch in branches:
-            for path_str in _git_branch_json_files(resolved_repo, branch, root_rel):
+            for entry in branch_artifacts.get(branch, []):
+                path_str = str(entry.get("path", ""))
+                size_bytes = entry.get("size_bytes")
+                blob_sha = entry.get("blob_sha")
                 rel_path = path_str[len(root_rel) + 1 :] if path_str.startswith(f"{root_rel}/") else path_str
-                _consume_path(rel_path, branch)
+                _consume_path(
+                    rel_path,
+                    branch,
+                    source="git_branch",
+                    size_bytes=size_bytes if isinstance(size_bytes, int) else None,
+                    blob_sha=blob_sha if isinstance(blob_sha, str) else None,
+                )
                 if len(artifacts) >= history_limit:
                     break
             if len(artifacts) >= history_limit:
@@ -315,10 +371,19 @@ def _build_history_index(
     else:
         branch_root = repo_root.resolve() if repo_root is not None else Path.cwd()
         current_branch = _git_current_branch(branch_root)
+        branches_scanned = 1
+        branch_jobs_completed = 1
         for path in _json_files_by_mtime(root):
             if path.name == "history_index.json":
                 continue
-            _consume_path(path.relative_to(root).as_posix(), current_branch)
+            stat = path.stat()
+            _consume_path(
+                path.relative_to(root).as_posix(),
+                current_branch,
+                source="working_tree",
+                size_bytes=int(stat.st_size),
+                blob_sha=None,
+            )
             if len(artifacts) >= history_limit:
                 break
     analytics = {
@@ -333,6 +398,12 @@ def _build_history_index(
         "history_root": str(root),
         "history_limit": history_limit,
         "include_all_branches": include_all_branches,
+        "parallel_collection": {
+            "enabled": include_all_branches,
+            "workers": parallel_workers,
+            "branches_scanned": branches_scanned,
+            "branch_jobs_completed": branch_jobs_completed,
+        },
         "artifacts_total": len(artifacts),
         "artifacts": artifacts,
         "analytics": analytics,
@@ -346,12 +417,14 @@ def _write_history_exports(
     export_csv: bool,
     include_all_branches: bool = False,
     repo_root: Path | None = None,
+    parallel_workers: int = 4,
 ) -> dict[str, str | int]:
     payload = _build_history_index(
         history_root,
         history_limit,
         include_all_branches=include_all_branches,
         repo_root=repo_root,
+        parallel_workers=parallel_workers,
     )
     root = history_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -365,6 +438,8 @@ def _write_history_exports(
         f"- History root: `{payload['history_root']}`",
         f"- Artifacts total: {payload['artifacts_total']}",
         f"- Include all branches: {payload['include_all_branches']}",
+        f"- Parallel workers: {payload['parallel_collection']['workers']}",
+        f"- Branch jobs completed: {payload['parallel_collection']['branch_jobs_completed']}",
         "",
         "## Analytics",
         "",
@@ -404,7 +479,16 @@ def _write_history_exports(
         artifacts_csv_path = root / "history_artifacts.csv"
         with artifacts_csv_path.open("w", encoding="utf-8", newline="") as handle:
             writer = csv.DictWriter(
-                handle, fieldnames=["branch", "path", "type", "generated_at_utc"]
+                handle,
+                fieldnames=[
+                    "branch",
+                    "path",
+                    "type",
+                    "source",
+                    "size_bytes",
+                    "blob_sha",
+                    "generated_at_utc",
+                ],
             )
             writer.writeheader()
             for item in payload["artifacts"]:
@@ -414,6 +498,9 @@ def _write_history_exports(
                             "branch": item.get("branch"),
                             "path": item.get("path"),
                             "type": item.get("type"),
+                            "source": item.get("source"),
+                            "size_bytes": item.get("size_bytes"),
+                            "blob_sha": item.get("blob_sha"),
                             "generated_at_utc": item.get("generated_at_utc"),
                         }
                     )
@@ -1635,6 +1722,12 @@ def main() -> int:
         help="Aggregate history artifacts from all local git branches into one index.",
     )
     parser.add_argument(
+        "--history-parallel-workers",
+        type=int,
+        default=4,
+        help="Parallel worker count used for all-branches metadata pull collection.",
+    )
+    parser.add_argument(
         "--json-out",
         default="outputs/model_benchmarks/latest_benchmark.json",
         help="Path for JSON output.",
@@ -1651,6 +1744,8 @@ def main() -> int:
         parser.error(f"Unsupported providers: {unknown}. Allowed: {sorted(SUPPORTED_PROVIDERS)}")
     if args.history_limit <= 0:
         parser.error("--history-limit must be a positive integer.")
+    if args.history_parallel_workers <= 0:
+        parser.error("--history-parallel-workers must be a positive integer.")
     try:
         timeout, poll_seconds, time_budget_seconds = _resolve_runtime_controls(
             args.runtime_profile,
@@ -1690,6 +1785,7 @@ def main() -> int:
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
             repo_root=Path.cwd(),
+            parallel_workers=args.history_parallel_workers,
         )
         print("Empirical secret scan complete.")
         print("Report artifacts written under the configured scan output directory.")
@@ -1720,6 +1816,7 @@ def main() -> int:
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
             repo_root=Path.cwd(),
+            parallel_workers=args.history_parallel_workers,
         )
         print(f"Probe summary JSON: {payload['summary_json']}")
         print(f"Probe summary markdown: {payload['summary_md']}")
@@ -1762,6 +1859,7 @@ def main() -> int:
             export_csv=args.history_export_csv,
             include_all_branches=args.history_all_branches,
             repo_root=Path.cwd(),
+            parallel_workers=args.history_parallel_workers,
         )
         print(f"Queue mode complete. Processed {processed} prompt(s).")
         print(f"History index JSON: {history_export['history_index_json']}")
@@ -1804,6 +1902,7 @@ def main() -> int:
         export_csv=args.history_export_csv,
         include_all_branches=args.history_all_branches,
         repo_root=Path.cwd(),
+        parallel_workers=args.history_parallel_workers,
     )
     print(f"Wrote benchmark JSON: {json_path}")
     print(f"Wrote benchmark markdown: {md_path}")

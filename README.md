@@ -164,6 +164,8 @@ vf-benchmark --prompt "..." --dry-run --history-root outputs --history-limit 200
   `history_benchmark_scores.csv` for R/Python analysis
 - `--history-all-branches`: merge history artifacts from all local git branches
   into one aggregated index
+- `--history-parallel-workers`: parallel worker count for all-branches metadata
+  pull collection
 
 The empirical scan includes detector coverage metrics and supports a canary
 validation phrase for detection checks.

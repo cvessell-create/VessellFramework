@@ -166,24 +166,28 @@ def test_build_history_index_can_include_all_branches(monkeypatch, tmp_path) -> 
     monkeypatch.setattr(llm_benchmark, "_git_current_branch", lambda _: "main")
     monkeypatch.setattr(
         llm_benchmark,
-        "_git_branch_json_files",
-        lambda _repo, branch, _root_rel: [f"outputs/{branch}/latest_benchmark.json"],
-    )
-    monkeypatch.setattr(
-        llm_benchmark,
-        "_classify_history_artifact",
-        lambda path: "benchmark" if path.name == "latest_benchmark.json" else "other",
+        "_git_branch_json_metadata",
+        lambda _repo, branch, _root_rel: [
+            {
+                "path": f"outputs/{branch}/latest_benchmark.json",
+                "blob_sha": f"sha-{branch}",
+                "size_bytes": 123,
+            }
+        ],
     )
     payload = llm_benchmark._build_history_index(
         root,
         10,
         include_all_branches=True,
         repo_root=tmp_path,
+        parallel_workers=2,
     )
     assert payload["include_all_branches"] is True
     assert payload["artifacts_total"] == 2
     branches = {item["branch"] for item in payload["artifacts"]}
     assert branches == {"main", "feature"}
+    assert payload["parallel_collection"]["enabled"] is True
+    assert payload["parallel_collection"]["workers"] == 2
 
 
 def test_enqueue_and_parse_queue_prompt(tmp_path) -> None:
