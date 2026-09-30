@@ -3,6 +3,8 @@
 **A VessellFramework case study in claim provenance, correction propagation, and lawful correction**
 *Christopher R. Vessell — September 30, 2026*
 
+DOI: [10.13140/RG.2.2.14843.89126](https://doi.org/10.13140/RG.2.2.14843.89126) (ResearchGate)
+
 ---
 
 ## 1. The incident, end to end
