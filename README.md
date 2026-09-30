@@ -86,11 +86,12 @@ The original flat launchers and doctrine files remain the compatibility layer fo
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 
-1. `python -m pytest tests/ -q` — 73-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting.
+1. `python -m pytest tests/ -q` — 99-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering.
 2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
 3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
 4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.
 5. `python -m pytest tests/test_weights.py tests/test_weighter.py -q` — Llama-calibrated evidence weighting with per-weight provenance.
+6. `python -m pytest tests/test_verify.py -q` — planted-news corroboration checks, hostile-spread intel (burst/clone-army/laundering detection), and ghost-job filtering, each verdict shipping its audit record.
 
 Engineering signals: typed Python, mypy + ruff gates, JSON schemas for machine-readable contracts, SHA-256 integrity manifest (`python verify_manifest.py`), CI on Python 3.13, Apache-2.0 licensed.
 

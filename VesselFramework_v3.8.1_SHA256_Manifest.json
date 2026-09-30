@@ -96,6 +96,18 @@
       "sha256": "f0c84f9748c36a26e422135280f5c38dfb0eed08ed0a1372a5bf30cb2c6f79b8"
     },
     {
+      "path": "vessell/verify.py",
+      "sha256": "6b956c70a7a3351a8afbaa828feda264c5c30a5bab1845bedeb9675722be157e"
+    },
+    {
+      "path": "tests/test_verify.py",
+      "sha256": "d7d4d5fe1f016f8fcb6653ea335f7dc8b3139d1a9a4828ac851923d521812572"
+    },
+    {
+      "path": "schemas/verification.record.schema.json",
+      "sha256": "599976a541bc21dde10ab900ee2547248750b9dc6ab42060e999939a0a617b08"
+    },
+    {
       "path": "schemas/weight.record.schema.json",
       "sha256": "4a013e657497f3bb503adde25132c542d069655d655b89261471e5cb2a0e6e6b"
     }
