@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Writers for human-readable and machine-readable case-run outputs."""
 
 from __future__ import annotations

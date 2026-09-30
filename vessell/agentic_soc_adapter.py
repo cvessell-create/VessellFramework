@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Optional, read-only Azure Log Analytics adapter for bounded SOC hunt plans."""
 
 from __future__ import annotations

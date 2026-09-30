@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Minimal Microsoft Intune remediation adapter for approved managed-device syncs."""
 
 from __future__ import annotations

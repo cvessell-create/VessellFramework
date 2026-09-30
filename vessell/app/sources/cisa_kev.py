@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Fetch and normalize the CISA Known Exploited Vulnerabilities (KEV) catalog
 into a VesselFramework-compliant case intake document.
 

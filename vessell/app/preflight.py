@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Pre-live readiness checks for the VessellFramework Control Room."""
 
 from __future__ import annotations

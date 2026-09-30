@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Typed models for the executable case-run pipeline."""
 
 from __future__ import annotations

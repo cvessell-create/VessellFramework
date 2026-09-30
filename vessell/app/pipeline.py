@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Core executable pipeline for doctrine-to-code case runs."""
 
 from __future__ import annotations

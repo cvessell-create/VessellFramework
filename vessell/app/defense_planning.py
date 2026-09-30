@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Correlate live CISA KEV intelligence with an authorized local asset inventory."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Normalize authorized scanner results into inventory-confirmed CVEs."""
 
 from __future__ import annotations
