@@ -60,6 +60,7 @@ from vessell.provenance import (
     ProvenanceResolution,
     ProvenanceState,
     SourceStatus,
+    register_dependent,
 )
 
 __all__ = [
@@ -130,6 +131,7 @@ class WeightRecord:
     table_version: str = WEIGHT_TABLE_VERSION
     rationale: str = ""
     flags: tuple[str, ...] = ()
+    claim_id: str = ""  # provenance claim this weight is derived from, if any
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -147,6 +149,7 @@ class WeightRecord:
             "table_version": self.table_version,
             "rationale": self.rationale,
             "flags": list(self.flags),
+            "claim_id": self.claim_id,
         }
 
 
@@ -357,7 +360,11 @@ class WeightingEngine:
 
     # -- item-level ---------------------------------------------------------
 
-    def weight_item(self, item: EvidenceItem, use_llama: bool = True) -> WeightRecord:
+    def weight_item(
+        self, item: EvidenceItem, use_llama: bool = True, *, claim_id: str = ""
+    ) -> WeightRecord:
+        """Weight one item; with ``claim_id``, link the weight as a derived
+        artifact of that provenance claim (dependent registration)."""
         resolution = self.registry.resolve(item.source_id)
         tier_weight = SOURCE_TIER_WEIGHTS[item.status]
         prov_multiplier = PROVENANCE_STATE_MULTIPLIERS[resolution.state]
@@ -402,7 +409,7 @@ class WeightingEngine:
             if use_llama and self.weighter is None:
                 rationale += "; no live weighter configured, static tables govern"
 
-        return WeightRecord(
+        record = WeightRecord(
             source_id=item.source_id,
             description=item.description,
             status=item.status.value,
@@ -415,7 +422,15 @@ class WeightingEngine:
             table_version=self.table_version,
             rationale=rationale,
             flags=tuple(flags),
+            claim_id=claim_id,
         )
+        if claim_id:
+            register_dependent(
+                claim_id,
+                artifact="vessell.weights.WeightRecord",
+                location=item.source_id,
+            )
+        return record
 
     # -- set-level ----------------------------------------------------------
 
@@ -442,11 +457,20 @@ class WeightingEngine:
         except LlamaUnavailable:
             return None
 
-    def weight_set(self, evidence_set: EvidenceSet) -> WeightedEvidenceSet:
-        """Weight every item, apply the independence discount, normalize."""
+    def weight_set(
+        self, evidence_set: EvidenceSet, *, claim_id: str = ""
+    ) -> WeightedEvidenceSet:
+        """Weight every item, apply the independence discount, normalize.
+
+        With ``claim_id``, every weight record is registered as a derived
+        artifact of that provenance claim.
+        """
         self._batch_cache = self._prefetch_batch(evidence_set)
         try:
-            records = [self.weight_item(item) for item in evidence_set.items]
+            records = [
+                self.weight_item(item, claim_id=claim_id)
+                for item in evidence_set.items
+            ]
         finally:
             self._batch_cache = None
 
@@ -509,8 +533,14 @@ class WeightingEngine:
         weighted: WeightedEvidenceSet,
         values: dict[str, float],
         value_label: str = "analyst assessment",
+        *,
+        claim_id: str = "",
     ) -> AggregationResult:
-        """Weighted mean of analyst-supplied per-item values (e.g. 0..1)."""
+        """Weighted mean of analyst-supplied per-item values (e.g. 0..1).
+
+        With ``claim_id``, the aggregation is registered as a derived
+        artifact of that provenance claim.
+        """
         contributors = [
             r for r in weighted.records
             if r.source_id in values and r.normalized_weight > 0
@@ -529,6 +559,12 @@ class WeightingEngine:
             values[r.source_id] * r.normalized_weight for r in contributors
         )
         result: float | None = weighted_sum / total if total > 0 else None
+        if claim_id:
+            register_dependent(
+                claim_id,
+                artifact="vessell.weights.AggregationResult",
+                location=value_label,
+            )
         return AggregationResult(
             value=result,
             total_weight=weighted.total_weight,
