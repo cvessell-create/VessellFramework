@@ -91,11 +91,14 @@ SourceStatus = _reference.SourceStatus
 assess_maskirovka_convergence = _reference.assess_maskirovka_convergence
 
 __all__ = [
+    "ClaimGateBlocked",
+    "ClaimKind",
     "ClaimRecord",
     "ClaimStatus",
     "ClaimWaiver",
     "Corroboration",
     "Dependent",
+    "DependentStatus",
     "Disavowal",
     "EvidenceItem",
     "EvidenceSet",
@@ -107,13 +110,18 @@ __all__ = [
     "SourceStatus",
     "add_corroboration",
     "assess_maskirovka_convergence",
+    "confirm_dependent_update",
     "disavow",
     "gate_for_use",
+    "get_claim",
     "intake_claim",
+    "pending_corrections",
     "propagate_correction",
     "record_waiver",
     "register_dependent",
+    "require_gate",
     "reset_claim_lifecycle",
+    "revalidate_claim",
 ]
 
 
@@ -135,6 +143,27 @@ class ClaimStatus(Enum):
     CORROBORATED = "CORROBORATED"  # 2+ independent roots, or one official record
     DISAVOWED = "DISAVOWED"  # withdrawn or refuted; kept, never deleted
     SUPERSEDED = "SUPERSEDED"  # replaced by a newer record (see superseded_by)
+
+
+class ClaimKind(Enum):
+    """ICD 203 information-vs-assumption-vs-judgment distinction.
+
+    REPORT is observed or reported fact. ASSUMPTION is taken as given
+    without being established. JUDGMENT is an analytic conclusion drawn
+    from evidence. The kind never changes the gate: only the
+    corroboration standing does.
+    """
+
+    REPORT = "REPORT"
+    ASSUMPTION = "ASSUMPTION"
+    JUDGMENT = "JUDGMENT"
+
+
+class DependentStatus(Enum):
+    """Whether a downstream dependent has confirmed it consumed a correction."""
+
+    PENDING = "PENDING"  # correction propagated; update not yet confirmed
+    UPDATED = "UPDATED"  # downstream confirmed it consumed the correction
 
 
 @dataclass(frozen=True)
@@ -207,12 +236,16 @@ class Dependent:
     artifact: str  # e.g. "cron:daily-job-hunt", "GOAL.md"
     location: str  # where inside the artifact, e.g. "filters block"
     noted_at: str = ""  # ISO date/datetime
+    status: DependentStatus = DependentStatus.PENDING
+    confirmed_at: str = ""  # ISO date/datetime the update was confirmed
 
     def to_dict(self) -> dict[str, object]:
         return {
             "artifact": self.artifact,
             "location": self.location,
             "noted_at": self.noted_at,
+            "status": self.status.value,
+            "confirmed_at": self.confirmed_at,
         }
 
 
@@ -241,6 +274,9 @@ class ClaimRecord:
     supersedes: str | None = None  # id of the record this one replaces
     superseded_by: str | None = None  # id of the record replacing this one
     note: str = ""
+    kind: ClaimKind = ClaimKind.REPORT  # ICD 203: report vs assumption vs judgment
+    uncertainty: str = ""  # ICD 203 uncertainty expression, in the analyst's own words
+    valid_until: str = ""  # ISO date/datetime; empty means no scheduled revalidation
 
     def effective_root(self) -> str:
         """The intake source's evidentiary root."""
@@ -252,11 +288,30 @@ class ClaimRecord:
         roots.update(c.effective_root() for c in self.corroboration)
         return len(roots)
 
+    def is_stale(self) -> bool:
+        """True when a scheduled revalidation date has passed.
+
+        Claims without a valid_until never go stale; staleness only
+        applies to claims that opted into step-6 revalidation.
+        """
+        if not self.valid_until:
+            return False
+        try:
+            cutoff = datetime.fromisoformat(self.valid_until)
+        except ValueError:
+            return False
+        if cutoff.tzinfo is None:
+            cutoff = cutoff.replace(tzinfo=UTC)
+        return cutoff < datetime.now(UTC)
+
     def to_dict(self) -> dict[str, object]:
         return {
             "id": self.id,
             "text": self.text,
             "subject": self.subject,
+            "kind": self.kind.value,
+            "uncertainty": self.uncertainty,
+            "valid_until": self.valid_until,
             "source": {
                 "description": self.source,
                 "tier": self.source_tier.value,  # type: ignore[attr-defined]
@@ -313,6 +368,9 @@ def intake_claim(
     source_root: str | None = None,
     is_official_record: bool = False,
     note: str = "",
+    kind: ClaimKind = ClaimKind.REPORT,
+    uncertainty: str = "",
+    valid_until: str = "",
 ) -> ClaimRecord:
     """Intake a claim with its provenance tag.
 
@@ -342,6 +400,9 @@ def intake_claim(
             source_root=source_root,
             is_official_record=is_official_record,
             note=note,
+            kind=kind,
+            uncertainty=uncertainty,
+            valid_until=valid_until,
         )
     )
 
@@ -443,6 +504,26 @@ def gate_for_use(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
             f"SUPERSEDED by record {live.superseded_by}; use that record instead.",
         )
     if live.status is ClaimStatus.CORROBORATED:
+        # Playbook step 6: a corroborated claim past its revalidation date
+        # is stale. Fail closed for consequential use; low-stakes use may
+        # proceed with the staleness explicitly noted. Only claims that
+        # opted into revalidation (valid_until set) can go stale.
+        if live.is_stale():
+            if stakes == "consequential":
+                return (
+                    False,
+                    (
+                        f"CORROBORATED but STALE (valid_until {live.valid_until}); "
+                        "revalidate before consequential use."
+                    ),
+                )
+            return (
+                True,
+                (
+                    f"CORROBORATED but STALE (valid_until {live.valid_until}); "
+                    "treat with the caution of an unverified claim."
+                ),
+            )
         return (
             True,
             (
@@ -477,6 +558,23 @@ def gate_for_use(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
     )
 
 
+class ClaimGateBlocked(Exception):
+    """Raised by require_gate when a claim fails its consequential-use gate."""
+
+
+def require_gate(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
+    """Enforce the consequential-use gate, raising instead of returning False.
+
+    Returns (True, reason) when the gate passes. Raises ClaimGateBlocked
+    when gate_for_use would return False, so callers cannot silently
+    ignore a blocked claim.
+    """
+    allowed, reason = gate_for_use(record, stakes)
+    if not allowed:
+        raise ClaimGateBlocked(f"Claim {record.id} blocked for {stakes!r} use: {reason}")
+    return True, reason
+
+
 def disavow(
     record: ClaimRecord,
     disavowed_by: str,
@@ -509,6 +607,9 @@ def disavow(
         source_tier=SourceStatus.WORKING_HYPOTHESIS,
         recorded_at=stamp,
         note=note,
+        kind=live.kind,
+        uncertainty=live.uncertainty,
+        valid_until=live.valid_until,
     )
     correction = _store(replace(correction, supersedes=live.id))
     _store(
@@ -551,3 +652,62 @@ def propagate_correction(claim_id: str) -> list[Dependent]:
     and needs updating after a disavowal. Empty list: nothing consumed
     it, nothing to fix."""
     return list(_DEPENDENTS.get(claim_id, []))
+
+
+def confirm_dependent_update(
+    claim_id: str,
+    artifact: str,
+    location: str,
+    confirmed_at: str = "",
+) -> Dependent:
+    """Confirm that a downstream dependent consumed a propagated correction
+    (playbook step 5: propagate, then verify the update landed).
+
+    Marks the matching dependent UPDATED; raises KeyError when no such
+    dependent is registered.
+    """
+    dependents = _DEPENDENTS.get(claim_id, [])
+    for index, dependent in enumerate(dependents):
+        if dependent.artifact == artifact and dependent.location == location:
+            updated = replace(
+                dependent,
+                status=DependentStatus.UPDATED,
+                confirmed_at=confirmed_at or _utcnow(),
+            )
+            dependents[index] = updated
+            return updated
+    raise KeyError(f"No dependent {artifact!r} / {location!r} registered for claim {claim_id}.")
+
+
+def pending_corrections() -> list[tuple[str, Dependent]]:
+    """Every (claim_id, dependent) pair still awaiting update confirmation.
+
+    The step-5 work queue: corrections that propagated but were never
+    confirmed as consumed downstream.
+    """
+    pending: list[tuple[str, Dependent]] = []
+    for claim_id, dependents in _DEPENDENTS.items():
+        for dependent in dependents:
+            if dependent.status is DependentStatus.PENDING:
+                pending.append((claim_id, dependent))
+    return pending
+
+
+def revalidate_claim(
+    record: ClaimRecord,
+    valid_until: str = "",
+    note: str = "",
+) -> ClaimRecord:
+    """Re-validate a claim on schedule (playbook step 6).
+
+    Records a fresh revalidation date and appends the note to the audit
+    trail. The record itself is never rewritten: the updated copy is
+    stored in the registry and returned.
+    """
+    live = _CLAIMS.get(record.id, record)
+    updated = replace(
+        live,
+        note=(live.note + "\n" + note).strip() if note else live.note,
+        valid_until=valid_until,
+    )
+    return _store(updated)
