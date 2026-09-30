@@ -17,7 +17,9 @@ https://doi.org/10.1145/359545.359563
 Every rule of the correction playbook is a rule about causal paths — which
 events may follow which, and what must travel the path between them. Claim
 versions and status timestamps reify a claim's causal history as data, the
-same move as Lamport's logical clocks.
+same move as Lamport's logical clocks. The hash-chained claim-event log
+(`record_event` / `verify_event_chain`) makes that reification
+tamper-evident: each event's SHA-256 commits to its predecessor's hash.
 
 **Castello, J., Redmond, P., & Kuper, L. (2024).** *Inductive diagrams for
 causal reasoning.* arXiv:2307.10484 [cs.PL]. Submitted July 19, 2023;
