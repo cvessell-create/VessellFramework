@@ -10,6 +10,13 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from vessell.provenance import (
+    ClaimKind,
+    SourceStatus,
+    intake_claim,
+    register_dependent,
+)
+
 SUPPORTED_SOURCES = {"greenbone", "trivy", "osv-scanner", "wazuh"}
 CVE_PATTERN = re.compile(r"CVE-\d{4}-\d{4,}")
 
@@ -33,14 +40,37 @@ def import_confirmed_cves(
     asset_id: str,
     source: str,
     report: object,
+    track_provenance: bool = True,
 ) -> dict[str, Any]:
-    """Add scanner-confirmed CVEs to exactly one authorized inventory asset."""
+    """Add scanner-confirmed CVEs to exactly one authorized inventory asset.
+
+    With ``track_provenance`` (default), every newly confirmed CVE is
+    intaked as a provenance claim (a scanner's verdict is framework
+    synthesis, not an official record) and the inventory's
+    ``confirmed_cves`` list registers as its dependent — so a later
+    correction of a confirmation propagates to the asset record.
+    """
     asset = authorized_asset(inventory, asset_id)
 
     confirmed = {str(cve).upper() for cve in asset.get("confirmed_cves", [])}
-    confirmed.update(extract_cves(source, report))
+    new_cves = extract_cves(source, report)
+    confirmed.update(new_cves)
     asset["confirmed_cves"] = sorted(confirmed)
     asset["scanner_source"] = source
+    if track_provenance:
+        for cve in sorted(new_cves):
+            record = intake_claim(
+                text=f"{cve} confirmed on asset {asset_id} by {source} scan",
+                subject=asset_id,
+                source=f"vessell.app.scanner_adapters import ({source})",
+                source_tier=SourceStatus.FRAMEWORK_SYNTHESIS,
+                kind=ClaimKind.REPORT,
+            )
+            register_dependent(
+                record.id,
+                artifact="asset-inventory",
+                location=f"{asset_id}:confirmed_cves",
+            )
     return inventory
 
 
