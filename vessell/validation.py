@@ -25,3 +25,29 @@ def validate_record(record: Any, schema_name: str) -> None:
     if errors:
         details = "; ".join(error.message for error in errors)
         raise ValueError(details)
+
+
+# Fields every provenance-tagged intake must carry before a record is
+# accepted for validation (doctrine: tag at intake, or do not intake).
+REQUIRED_PROVENANCE_FIELDS = ("source", "source_tier", "observed_at", "status")
+
+
+def require_provenance_fields(record: dict[str, Any]) -> dict[str, Any]:
+    """Enforce provenance tagging at validation time.
+
+    Every record accepted for downstream use must name its source, its
+    source tier, when it was observed, and its corroboration standing.
+    Missing or blank fields raise ValueError naming the gaps — the
+    record is rejected at the boundary instead of entering the system
+    untagged.
+    """
+    missing = [
+        field
+        for field in REQUIRED_PROVENANCE_FIELDS
+        if not isinstance(record.get(field), str) or not record[field].strip()
+    ]
+    if missing:
+        raise ValueError(
+            "Record rejected: missing provenance fields: " + ", ".join(missing)
+        )
+    return record
