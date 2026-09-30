@@ -3,6 +3,18 @@
     "ClaimRecord": {
       "additionalProperties": false,
       "properties": {
+        "causal_path": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "causal_predecessor_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "corroboration": {
           "items": {
             "$ref": "#/$defs/Corroboration"
@@ -93,7 +105,9 @@
         "note",
         "kind",
         "uncertainty",
-        "valid_until"
+        "valid_until",
+        "causal_path",
+        "causal_predecessor_id"
       ],
       "title": "ClaimRecord",
       "type": "object"
@@ -208,6 +222,18 @@
         "confirmed_at": {
           "type": "string"
         },
+        "confirmed_correction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delivered_correction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "location": {
           "type": "string"
         },
@@ -220,6 +246,9 @@
             "UPDATED"
           ],
           "type": "string"
+        },
+        "via": {
+          "type": "string"
         }
       },
       "required": [
@@ -227,7 +256,10 @@
         "location",
         "noted_at",
         "status",
-        "confirmed_at"
+        "confirmed_at",
+        "via",
+        "delivered_correction",
+        "confirmed_correction"
       ],
       "title": "Dependent",
       "type": "object"

@@ -83,23 +83,23 @@ ICD 203 exists because the Intelligence Community learned — at high cost — t
 | Silent hardening | `add_corroboration()` | `CORROBORATED` only at 2+ independent roots (shared-root discount applied) or one official record |
 | Automation misuse | `gate_for_use()` | Consequential use blocked unless `CORROBORATED` or a named, dated waiver is recorded |
 | Opaque cascade | Status attachment | `UNVERIFIED` status travels with the claim; low-stakes use permitted but labeled |
-| Manual retraction hunt | `register_dependent()` / `propagate_correction()` | The TMS dependents registry; disavowal yields the full update list |
-| Erasure vs. correction | `disavow()` | Original kept, marked `DISAVOWED`, never deleted; correction record links `supersedes` → original; full audit trail |
+| Manual retraction hunt | `register_dependent()` (with `via` witnessed path) / `propagate_correction()` + `deliver_correction()` (causal-order delivery) / `confirm_dependent_update(..., correction_id=...)` (ordering-violation guard) | The TMS dependents registry with causal broadcast: each dependent records how the claim reached it; corrections are delivered along every dependency path in causal order, and out-of-order application raises `CausalOrderingError` instead of being silently marked complete |
+| Erasure vs. correction | `disavow()` | Original kept, marked `DISAVOWED`, never deleted; correction record links `supersedes` → original and carries `causal_path` — the witnessed path from the originating claim; full audit trail |
 
 The September 30 incident is the module's worked example, in its docstring and its test suite: intake → gate blocks operational use → (in the real incident, no gate existed, so the claim went operational) → disavowal → propagation list → verified correction.
 
 ---
 
-## 4. Prevention and correction playbook
+## 4. Prevention and correction: a causal-order playbook
 
-For people and teams, not just code. This is the operating procedure the incident implies:
+For people and teams, not just code. The incident was a concurrent system: intake, hardening, disavowal, and correction were events, and the failure was a failure of causal order. Leslie Lamport defined the terms in 1978: in a distributed system, event *a* happens-before event *b* (written *a → b*) when information could have flowed from *a* to *b* — and correct reasoning about the system must respect that order. Castello, Redmond, and Kuper (2024) sharpened the idea into something enforceable: in their causal separation diagrams, a causal relationship is not an abstract ordering but is *witnessed by the path that information follows* between events — happens-before modeled as paths, mechanized in Agda. And Redmond, Shen, Vazou, and Kuper (2022) proved, machine-checked, that a causal broadcast protocol can guarantee messages are never delivered in an order violating causality. The playbook below is that theory operationalized: every rule is a rule about causal paths — which events may follow which, and what must travel the path between them.
 
-1. **Tag at intake, or it didn't happen.** Source, tier, date, corroboration state — recorded with the claim, not beside it. An untagged claim constrains nothing.
-2. **Corroborate before operationalizing.** One source is a lead, not a constraint. Consequential decisions require two independent roots or an official record — the same bar the framework's verification doctrine already applies to news claims.
-3. **Waivers are explicit or they don't exist.** If urgency demands acting on an unverified claim, record who accepted the risk, when, and why. Silent trust is how §2.2 happens.
-4. **Disavow by supersession, never by erasure.** Record who retracted, when, and why; keep the original marked `DISAVOWED`. Erasure destroys the audit trail and invites the claim to re-enter later through the same door. *Operate in law and order: the record shows what was believed, when, and on what basis — including the correction.*
-5. **Propagate, then verify.** Enumerate every dependent of the retracted claim, update each, and confirm the update. A correction that misses one dependent is a cascade waiting to resume.
-6. **Re-validate consequential claims on a schedule.** Claims decay; sources change; people's circumstances change. What was true at intake is not true by default six months later.
+1. **Tag at intake, or it didn't happen.** Source, tier, date, corroboration state — recorded with the claim, not beside it. In causal terms, the intake event anchors the claim's history, and every downstream event must be causally after (*→*) it. An untagged claim has no causal anchor, so nothing may follow from it: it constrains nothing.
+2. **Corroborate before operationalizing.** One source is a lead, not a constraint. A consequential decision must be causally after corroboration — two independent roots or an official record — because only corroboration completes a witnessed path from evidence to decision. The framework's verification doctrine already applies this bar to news claims; claims about people deserve no less.
+3. **Waivers are explicit or they don't exist.** If urgency demands acting on an unverified claim, the waiver is itself an event on the causal path: record who accepted the risk, when, and why. Silent trust is an *unwitnessed* causal edge — information flowing with no path anyone can audit — which is exactly the §2.2 failure.
+4. **Disavow by supersession, never by erasure.** The correction event is causally after the claim it corrects, and the *supersedes* link is the witnessed path between them — the route the correction must travel to reach every dependent. Erasure destroys the path: with no recorded route from claim to correction, the claim can re-enter later through the same door, unwitnessed. *Operate in law and order: the record shows what was believed, when, and on what basis — including the correction.*
+5. **Propagate, then verify.** Deliver the correction along every dependency path, in causal order, and confirm receipt at each dependent. This is causal broadcast: no dependent applies a correction for a claim it never received, and no dependent keeps acting on a claim after its retraction without receiving the retraction. Redmond et al. proved the delivery guarantee machine-checked; the framework's dependents registry is the same guarantee in miniature — enumerate every path the claim's information followed, walk each one with the correction, and verify. A correction that misses one dependent is a cascade waiting to resume.
+6. **Re-validate consequential claims on a schedule.** Claims decay; sources change; people's circumstances change. Lamport's clock condition showed causal relationships can be reified as data — logical clocks make "happened before" visible to the system itself. Claim versions and status timestamps are the same move: reify the claim's causal history as data, so staleness is detectable rather than assumed away. What was true at intake is not true by default six months later.
 
 ---
 
@@ -111,6 +111,18 @@ The fix is correspondingly general: **provenance at intake, corroboration before
 
 ---
 
+## 6. Meta-note: the analyst's miss (a second worked example)
+
+On September 30, while rebuilding §4, the analyst (Pepper) was asked to verify this section's arXiv references. The user named "Jonathan Castillo, Patrick Redmond and Lindsey Kipper." The analyst searched arXiv for the literal string "Jonathan Castillo," found nothing, and reported no such author — handing the identification work back to the user.
+
+The user photographed his screen: the paper was there all along — "Inductive Diagrams for Causal Reasoning" by Jonathan **Castello**, Patrick Redmond, and Lindsey **Kuper** (arXiv:2307.10484). One letter off, and one letter wrong, on both names. The analyst held two correct co-author names and never searched them; a "Redmond + Kuper" query would have surfaced the paper immediately.
+
+Map it onto §2: a **provenance failure** (the negative result kept its value — "zero hits" — while its lineage, "one literal spelling checked," was discarded); **automation misuse** (the search tool's output treated as authoritative); and, in the new §4 terms, a **causal-path failure** — the claim "no such paper exists" traveled exactly one unwitnessed path (literal-string search). The witnessed paths — spelling variants, co-author cross-check, title-keyword search — were never walked. The claim was then **operationalized without corroboration**: reported as a finding, shifting labor to the user and stalling his publish.
+
+The correction follows the playbook: supersession, not erasure — the miss stays in the record — and propagation into the framework itself (below).
+
+**The pulled lesson:** a negative existential ("no X exists") is a claim like any other. It enters UNVERIFIED and may not be reported as a finding until at least two independent search paths corroborate the absence — with every path attempted recorded as the claim's provenance. The analyst's search history is the witnessed path. (Framework: `vessell/verify.py` — `record_search_path()` / `gate_negative_finding()`: search-path provenance for negative findings.)
+
 ## References
 
 - Office of the Director of National Intelligence. *Intelligence Community Directive 203: Analytic Standards* (revalidated January 2, 2015). https://www.dni.gov/files/documents/ICD/ICD-203.pdf
@@ -119,3 +131,6 @@ The fix is correspondingly general: **provenance at intake, corroboration before
 - Parasuraman, R., & Riley, V. (1997). Humans and Automation: Use, Misuse, Disuse, Abuse. *Human Factors*, 39(2), 230–253. https://journals.sagepub.com/doi/10.1518/001872097778543886
 - Sambasivan, N., Kapania, S., Highfill, H., Akrong, D., Paritosh, P., & Aroyo, L. M. (2021). "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In *Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems*. https://dl.acm.org/doi/abs/10.1145/3411764.3445518
 - VessellFramework: `vessell/provenance.py` (claim lifecycle), `vessell/verify.py` (verification doctrine), `docs/grad-school-prospectus.md`, `docs/commercialization-strategy.md`.
+- Lamport, L. (1978). Time, clocks, and the ordering of events in a distributed system. *Communications of the ACM*, 21(7), 558–565. https://doi.org/10.1145/359545.359563
+- Castello, J., Redmond, P., & Kuper, L. (2024). Inductive diagrams for causal reasoning. arXiv:2307.10484 [cs.PL]. https://arxiv.org/abs/2307.10484
+- Redmond, P., Shen, G., Vazou, N., & Kuper, L. (2022). Verified causal broadcast with Liquid Haskell. arXiv:2206.14767 [cs.PL]. https://arxiv.org/abs/2206.14767
