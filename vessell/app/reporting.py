@@ -7,6 +7,8 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+from vessell.provenance import register_dependent
+
 from .models import PipelineResult
 
 
@@ -50,10 +52,27 @@ def render_markdown_report(result: PipelineResult) -> str:
 
 
 def write_outputs(result: PipelineResult, output_dir: Path, stem: str) -> tuple[Path, Path]:
+    """Write the markdown and JSON reports; register them as dependents.
+
+    Each written artifact registers itself against the provenance claims
+    the result was derived from, so a later correction of a claim
+    propagates to the exact report files that consumed it.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     markdown_path = output_dir / f"{stem}.md"
     json_path = output_dir / f"{stem}.json"
 
     markdown_path.write_text(render_markdown_report(result), encoding="utf-8")
     json_path.write_text(json.dumps(asdict(result), indent=2), encoding="utf-8")
+    for claim_id in result.claim_ids:
+        register_dependent(
+            claim_id,
+            artifact="vessell.app.reporting.case-report",
+            location=str(markdown_path),
+        )
+        register_dependent(
+            claim_id,
+            artifact="vessell.app.reporting.case-report",
+            location=str(json_path),
+        )
     return markdown_path, json_path
