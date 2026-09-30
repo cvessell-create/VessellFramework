@@ -106,7 +106,13 @@ class RemediationStore:
 
         with self._connect() as database:
             for action in plan["actions"]:
-                payload = {"asset": asset_by_id[action["asset_id"]], "cisa": kev_by_cve[action["cve_id"]]}
+                payload = {
+                    "asset": asset_by_id[action["asset_id"]],
+                    "cisa": kev_by_cve[action["cve_id"]],
+                    # Provenance: the defense-plan claim this action was
+                    # derived from, so corrections propagate to the action.
+                    "plan_claim_id": plan.get("claim_id", ""),
+                }
                 cursor = database.execute(
                     """
                     INSERT OR IGNORE INTO actions(
