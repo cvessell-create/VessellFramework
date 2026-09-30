@@ -110,6 +110,10 @@
     {
       "path": "schemas/weight.record.schema.json",
       "sha256": "4a013e657497f3bb503adde25132c542d069655d655b89261471e5cb2a0e6e6b"
+    },
+    {
+      "path": "schemas/claim.record.schema.json",
+      "sha256": "b36e0ad00391996d3a8c6c3d5d3b894cd2b3c3fe3a4e17fb50443fe4c0a4b0ff"
     }
   ]
 }
