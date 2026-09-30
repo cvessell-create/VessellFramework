@@ -1,23 +1,23 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-09-06T23:59:05.982407+00:00",
+  "generated_utc": "2026-09-30T00:27:24.223547+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
       "path": "SKILL.md",
-      "sha256": "97fdd0382570670d859d6fadd91fe12545ba7237efc1e78d713fed91230409ed"
+      "sha256": "503e8eafa9073151786d14fec852258405bd75671ed01b94779a8e92f94bd85e"
     },
     {
       "path": "VesselFramework_Hardening_Patch_Registry_v3.8.md",
-      "sha256": "e7a59f0d8e51b2d9d80e1a12aa88ebd4d42ffc74faf1b6ac60949ff70aecf3da"
+      "sha256": "b9c54277602f025ff826a45fdc5e8479ef031d78999641127f9f7df780386997"
     },
     {
-      "path": "VesselFramework_MetaMatrix_Framework_v3.8.md",
-      "sha256": "dbd02de75d81396717aa312e564283dbf73c36df50290b8d3b1fae43826f498b"
+      "path": "VesselFramework_MetaMatrix_Framework_v3.8_v3.9_Combined.md",
+      "sha256": "0862f490715551b1dda95241069a3f9260ff76480fde76e34010dc431b10ff41"
     },
     {
       "path": "VesselFramework_Path_Sync_Log.jsonl",
-      "sha256": "9a217db7e3e38dbf715db74840454ac4d4943dc6b63cf72be8f12c886a8a14ae"
+      "sha256": "e9835227b3bb14461a59447835c4dd578f15d8da7a89b8e4cc24010d7ed8a07f"
     },
     {
       "path": "VesselFramework_Path_Sync_Log_v3.8.md",
@@ -29,11 +29,11 @@
     },
     {
       "path": "VesselFramework_v3.8_Installation_Manifest.md",
-      "sha256": "803c9a9c49037b72519a31f88e8b031613f280d56b2a3b6c7e08f4d7019dbfa3"
+      "sha256": "8738f02d4c0c9192f1de2c55aa9da34c5de5b5b5201d83a3c864db78f8f73370"
     },
     {
       "path": "install_vesselframework_v3_8.py",
-      "sha256": "30a9bbba271ac011fae27b529b0e24812f7b35077021929391595a5bb2ad0471"
+      "sha256": "fa933f4502e3423aec9faf32c37d670ba8126f1e2c6c99863c02a48a502cdd57"
     },
     {
       "path": "verify_manifest.py",
@@ -41,11 +41,11 @@
     },
     {
       "path": "vesselframework_case_runner.py",
-      "sha256": "854f04ca8ffb40369b7a56f8a732e7beedcfecb51b7f9681a24322183ce25557"
+      "sha256": "e08b2f46a9a94b4b3c3e89133f8c18d06c83e89bdcb8f53c4c52bd714736d4ac"
     },
     {
       "path": "example_case.json",
-      "sha256": "7a78d2d6a50a909e0ba24bb6cadac9086905cbc78842b9bdc082673e1c1e5459"
+      "sha256": "e900d67ffd5545bbd074b2c2c5e2489046d00ce62da6377d8d5bb9937fdf1e03"
     },
     {
       "path": "run_framework.py",
@@ -65,11 +65,11 @@
     },
     {
       "path": "memory_payloads/areas__maskirovka-paper.md.managed.md",
-      "sha256": "8124df1ba6f2f06bd9faf29abfeefbdaa1eae40b878aeb0fabc7f29aca390b7d"
+      "sha256": "bb39f9242fb04b6b62d5e8afe3bec3e869ddadb637ec1e6e26ea87915c60a989"
     },
     {
       "path": "memory_payloads/areas__vessel-framework.md.managed.md",
-      "sha256": "116ee37a1e7767f08e1968bb1372be6716b80a1a43feadb3b63d3a28f23f80e9"
+      "sha256": "06998eb7a086bf17d7378a8c11790be11cf2f3a290980408288fc4da3ec49345"
     },
     {
       "path": "memory_payloads/topics__writing-style.md.managed.md",
@@ -77,7 +77,27 @@
     },
     {
       "path": "vesselframework_reference_v1.1_provenance_firewall.py",
-      "sha256": "28bfe8e6d465479b270d023ef309dc41d0c64e14cb81bdb166933af4c057e054"
+      "sha256": "9d9ceeecabfd13a0e8a2dee277af72aa0c9c868d7a9a9bb50798a547bb9501e3"
+    },
+    {
+      "path": "vessell/weights.py",
+      "sha256": "6610b21874fc4d8f3af249f8efef62c6f8512d92178e034dff56ec0ccc83a789"
+    },
+    {
+      "path": "vessell/weighter.py",
+      "sha256": "eefc207fda9125cceeac160b78dcb271541eff89a7fa1fa8f7ab3bf7575e57e7"
+    },
+    {
+      "path": "tests/test_weights.py",
+      "sha256": "5227786f6a4caa322c974ce1d2e169a61f2cc22480004a4f3140e9e02c759551"
+    },
+    {
+      "path": "tests/test_weighter.py",
+      "sha256": "50e23162a29275ff13842a73439c3ece442498c181807bed4fa897d166b52405"
+    },
+    {
+      "path": "schemas/weight.record.schema.json",
+      "sha256": "4a013e657497f3bb503adde25132c542d069655d655b89261471e5cb2a0e6e6b"
     }
   ]
 }

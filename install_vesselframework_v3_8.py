@@ -31,6 +31,7 @@ from pathlib import Path
 import shutil
 import tempfile
 from datetime import datetime, timezone
+from typing import Any
 
 VERSION = "3.8"
 MANAGED_START = "<!-- VESSELFRAMEWORK MANAGED START -->"
@@ -149,7 +150,7 @@ def update_managed_block(existing: str, managed: str) -> str:
     existing = existing.rstrip()
     return ((existing + "\n\n") if existing else "") + managed + "\n"
 
-def log_event(log_path: Path, event: dict) -> None:
+def log_event(log_path: Path, event: dict[str, Any]) -> None:
     with log_path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(event, sort_keys=True) + "\n")
 
@@ -166,7 +167,7 @@ def path_has_access(path: Path, *, read: bool = False, write: bool = False) -> b
     except (TypeError, ValueError):
         return False
 
-def sync_one(target_text: str, cfg: dict, apply: bool, create_missing: bool, log_path: Path) -> dict:
+def sync_one(target_text: str, cfg: dict[str, Any], apply: bool, create_missing: bool, log_path: Path) -> dict[str, Any]:
     target = resolve_target(target_text)
     source = Path(cfg["source"])
     event = {
