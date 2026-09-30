@@ -1,7 +1,9 @@
 # Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Importable VessellFramework core package.
 
-Public surface: evidence intake and provenance tracking (:mod:`vessell.provenance`),
+Public surface: evidence intake and provenance tracking plus the
+provenance-tagged claim lifecycle — intake, corroboration, gating,
+disavowal, and correction propagation (:mod:`vessell.provenance`),
 deterministic + LLM-calibrated evidence weighting (:mod:`vessell.weights`),
 the calibrated live-Llama weighter (:mod:`vessell.weighter`), and claim
 verification — planted-news checks, hostile-spread intel, and ghost-job
@@ -9,12 +11,26 @@ filtering (:mod:`vessell.verify`).
 """
 
 from vessell.provenance import (
+    ClaimRecord,
+    ClaimStatus,
+    ClaimWaiver,
+    Corroboration,
+    Dependent,
+    Disavowal,
     EvidenceItem,
     EvidenceSet,
     ProvenanceRegistry,
     ProvenanceResolution,
     ProvenanceState,
     SourceStatus,
+    add_corroboration,
+    disavow,
+    gate_for_use,
+    intake_claim,
+    propagate_correction,
+    record_waiver,
+    register_dependent,
+    reset_claim_lifecycle,
 )
 from vessell.verify import (
     BURST_MIN_SOURCES,
@@ -65,6 +81,12 @@ __all__ = [
     "AggregationResult",
     "CalibratedLlamaWeighter",
     "ClaimCheck",
+    "ClaimRecord",
+    "ClaimStatus",
+    "ClaimWaiver",
+    "Corroboration",
+    "Dependent",
+    "Disavowal",
     "EvidenceItem",
     "EvidenceSet",
     "GhostJobReport",
@@ -87,10 +109,18 @@ __all__ = [
     "WeightedEvidenceSet",
     "WeightingEngine",
     "__version__",
+    "add_corroboration",
     "analyze_planted_news",
     "combine_factors",
     "detect_ghost_job",
+    "disavow",
     "filter_ghost_jobs",
+    "gate_for_use",
     "group_postings_by_role",
+    "intake_claim",
+    "propagate_correction",
+    "record_waiver",
+    "register_dependent",
+    "reset_claim_lifecycle",
     "verify_claim",
 ]
