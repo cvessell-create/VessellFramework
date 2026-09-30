@@ -3,12 +3,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import json
 import os
 import sqlite3
-import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -16,10 +16,11 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+import httpx
+
 from .defense_planning import build_defense_plan, load_asset_inventory
 from .microsoft_intune import sync_device
 from .sources.cisa_kev import fetch_kev_catalog
-
 
 REQUIRED_CONFIG = (
     "APPROVAL_TOKEN",
@@ -208,8 +209,10 @@ class RemediationStore:
             if intune_asset is not None:
                 status, result = "DISPATCHED", sync_device(intune_asset)
             else:
-                import httpx
-
+                if not isinstance(endpoint, str) or not endpoint:
+                    raise RuntimeError(
+                        "Remediation webhook endpoint is not configured."
+                    )
                 body = json.dumps(request_payload, separators=(",", ":"), sort_keys=True).encode()
                 signature = hmac.new(webhook_secret.encode(), body, hashlib.sha256).hexdigest()
                 response = httpx.post(
@@ -224,7 +227,7 @@ class RemediationStore:
                 )
                 response.raise_for_status()
                 status, result = "DISPATCHED", response.text[:4000]
-        except Exception as error:
+        except (httpx.HTTPError, RuntimeError, OSError) as error:
             status, result = "DISPATCH_FAILED", str(error)
 
         with self._connect() as database:
@@ -335,6 +338,7 @@ def create_app() -> Any:
 def main() -> int:
     import argparse
     import sys
+
     import uvicorn
     from dotenv import load_dotenv
 

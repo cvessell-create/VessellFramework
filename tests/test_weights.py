@@ -21,7 +21,6 @@ from vessell.weights import (
     LlamaScore,
     LlamaUnavailable,
     LlamaWeighter,
-    WeightedEvidenceSet,
     WeightingEngine,
 )
 

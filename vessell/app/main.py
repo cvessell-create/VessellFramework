@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .pipeline import run_case_pipeline
@@ -48,7 +48,7 @@ def main() -> int:
         print(f"RUN FAILED: invalid case payload: {error}")
         return 2
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     stem = f"{timestamp}_{_slugify(result.title)}"
     markdown_path, json_path = write_outputs(result, args.output_dir, stem)
 

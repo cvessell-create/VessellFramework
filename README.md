@@ -54,6 +54,32 @@ The recognition gate quarantines name-only matches, classifies recognition
 stages, and counts independent provenance roots rather than search-result
 quantity.
 
+Use it as a library:
+
+```python
+from vessell import (
+    EvidenceItem,
+    EvidenceSet,
+    ProvenanceRegistry,
+    SourceStatus,
+    WeightingEngine,
+)
+
+items = [
+    EvidenceItem(source_id="cisa-kev", description="CISA KEV entry",
+                 status=SourceStatus.SOURCE_ESTABLISHED),
+    EvidenceItem(source_id="vendor-blog", description="Vendor write-up",
+                 status=SourceStatus.WORKING_HYPOTHESIS),
+]
+registry = ProvenanceRegistry()
+registry.register_many(items)
+
+engine = WeightingEngine(registry)  # add CalibratedLlamaWeighter for live LLM scoring
+weighted = engine.weight_set(EvidenceSet(registry, items))
+for record in weighted.records:
+    print(record.source_id, round(record.normalized_weight, 3))
+```
+
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
 
 ## What this demonstrates

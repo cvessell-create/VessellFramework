@@ -8,7 +8,6 @@ from typing import Any
 
 import httpx
 
-
 REQUIRED_SETTINGS = (
     "MICROSOFT_TENANT_ID",
     "MICROSOFT_CLIENT_ID",

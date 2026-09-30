@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import urllib.request
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 KEV_FEED_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -26,12 +26,15 @@ def fetch_kev_catalog(url: str = KEV_FEED_URL, timeout: float = 10.0) -> dict[st
     request = urllib.request.Request(url, headers={"User-Agent": "VesselFramework-CaseIntake/1.0"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         payload = response.read().decode("utf-8")
-    return json.loads(payload)
+    data = json.loads(payload)
+    if not isinstance(data, dict):
+        raise TypeError("CISA KEV feed did not return a JSON object.")
+    return data
 
 
 def _added_date(entry: dict[str, Any]) -> date:
     raw = entry.get("dateAdded", "1970-01-01")
-    return datetime.strptime(raw, "%Y-%m-%d").date()
+    return datetime.strptime(raw, "%Y-%m-%d").replace(tzinfo=UTC).date()
 
 
 def select_recent_vulnerabilities(
@@ -42,7 +45,7 @@ def select_recent_vulnerabilities(
     as_of: date | None = None,
 ) -> list[dict[str, Any]]:
     """Select the most recently added actively-exploited vulnerabilities."""
-    as_of = as_of or datetime.now().date()
+    as_of = as_of or datetime.now(UTC).date()
     cutoff = as_of - timedelta(days=lookback_days)
 
     vulnerabilities = catalog.get("vulnerabilities", [])

@@ -48,9 +48,10 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from vessell.provenance import (
     EvidenceItem,
@@ -62,17 +63,17 @@ from vessell.provenance import (
 )
 
 __all__ = [
-    "WEIGHT_TABLE_VERSION",
-    "SOURCE_TIER_WEIGHTS",
-    "PROVENANCE_STATE_MULTIPLIERS",
     "CONFLICT_MULTIPLIER",
-    "WeightRecord",
-    "WeightedEvidenceSet",
+    "PROVENANCE_STATE_MULTIPLIERS",
+    "SOURCE_TIER_WEIGHTS",
+    "WEIGHT_TABLE_VERSION",
     "AggregationResult",
-    "WeightingEngine",
-    "LlamaWeighter",
     "LlamaScore",
     "LlamaUnavailable",
+    "LlamaWeighter",
+    "WeightRecord",
+    "WeightedEvidenceSet",
+    "WeightingEngine",
 ]
 
 
@@ -119,11 +120,11 @@ class WeightRecord:
     description: str
     status: str
     provenance_state: str
-    root_id: Optional[str]
+    root_id: str | None
     weight: float  # final raw weight
     normalized_weight: float = 0.0  # share of set total; set by weight_set()
     static_weight: float = 0.0  # static-table prior before any live scoring
-    llama_score: Optional[float] = None  # live Llama 0..1 score, if used
+    llama_score: float | None = None  # live Llama 0..1 score, if used
     independence_factor: float = 1.0
     weight_model: str = STATIC_MODEL_ID  # what produced this number
     table_version: str = WEIGHT_TABLE_VERSION
@@ -155,7 +156,7 @@ class WeightedEvidenceSet:
 
     records: list[WeightRecord] = field(default_factory=list)
     total_weight: float = 0.0
-    independent_root_count: Optional[int] = None
+    independent_root_count: int | None = None
     notes: list[str] = field(default_factory=list)
 
     def by_source(self, source_id: str) -> WeightRecord:
@@ -169,7 +170,7 @@ class WeightedEvidenceSet:
 class AggregationResult:
     """Weighted aggregation of analyst-supplied per-item values."""
 
-    value: Optional[float]
+    value: float | None
     total_weight: float
     contributors: int
     weight_model: str
@@ -206,7 +207,7 @@ class LlamaWeighter:
         self,
         base_url: str = "http://localhost:11434/v1",
         model: str = "llama3.1",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         timeout: float = 30.0,
     ) -> None:
         self.base_url = base_url.rstrip("/")
@@ -275,7 +276,7 @@ class LlamaWeighter:
         try:
             with urllib.request.urlopen(request, timeout=self.timeout):
                 return True
-        except Exception:
+        except (urllib.error.URLError, TimeoutError, OSError):
             return False
 
     # -- internals ---------------------------------------------------------
@@ -323,7 +324,7 @@ def _extract_json(content: str) -> dict[str, Any]:
         raise ValueError("No JSON object in model output.")
     parsed = json.loads(match.group(0))
     if not isinstance(parsed, dict):
-        raise ValueError("Model output JSON is not an object.")
+        raise TypeError("Model output JSON is not an object.")
     return parsed
 
 
@@ -344,7 +345,7 @@ class WeightingEngine:
     def __init__(
         self,
         registry: ProvenanceRegistry,
-        weighter: Optional[LlamaWeighter] = None,
+        weighter: LlamaWeighter | None = None,
         table_version: str = WEIGHT_TABLE_VERSION,
     ) -> None:
         self.registry = registry
@@ -352,7 +353,7 @@ class WeightingEngine:
         self.table_version = table_version
         # One-shot cache: weight_set() fills this via score_batch() when the
         # weighter supports it, so a set costs one model call, not N.
-        self._batch_cache: Optional[dict[str, Any]] = None
+        self._batch_cache: dict[str, Any] | None = None
 
     # -- item-level ---------------------------------------------------------
 
@@ -366,7 +367,7 @@ class WeightingEngine:
         if resolution.state != ProvenanceState.RESOLVED:
             flags.append(f"provenance-{resolution.state.value.lower()}")
 
-        llama_score: Optional[float] = None
+        llama_score: float | None = None
         weight_model = f"llama-static-{self.table_version}"
         rationale = (
             f"tier={item.status.value}({tier_weight:.2f}) x "
@@ -376,14 +377,17 @@ class WeightingEngine:
         if use_llama and self.weighter is not None and static_weight > 0:
             cached = (self._batch_cache or {}).get(item.source_id)
             try:
-                if cached is not None and hasattr(self.weighter, "score_from_detailed"):
-                    scored = self.weighter.score_from_detailed(cached)
+                score_from_detailed = getattr(
+                    self.weighter, "score_from_detailed", None
+                )
+                if cached is not None and score_from_detailed is not None:
+                    scored = score_from_detailed(cached)
                     flags.append("llama-batch-scored")
                 else:
                     scored = self.weighter.score(item, resolution)
                 llama_score = scored.weight
                 blend = LLAMA_FLOOR + (1.0 - LLAMA_FLOOR) * scored.weight
-                static_weight, final_weight = static_weight, static_weight * blend
+                final_weight = static_weight * blend
                 weight_model = f"llama-live:{scored.model}"
                 rationale += (
                     f" x llama={scored.weight:.2f}(floor {LLAMA_FLOOR:.2f}); "
@@ -417,7 +421,7 @@ class WeightingEngine:
 
     def _prefetch_batch(
         self, evidence_set: EvidenceSet
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """One model call for the whole set when the weighter supports it.
 
         Returns None (per-item scoring) when there is no weighter, no batch
@@ -425,14 +429,16 @@ class WeightingEngine:
         weight_item() still applies per item.
         """
         weighter = self.weighter
-        if weighter is None or not hasattr(weighter, "score_batch"):
+        score_batch = getattr(weighter, "score_batch", None)
+        if weighter is None or score_batch is None:
             return None
         try:
             pairs = [
                 (item, self.registry.resolve(item.source_id))
                 for item in evidence_set.items
             ]
-            return weighter.score_batch(pairs)
+            batch: dict[str, Any] | None = score_batch(pairs)
+            return batch
         except LlamaUnavailable:
             return None
 
@@ -519,8 +525,10 @@ class WeightingEngine:
                 note=f"No {value_label} values supplied for weighted items.",
             )
         total = sum(r.normalized_weight for r in contributors)
-        result = sum(values[r.source_id] * r.normalized_weight for r in contributors)
-        result = result / total if total > 0 else None
+        weighted_sum = sum(
+            values[r.source_id] * r.normalized_weight for r in contributors
+        )
+        result: float | None = weighted_sum / total if total > 0 else None
         return AggregationResult(
             value=result,
             total_weight=weighted.total_weight,

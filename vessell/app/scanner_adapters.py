@@ -7,10 +7,8 @@ import json
 import re
 import shutil
 import subprocess
-from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
-
 
 SUPPORTED_SOURCES = {"greenbone", "trivy", "osv-scanner", "wazuh"}
 CVE_PATTERN = re.compile(r"CVE-\d{4}-\d{4,}")
@@ -25,7 +23,7 @@ def extract_cves(source: str, report: object) -> set[str]:
     if source not in SUPPORTED_SOURCES:
         raise ValueError(f"Unsupported scanner source: {source}.")
     if not isinstance(report, (dict, list)):
-        raise ValueError("Scanner report must be a JSON object or array.")
+        raise TypeError("Scanner report must be a JSON object or array.")
     return _cves(report)
 
 
@@ -49,8 +47,10 @@ def import_confirmed_cves(
 def authorized_asset(inventory: dict[str, Any], asset_id: str) -> dict[str, Any]:
     assets = inventory.get("assets")
     if not isinstance(assets, list):
-        raise ValueError("Inventory must contain an assets list.")
-    asset = next((row for row in assets if row.get("asset_id") == asset_id), None)
+        raise TypeError("Inventory must contain an assets list.")
+    asset: dict[str, Any] | None = next(
+        (row for row in assets if row.get("asset_id") == asset_id), None
+    )
     if asset is None:
         raise ValueError("Asset ID is not present in the inventory.")
     if not asset.get("authorized", False):
@@ -84,8 +84,8 @@ def run_local_scan(source: str, target_path: Path) -> dict[str, Any]:
         report = json.loads(completed.stdout)
     except json.JSONDecodeError as error:
         raise RuntimeError(f"{source} did not produce JSON output.") from error
-    if not isinstance(report, (dict, list)):
-        raise RuntimeError(f"{source} produced an invalid JSON report.")
+    if not isinstance(report, dict):
+        raise TypeError(f"{source} produced an invalid JSON report.")
     return report
 
 

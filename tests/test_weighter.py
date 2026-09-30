@@ -11,13 +11,13 @@ from vessell.provenance import (
     ProvenanceRegistry,
     SourceStatus,
 )
-from vessell.weights import LlamaUnavailable, WeightingEngine
 from vessell.weighter import (
     FACTOR_WEIGHTS,
     PROMPT_VERSION,
     CalibratedLlamaWeighter,
     combine_factors,
 )
+from vessell.weights import LlamaUnavailable, WeightingEngine
 
 
 def _item(source_id: str, status=SourceStatus.SOURCE_ESTABLISHED) -> EvidenceItem:

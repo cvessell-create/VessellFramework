@@ -1,6 +1,11 @@
 import pytest
 
-from vessell.app.scanner_adapters import _scanner_executable, authorized_asset, extract_cves, import_confirmed_cves
+from vessell.app.scanner_adapters import (
+    _scanner_executable,
+    authorized_asset,
+    extract_cves,
+    import_confirmed_cves,
+)
 
 
 @pytest.mark.parametrize("source", ["greenbone", "trivy", "osv-scanner", "wazuh"])

@@ -40,12 +40,11 @@ from __future__ import annotations
 
 import http.client
 import json
-import socket
 import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from vessell.provenance import EvidenceItem, ProvenanceResolution
 from vessell.weights import (
@@ -56,11 +55,11 @@ from vessell.weights import (
 )
 
 __all__ = [
-    "PROMPT_VERSION",
-    "FACTOR_WEIGHTS",
     "FACTOR_NAMES",
-    "LlamaDetailedScore",
+    "FACTOR_WEIGHTS",
+    "PROMPT_VERSION",
     "CalibratedLlamaWeighter",
+    "LlamaDetailedScore",
     "combine_factors",
 ]
 
@@ -153,18 +152,23 @@ class CalibratedLlamaWeighter(LlamaWeighter):
 
     def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Single HTTP round-trip. Override in tests to stub the model."""
-        data = json.dumps(payload).encode("utf-8")
+        raw = json.dumps(payload).encode("utf-8")
         request = urllib.request.Request(
             f"{self.base_url}/chat/completions",
-            data=data,
+            data=raw,
             headers={"Content-Type": "application/json", **self._auth_headers()},
             method="POST",
         )
         with urllib.request.urlopen(request, timeout=self.timeout) as response:
-            return json.loads(response.read().decode("utf-8"))
+            parsed = json.loads(response.read().decode("utf-8"))
+        if not isinstance(parsed, dict):
+            raise LlamaUnavailable(
+                f"Llama endpoint {self.base_url} did not return a JSON object."
+            )
+        return parsed
 
     def _post_with_retry(self, payload: dict[str, Any]) -> dict[str, Any]:
-        last_exc: Optional[Exception] = None
+        last_exc: Exception | None = None
         for attempt in range(1, MAX_ATTEMPTS + 1):
             try:
                 return self._post(payload)
@@ -172,13 +176,7 @@ class CalibratedLlamaWeighter(LlamaWeighter):
                 last_exc = exc
                 if exc.code is not None and 400 <= exc.code < 500 and exc.code != 429:
                     break  # client error: retrying won't help
-            except (
-                urllib.error.URLError,
-                socket.timeout,
-                TimeoutError,
-                ConnectionError,
-                http.client.HTTPException,
-            ) as exc:
+            except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException) as exc:
                 last_exc = exc
             if attempt < MAX_ATTEMPTS:
                 time.sleep(BACKOFF_BASE_SECONDS * (2 ** (attempt - 1)))
