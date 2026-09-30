@@ -6,7 +6,7 @@ from __future__ import annotations
 import importlib
 import os
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from .agentic_soc import HuntPlan, redact_secrets
@@ -14,12 +14,18 @@ from .agentic_soc import HuntPlan, redact_secrets
 
 @dataclass(frozen=True)
 class QueryBatch:
-    """Normalized telemetry returned by a read-only workspace query."""
+    """Normalized telemetry returned by a read-only workspace query.
+
+    ``source`` and ``queried_at`` are the intake provenance tag: where
+    the rows came from and when they were observed.
+    """
 
     table: str
     columns: tuple[str, ...]
     rows: tuple[dict[str, Any], ...]
     truncated: bool
+    source: str = "azure-log-analytics"  # provenance: telemetry origin
+    queried_at: str = ""  # provenance: ISO date/datetime of the query
 
 
 class AzureAdapterConfigurationError(RuntimeError):
@@ -84,8 +90,9 @@ class AzureLogAnalyticsAdapter:
             timespan=timedelta(hours=plan.request.hours),
         )
         tables = list(getattr(response, "tables", ()))
+        queried_at = datetime.now(UTC).isoformat(timespec="seconds")
         if not tables:
-            return QueryBatch(plan.request.table, (), (), False)
+            return QueryBatch(plan.request.table, (), (), False, queried_at=queried_at)
         normalized = _table_rows(tables[0])
         rows = normalized.rows[: plan.max_rows]
         return QueryBatch(
@@ -93,4 +100,5 @@ class AzureLogAnalyticsAdapter:
             normalized.columns,
             rows,
             len(normalized.rows) > len(rows),
+            queried_at=queried_at,
         )
