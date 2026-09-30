@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-09-30T00:54:12Z",
+  "generated_utc": "2026-09-30T13:47:43Z",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -81,7 +81,7 @@
     },
     {
       "path": "vessell/weights.py",
-      "sha256": "ba17158d63af369577ffb12686727f8e4c375c4c956772cadcd19e5bbb46b792"
+      "sha256": "5d6f09042e695fb98b7136a6de136e68bcbd843bc7b580e456a8c05420516dfe"
     },
     {
       "path": "vessell/weighter.py",
@@ -97,7 +97,7 @@
     },
     {
       "path": "vessell/verify.py",
-      "sha256": "6b956c70a7a3351a8afbaa828feda264c5c30a5bab1845bedeb9675722be157e"
+      "sha256": "b30638df496707fc23b7b566246b83f7a24584165b6855cf058a736cde004ffc"
     },
     {
       "path": "tests/test_verify.py",
@@ -109,11 +109,15 @@
     },
     {
       "path": "schemas/weight.record.schema.json",
-      "sha256": "4a013e657497f3bb503adde25132c542d069655d655b89261471e5cb2a0e6e6b"
+      "sha256": "af83f681e7f0508929960f5819684093b9a3e1816232a6d06ddea68b44254e9a"
     },
     {
       "path": "schemas/claim.record.schema.json",
-      "sha256": "b36e0ad00391996d3a8c6c3d5d3b894cd2b3c3fe3a4e17fb50443fe4c0a4b0ff"
+      "sha256": "0f27c2ded80fa56b4fcf444bc56f1f01edb40eac8309bc2c10034759a9ef5269"
+    },
+    {
+      "path": "tests/test_doctrine_reconciliation.py",
+      "sha256": "ffb7d48c2fe4981e4f8db481d430203e2db3245efa4dbc883c2c0e9df08ec408"
     }
   ]
 }
