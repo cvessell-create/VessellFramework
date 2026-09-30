@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Import authorized scanner findings into one inventory asset's confirmed CVEs."""
 
 from __future__ import annotations

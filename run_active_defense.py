@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """Create an approval-gated defense plan from live CISA KEV intelligence."""
 
 from __future__ import annotations

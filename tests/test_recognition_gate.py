@@ -10,9 +10,9 @@ SPEC.loader.exec_module(RUNTIME)
 
 def test_name_only_match_is_quarantined() -> None:
     result = RUNTIME.recognition_gate(
-        "Christopher Ray Vessell",
+        "Alex Cvessell",
         [{
-            "identity": "Christopher Ray Vessell",
+            "identity": "Alex Cvessell",
             "class": "INDEPENDENT-MENTION",
             "root_id": "root-1",
         }],
@@ -26,14 +26,14 @@ def test_name_only_match_is_quarantined() -> None:
 def test_derivative_items_share_one_independent_root() -> None:
     evidence = [
         {
-            "identity": "Christopher Ray Vessell",
+            "identity": "Alex Cvessell",
             "class": "INDEPENDENT-MENTION",
             "root_id": "root-1",
             "corroborating_attributes": ["occupation", "location"],
             "title": "Mention",
         },
         {
-            "identity": "Christopher Ray Vessell",
+            "identity": "Alex Cvessell",
             "class": "INDEPENDENT-EVALUATION",
             "root_id": "root-1",
             "corroborating_attributes": ["occupation", "location"],
@@ -41,7 +41,7 @@ def test_derivative_items_share_one_independent_root() -> None:
         },
     ]
 
-    result = RUNTIME.recognition_gate("Christopher Ray Vessell", evidence)
+    result = RUNTIME.recognition_gate("Alex Cvessell", evidence)
 
     assert result["raw_item_count"] == 2
     assert result["independent_root_count"] == 1

@@ -47,7 +47,7 @@ Run the Identity & Recognition Provenance Gate:
 
 ```powershell
 python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest
-python VesselFramework_SingleFile_EvilTwin_v0.2.py recognition --subject "Christopher Ray Vessell" --evidence example_recognition_evidence.json
+python VesselFramework_SingleFile_EvilTwin_v0.2.py recognition --subject "Alex Cvessell" --evidence example_recognition_evidence.json
 ```
 
 The recognition gate quarantines name-only matches, classifies recognition
@@ -55,3 +55,19 @@ stages, and counts independent provenance roots rather than search-result
 quantity.
 
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
+
+## What this demonstrates
+
+Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
+
+1. `python -m pytest tests/ -q` — 73-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting.
+2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
+3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
+4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.
+5. `python -m pytest tests/test_weights.py tests/test_weighter.py -q` — Llama-calibrated evidence weighting with per-weight provenance.
+
+Engineering signals: typed Python, mypy + ruff gates, JSON schemas for machine-readable contracts, SHA-256 integrity manifest (`python verify_manifest.py`), CI on Python 3.13, Apache-2.0 licensed.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE). Copyright 2026 Christopher R. Vessell.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright 2026 Christopher R. Vessell. Licensed under the Apache License, Version 2.0. See LICENSE.
 """One-click live case run: fetches the official CISA KEV feed and produces a
 VesselFramework doctrine-to-code report on currently active, US-relevant
 exploited vulnerabilities.

@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-09-30T00:27:24.223547+00:00",
+  "generated_utc": "2026-09-30T00:37:13.909370+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "VesselFramework_Path_Sync_Log.jsonl",
-      "sha256": "e9835227b3bb14461a59447835c4dd578f15d8da7a89b8e4cc24010d7ed8a07f"
+      "sha256": "40eb50d691aa21d8f5d41bef33e27c96852e765bb015c56cf4ed1817cef91155"
     },
     {
       "path": "VesselFramework_Path_Sync_Log_v3.8.md",
@@ -33,15 +33,15 @@
     },
     {
       "path": "install_vesselframework_v3_8.py",
-      "sha256": "fa933f4502e3423aec9faf32c37d670ba8126f1e2c6c99863c02a48a502cdd57"
+      "sha256": "8a5e62e97a173e10720a8aeebda2ba725a81a1eebce353a2d888adbb35808aaf"
     },
     {
       "path": "verify_manifest.py",
-      "sha256": "a42ff916227bc18bf8c3a23b9a959df7446e2c0af0dcf3fa71873ee460fd505e"
+      "sha256": "7ff21ab8cca892ab38669a822c1903af4d5ebc57b79985c8e6293eef702c3c74"
     },
     {
       "path": "vesselframework_case_runner.py",
-      "sha256": "e08b2f46a9a94b4b3c3e89133f8c18d06c83e89bdcb8f53c4c52bd714736d4ac"
+      "sha256": "77156e1b0fe9ce81cf23a581b609fb735989fb8fc8ca8d54bc0f034b383e18e5"
     },
     {
       "path": "example_case.json",
@@ -49,7 +49,7 @@
     },
     {
       "path": "run_framework.py",
-      "sha256": "446136f56ab435cc39a2f313c7cb8b5fa26d855acfd4a2c1b9f112a41c0eed41"
+      "sha256": "02537f95f129ed12f471df82a9441287b99d721780433a729ffd60fc751547a0"
     },
     {
       "path": "run_framework.ps1",
@@ -77,15 +77,15 @@
     },
     {
       "path": "vesselframework_reference_v1.1_provenance_firewall.py",
-      "sha256": "9d9ceeecabfd13a0e8a2dee277af72aa0c9c868d7a9a9bb50798a547bb9501e3"
+      "sha256": "b489d3eb919cf8de833cc861f79ecae91645144c99ee210c7e950e38184cd38f"
     },
     {
       "path": "vessell/weights.py",
-      "sha256": "6610b21874fc4d8f3af249f8efef62c6f8512d92178e034dff56ec0ccc83a789"
+      "sha256": "dd78e0ca79f86c4d81c7ab72c036ca36f467dfdfc68b4d04594feb7552b25f75"
     },
     {
       "path": "vessell/weighter.py",
-      "sha256": "eefc207fda9125cceeac160b78dcb271541eff89a7fa1fa8f7ab3bf7575e57e7"
+      "sha256": "b13a01cd03c38128dbf296275bedf39fe4ba72be4dfbcdf917b773890d790137"
     },
     {
       "path": "tests/test_weights.py",

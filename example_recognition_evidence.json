@@ -1,21 +1,21 @@
 {
   "evidence": [
     {
-      "identity": "Christopher Ray Vessell",
+      "identity": "Alex Cvessell",
       "class": "SELF-CONTROLLED",
       "root_id": "self-root-1",
       "corroborating_attributes": ["name", "profile URL"],
       "title": "Self-published profile"
     },
     {
-      "identity": "Christopher Ray Vessell",
+      "identity": "Alex Cvessell",
       "class": "PLATFORM-INDEXED",
       "root_id": "platform-root-1",
       "corroborating_attributes": ["occupation", "location"],
       "title": "Platform index result"
     },
     {
-      "identity": "Christopher Ray Vessell",
+      "identity": "Alex Cvessell",
       "class": "INDEPENDENT-MENTION",
       "root_id": "independent-root-1",
       "corroborating_attributes": ["occupation", "location", "publication"],
