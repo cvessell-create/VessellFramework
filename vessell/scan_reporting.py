@@ -19,6 +19,19 @@ class ScanFinding(TypedDict):
     verification: str
 
 
+class ScanProvenance(TypedDict, total=False):
+    """Optional provenance tag for a scan finding (ICD 203 sourcing).
+
+    Carried alongside a finding, never required: untagged findings still
+    render, but the report then shows no provenance line for them.
+    """
+
+    source: str  # e.g. "trivy fs scan", "analyst manual review"
+    source_tier: str  # SourceStatus value, e.g. "FRAMEWORK SYNTHESIS"
+    observed_at: str  # ISO date/datetime the finding was observed
+    claim_id: str  # provenance claim id, when the finding was intaked
+
+
 def _text(value: Any, field_name: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field_name} must be a non-empty string.")
@@ -51,6 +64,23 @@ def _normalise_result(result: Mapping[str, object], index: int) -> ScanFinding:
     }
 
 
+def _provenance_line(host: str, result: Mapping[str, object]) -> str | None:
+    """Render one finding's provenance tag, or None when untagged."""
+    bits: list[str] = []
+    for key, label in (
+        ("source", "source"),
+        ("source_tier", "tier"),
+        ("observed_at", "observed"),
+        ("claim_id", "claim"),
+    ):
+        value = result.get(key)
+        if isinstance(value, str) and value.strip():
+            bits.append(f"{label}: {_markdown_cell(value.strip())}")
+    if not bits:
+        return None
+    return f"- {_markdown_cell(host)}: " + "; ".join(bits)
+
+
 def build_scan_report(
     scan_results: Iterable[Mapping[str, object]],
     *,
@@ -58,7 +88,8 @@ def build_scan_report(
     title: str = "Security Scan Report",
 ) -> str:
     """Build a Markdown report without performing any network activity."""
-    normalised = [_normalise_result(result, index) for index, result in enumerate(scan_results)]
+    results = list(scan_results)
+    normalised = [_normalise_result(result, index) for index, result in enumerate(results)]
     if not normalised:
         raise ValueError("scan_results must contain at least one result.")
 
@@ -108,6 +139,14 @@ def build_scan_report(
             "- Treat `Unknown` findings as requiring review, not as secure.",
         ]
     )
+    provenance_lines = [
+        line
+        for result in results
+        if (line := _provenance_line(str(result.get("host", "")), result))
+    ]
+    if provenance_lines:
+        lines.extend(["", "## Finding Provenance", ""])
+        lines.extend(provenance_lines)
     return "\n".join(lines) + "\n"
 
 
