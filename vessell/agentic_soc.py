@@ -11,6 +11,8 @@ import re
 from dataclasses import dataclass
 from typing import Final
 
+from vessell.provenance import register_dependent
+
 DEFAULT_MAX_HOURS: Final = 96
 DEFAULT_MAX_ROWS: Final = 5_000
 DEFAULT_MAX_TOKENS: Final = 100_000
@@ -57,6 +59,7 @@ class RemediationProposal:
     authorization_required: bool
     rollback_required: bool
     executed: bool = False
+    claim_id: str = ""  # provenance claim that motivated this proposal, if any
 
 
 TABLES: Final[dict[str, TableDefinition]] = {
@@ -220,15 +223,29 @@ def plan_hunt(
     )
 
 
-def propose_remediation(action: str, target: str, rationale: str) -> RemediationProposal:
-    """Create a human-reviewable remediation proposal without executing it."""
+def propose_remediation(
+    action: str, target: str, rationale: str, *, claim_id: str = ""
+) -> RemediationProposal:
+    """Create a human-reviewable remediation proposal without executing it.
+
+    With ``claim_id``, the proposal is registered as a downstream
+    dependent of that provenance claim, so a later correction of the
+    claim propagates to the proposal for re-review.
+    """
     for value, name in ((action, "action"), (target, "target"), (rationale, "rationale")):
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"{name} must be a non-empty string.")
+    if claim_id:
+        register_dependent(
+            claim_id,
+            artifact="vessell.agentic_soc.RemediationProposal",
+            location=f"{action.strip()} on {target.strip()}",
+        )
     return RemediationProposal(
         action=action.strip(),
         target=target.strip(),
         rationale=rationale.strip(),
         authorization_required=True,
         rollback_required=True,
+        claim_id=claim_id,
     )
