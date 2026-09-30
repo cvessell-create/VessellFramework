@@ -13,6 +13,7 @@ filtering (:mod:`vessell.verify`).
 from vessell.malware_triage import triage_source_and_record
 from vessell.provenance import (
     CausalOrderingError,
+    ClaimEvent,
     ClaimGateBlocked,
     ClaimKind,
     ClaimRecord,
@@ -29,6 +30,7 @@ from vessell.provenance import (
     ProvenanceState,
     SourceStatus,
     add_corroboration,
+    claim_events,
     confirm_dependent_update,
     deliver_correction,
     disavow,
@@ -37,11 +39,13 @@ from vessell.provenance import (
     intake_claim,
     pending_corrections,
     propagate_correction,
+    record_event,
     record_waiver,
     register_dependent,
     require_gate,
     reset_claim_lifecycle,
     revalidate_claim,
+    verify_event_chain,
 )
 from vessell.validation import require_provenance_fields
 from vessell.verify import (
@@ -105,6 +109,7 @@ __all__ = [
     "CalibratedLlamaWeighter",
     "CausalOrderingError",
     "ClaimCheck",
+    "ClaimEvent",
     "ClaimGateBlocked",
     "ClaimKind",
     "ClaimRecord",
@@ -140,6 +145,7 @@ __all__ = [
     "add_corroboration",
     "analyze_planted_news",
     "analyze_planted_news_and_record",
+    "claim_events",
     "combine_factors",
     "confirm_dependent_update",
     "deliver_correction",
@@ -154,6 +160,7 @@ __all__ = [
     "intake_claim",
     "pending_corrections",
     "propagate_correction",
+    "record_event",
     "record_search_path",
     "record_waiver",
     "register_dependent",
@@ -167,4 +174,5 @@ __all__ = [
     "triage_source_and_record",
     "verify_and_record",
     "verify_claim",
+    "verify_event_chain",
 ]
