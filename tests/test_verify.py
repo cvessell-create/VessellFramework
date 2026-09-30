@@ -419,3 +419,203 @@ def test_planted_report_to_dict_is_auditable() -> None:
     corroboration = record["corroboration"]
     assert isinstance(corroboration, dict)
     assert corroboration["verdict"] == "UNCORROBORATED"
+
+
+# ---------------------------------------------------------------------------
+# Search-path provenance for negative findings (§6: the analyst's miss)
+# ---------------------------------------------------------------------------
+
+from vessell.provenance import (
+    ClaimGateBlocked,
+    intake_claim,
+    reset_claim_lifecycle,
+)
+from vessell.verify import (
+    MIN_ABSENCE_PATHS,
+    SearchPath,
+    gate_negative_finding,
+    record_search_path,
+    require_negative_finding,
+    reset_search_paths,
+    search_paths,
+)
+
+
+@pytest.fixture()
+def _clean_search_paths():
+    reset_claim_lifecycle()
+    reset_search_paths()
+    yield
+    reset_claim_lifecycle()
+    reset_search_paths()
+
+
+def _absence_claim() -> str:
+    """The negative existential: 'no such paper exists.' Enters UNVERIFIED."""
+    record = intake_claim(
+        text="No arXiv paper matches 'Jonathan Castillo, Patrick Redmond, "
+        "Lindsey Kipper'.",
+        subject="arXiv:2307.10484 identification",
+        source="analyst search",
+        source_tier=HYP,
+    )
+    assert record.status.value == "UNVERIFIED"
+    return record.id
+
+
+def test_record_search_path_logs_against_claim(_clean_search_paths: None) -> None:
+    claim_id = _absence_claim()
+    path = record_search_path(
+        claim_id,
+        query="Jonathan Castillo",
+        strategy="literal-author-name",
+        source="arxiv.org",
+        date="2026-09-30",
+        result_summary="zero hits",
+    )
+    assert isinstance(path, SearchPath)
+    assert path.date == "2026-09-30"
+    assert search_paths(claim_id) == [path]
+    assert path.to_dict()["result_summary"] == "zero hits"
+
+
+def test_record_search_path_rejects_unknown_claim(_clean_search_paths: None) -> None:
+    with pytest.raises(KeyError):
+        record_search_path(
+            "claim-does-not-exist", query="x", strategy="y", source="z"
+        )
+
+
+def test_zero_paths_stays_gated(_clean_search_paths: None) -> None:
+    allowed, reason = gate_negative_finding(_absence_claim())
+    assert allowed is False
+    assert "gated" in reason
+
+
+def test_single_search_path_stays_gated(_clean_search_paths: None) -> None:
+    """The §6 failure mode, exactly: one literal search, reported as a finding."""
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id,
+        query="Jonathan Castillo",
+        strategy="literal-author-name",
+        source="arxiv.org",
+        result_summary="zero hits",
+    )
+    allowed, reason = gate_negative_finding(claim_id)
+    assert allowed is False
+    assert str(MIN_ABSENCE_PATHS) in reason
+    with pytest.raises(ClaimGateBlocked):
+        require_negative_finding(claim_id)
+
+
+def test_two_independent_paths_clear_the_gate(_clean_search_paths: None) -> None:
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="arxiv.org", result_summary="zero hits",
+    )
+    record_search_path(
+        claim_id, query="Castillo Redmond Kipper", strategy="spelling-variant",
+        source="arxiv.org", result_summary="zero hits",
+    )
+    allowed, reason = gate_negative_finding(claim_id)
+    assert allowed is True
+    assert "2 independent search paths" in reason
+    assert require_negative_finding(claim_id) == (True, reason)
+
+
+def test_same_strategy_same_source_counts_once(_clean_search_paths: None) -> None:
+    """Re-running the same query on the same source is one path, not two."""
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="arxiv.org", result_summary="zero hits",
+    )
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="arxiv.org", result_summary="zero hits again",
+    )
+    allowed, _ = gate_negative_finding(claim_id)
+    assert allowed is False
+
+
+def test_same_strategy_different_source_is_independent(_clean_search_paths: None) -> None:
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="arxiv.org", result_summary="zero hits",
+    )
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="Semantic Scholar", result_summary="zero hits",
+    )
+    allowed, _ = gate_negative_finding(claim_id)
+    assert allowed is True
+
+
+def test_found_path_contradicts_the_absence(_clean_search_paths: None) -> None:
+    """The Castello correction: a co-author cross-check finds the paper."""
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="arxiv.org", result_summary="zero hits",
+    )
+    record_search_path(
+        claim_id, query="Redmond Kuper", strategy="coauthor-cross-check",
+        source="arxiv.org", result_summary="found arXiv:2307.10484",
+        found=True,
+    )
+    allowed, reason = gate_negative_finding(claim_id)
+    assert allowed is False
+    assert "contradicted" in reason
+    with pytest.raises(ClaimGateBlocked):
+        require_negative_finding(claim_id)
+
+
+def test_castello_worked_example_end_to_end(_clean_search_paths: None) -> None:
+    """§6 as the machine would have run it: the single-path miss stays gated."""
+    claim_id = _absence_claim()
+    # The analyst's actual (deficient) search history.
+    record_search_path(
+        claim_id, query="Jonathan Castillo", strategy="literal-author-name",
+        source="arxiv.org", result_summary="zero hits", date="2026-09-30",
+    )
+    allowed, _ = gate_negative_finding(claim_id)
+    assert allowed is False  # may not be reported as a finding
+
+    # The unwalked paths, walked after the user's correction.
+    record_search_path(
+        claim_id, query="Jonathan Castello", strategy="spelling-variant",
+        source="arxiv.org", result_summary="found arXiv:2307.10484",
+        found=True, date="2026-09-30",
+    )
+    record_search_path(
+        claim_id, query="Redmond Kuper", strategy="coauthor-cross-check",
+        source="arxiv.org", result_summary="found arXiv:2307.10484",
+        found=True, date="2026-09-30",
+    )
+    record_search_path(
+        claim_id, query="inductive diagrams causal reasoning",
+        strategy="title-keyword", source="arxiv.org",
+        result_summary="found arXiv:2307.10484", found=True, date="2026-09-30",
+    )
+    assert len(search_paths(claim_id)) == 4
+    allowed, reason = gate_negative_finding(claim_id)
+    assert allowed is False
+    assert "contradicted" in reason  # the absence is refuted, not corroborated
+
+
+def test_every_attempted_path_is_provenance(_clean_search_paths: None) -> None:
+    """Hits and misses alike are recorded: the search history is the witnessed path."""
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id, query="a", strategy="s1", source="src1", result_summary="miss",
+    )
+    record_search_path(
+        claim_id, query="b", strategy="s2", source="src2", result_summary="hit",
+        found=True,
+    )
+    paths = search_paths(claim_id)
+    assert [p.found for p in paths] == [False, True]
+    assert all(p.date for p in paths)  # dates default to now
