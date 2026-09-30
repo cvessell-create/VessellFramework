@@ -32,15 +32,15 @@ python -m pip install -r requirements\dev.txt -r requirements\core.txt
 Run the assurance gate:
 
 ```powershell
-ruff check vessel tests
-mypy vessel
+ruff check vessell tests
+mypy vessell
 pytest
 ```
 
 Validate a case record:
 
 ```powershell
-python -m vessel.cli example_case.json --schema case.schema.json
+python -m vessell.cli example_case.json --schema case.schema.json
 ```
 
 Run the Identity & Recognition Provenance Gate:
@@ -80,7 +80,7 @@ for record in weighted.records:
     print(record.source_id, round(record.normalized_weight, 3))
 ```
 
-The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessel/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
+The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
 
 ## What this demonstrates
 

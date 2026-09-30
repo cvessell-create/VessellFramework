@@ -657,7 +657,7 @@ Use the following updated references as the starting set for future challenge ex
 
 # 15. Malware Behavior Triage Capability
 
-The package includes a non-executing static analyzer in `vessel/malware_triage.py` for suspicious
+The package includes a non-executing static analyzer in `vessell/malware_triage.py` for suspicious
 Python source samples. It is intended for authorized range analysis, evidence capture, and
 remediation planning.
 
