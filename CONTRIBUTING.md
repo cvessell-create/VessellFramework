@@ -25,7 +25,7 @@ Python 3.13+ is required.
    not invent conclusions.
 5. **Docs** — update the relevant `*_SKILL_*.md` and/or `README.md`.
 6. **Integrity manifest** — if you touch a file tracked in
-   `VesselFramework_v3.8.1_SHA256_Manifest.json`, regenerate it and confirm
+   `VessellFramework_v3.8.1_SHA256_Manifest.json`, regenerate it and confirm
    `python verify_manifest.py` passes.
 
 The `VessellFramework_Community_SKILL_v1.0.md` skill file is the detailed,

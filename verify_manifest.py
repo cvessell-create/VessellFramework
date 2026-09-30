@@ -82,7 +82,7 @@ def main() -> int:
     parser.add_argument(
         "manifest",
         nargs="?",
-        default="VesselFramework_v3.8.1_SHA256_Manifest.json",
+        default="VessellFramework_v3.8.1_SHA256_Manifest.json",
         help="Path to the JSON manifest.",
     )
     args = parser.parse_args()

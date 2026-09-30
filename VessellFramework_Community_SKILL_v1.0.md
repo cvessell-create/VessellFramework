@@ -41,7 +41,7 @@ Every PR must satisfy all of these:
 5. **Docs.** User-facing changes update the relevant `*_SKILL_*.md`
    and/or `README.md`.
 6. **Integrity manifest.** If you touch a file tracked in
-   `VesselFramework_v3.8.1_SHA256_Manifest.json`, regenerate the manifest
+   `VessellFramework_v3.8.1_SHA256_Manifest.json`, regenerate the manifest
    and confirm `python verify_manifest.py` passes.
 
 ## 4. Welcome Contributions
