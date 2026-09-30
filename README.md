@@ -20,6 +20,27 @@ If you are reviewing this as an academic rough-working submission, read in this 
 
 For package boundaries and canonical scope, see `CANONICAL_REFERENCE.md`.
 
+## Governing doctrine
+
+The claim-correction case study ([docs/claim-correction-case-study.md](docs/claim-correction-case-study.md))
+is the governing spec for this codebase. Its six-step playbook is implemented head-to-toe:
+
+1. **Tag at intake** — every claim enters with source, tier, kind (ICD 203 report/assumption/judgment),
+   uncertainty, and observation date (`vessell.provenance.intake_claim`; `vessell.validation.require_provenance_fields`).
+2. **Corroborate before operationalizing** — consequential use passes through `gate_for_use` /
+   `require_gate`; verification outcomes are intaked with their sightings as corroborations
+   (`vessell.verify.verify_and_record`, `analyze_planted_news_and_record`, `detect_ghost_job_and_record`).
+3. **Explicit waivers** — `record_waiver` (named, dated, reasoned); the remediation orchestrator's
+   named approval + change ticket is the operational equivalent.
+4. **Disavow by supersession, never erasure** — `disavow` keeps the original record and links the
+   correction; corrections inherit kind, uncertainty, and revalidation schedule.
+5. **Propagate, then verify the update landed** — `register_dependent` on every operational use;
+   `confirm_dependent_update` / `pending_corrections` close the loop.
+6. **Re-validate on schedule** — `valid_until` + `is_stale` + `revalidate_claim`; stale corroborated
+   claims fail closed for consequential use.
+
+Step-by-step traceability lives in [docs/traceability/doctrine_code_matrix.md](docs/traceability/doctrine_code_matrix.md).
+
 ## Quick start
 
 ```powershell
@@ -86,7 +107,7 @@ The original flat launchers and doctrine files remain the compatibility layer fo
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 
-1. `python -m pytest tests/ -q` — 99-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering.
+1. `python -m pytest tests/ -q` — 144-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
 2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
 3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
 4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.
