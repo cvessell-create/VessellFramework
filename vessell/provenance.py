@@ -40,7 +40,7 @@ A claim is a liability until corroborated. The lifecycle is:
    register as dependents; when the claim is disavowed, the registry
    lists exactly what needs updating. No silent downstream rot.
 
-Causal order (§4 of the case study)
+Causal order (Section 4 of the case study)
 ----------------------------------
 Lifecycle events are ordered by Lamport's (1978) happens-before relation,
 and — following Castello, Redmond, and Kuper (2024) — every causal
@@ -256,7 +256,7 @@ class Dependent:
 
     ``via`` is the witnessed path: how the claim reached this dependent
     (e.g. "intake note -> goal constraint -> cron config"). Causal-path
-    semantics (§4 rule 5): a dependent tracks which corrections it has
+    semantics (Section 4 rule 5): a dependent tracks which corrections it has
     been *delivered* (:func:`deliver_correction`) and which it has
     *confirmed* consuming (:func:`confirm_dependent_update`), so a
     correction can never be marked applied out of causal order.
@@ -622,7 +622,7 @@ class CausalOrderingError(Exception):
 
     Raised instead of silently marking a dependent corrected when the
     correction was never delivered to it, belongs to a different claim, or
-    arrives before the correction it causally follows. The §4 rule-5
+    arrives before the correction it causally follows. The Section 4 rule-5
     guarantee: no dependent applies a correction for a claim version it
     never received.
     """
@@ -677,7 +677,7 @@ def disavow(
         uncertainty=live.uncertainty,
         valid_until=live.valid_until,
     )
-    # §4 rule 4: the correction event is causally after the claim it
+    # Section 4 rule 4: the correction event is causally after the claim it
     # corrects, and the supersedes link is the witnessed path between them.
     # The causal path extends the predecessor's own path, so chains of
     # corrections (a correction of a correction) keep the full lineage.
@@ -715,7 +715,7 @@ def register_dependent(
     corrections know where to propagate.
 
     ``via`` is the witnessed path: how the claim reached this dependent
-    (e.g. "intake note -> goal constraint -> cron config"). §4 rule 5 —
+    (e.g. "intake note -> goal constraint -> cron config"). Section 4 rule 5 —
     causal relationships are witnessed by the paths information follows —
     so the registry records the path, not just the destination.
     """
@@ -734,7 +734,7 @@ def register_dependent(
 
 
 def _causal_predecessor_of(correction_id: str) -> str | None:
-    """The causal predecessor of a correction record (§4 rule 4)."""
+    """The causal predecessor of a correction record (Section 4 rule 4)."""
     correction = _CLAIMS[correction_id]
     return correction.causal_predecessor()
 
@@ -795,12 +795,20 @@ def _check_causal_application(
 def deliver_correction(claim_id: str, correction_id: str) -> list[Dependent]:
     """Deliver a correction along every dependency path of a claim, in causal order.
 
-    §4 rule 5 (causal broadcast in miniature): the correction is delivered
+    Section 4 rule 5 (causal broadcast in miniature): the correction is delivered
     to each registered dependent, and delivery that would arrive out of
     causal order is rejected with :class:`CausalOrderingError` instead of
     queued. Delivery is not application: the dependent is still
     PENDING until :func:`confirm_dependent_update` verifies the update
     landed. Returns the updated dependents.
+
+    Tradecraft: alongside the causal-broadcast guarantee, this is the
+    IC's recall doctrine as code — Office of the Director of National
+    Intelligence (2020), *Intelligence Community Policy Memorandum
+    2020-200-01: Standards and Procedures for Revised or Recalled
+    Intelligence Products*: a revision/recall notice must go to *all
+    recipients of the original product*. The dependents registry is the
+    recipient list; delivery to every dependent is the notice.
     """
     if correction_id not in _CLAIMS:
         raise KeyError(f"Unknown correction id: {correction_id}")
@@ -821,11 +829,16 @@ def propagate_correction(
     and needs updating after a disavowal. Empty list: nothing consumed
     it, nothing to fix.
 
-    With ``correction_id`` given, this is the delivery step of §4 rule 5:
+    With ``correction_id`` given, this is the delivery step of Section 4 rule 5:
     the correction is delivered to every dependent in causal order
     (see :func:`deliver_correction`), raising :class:`CausalOrderingError`
     on any ordering violation. Without it, this is the pure enumeration
     of the TMS dependents registry.
+
+    Tradecraft: with ``correction_id``, this is ODNI's recall doctrine
+    as code — ICPM-2020-200-01 (2020) requires revision/recall notices to
+    reach *all recipients of the original product*; the enumerated
+    dependents are those recipients (see :func:`deliver_correction`).
     """
     if correction_id is not None:
         return deliver_correction(claim_id, correction_id)
@@ -846,7 +859,7 @@ def confirm_dependent_update(
     Marks the matching dependent UPDATED; raises KeyError when no such
     dependent is registered.
 
-    With ``correction_id`` given, this is the causal-broadcast guard (§4
+    With ``correction_id`` given, this is the causal-broadcast guard (Section 4
     rule 5): the dependent is marked corrected only for a correction it
     was actually delivered (:func:`deliver_correction`), and only when
     that correction arrives in causal order — after the correction it

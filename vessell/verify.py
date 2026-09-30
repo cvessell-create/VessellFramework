@@ -40,11 +40,11 @@ the calling pipeline) decides.
    UNVERIFIED and may not be reported/operationalized as a finding until
    at least two independent search paths corroborate the absence — with
    every attempted path recorded as the claim's provenance. The analyst's
-   own search history is the witnessed path (§4 rule 5: causal
+   own search history is the witnessed path (Section 4 rule 5: causal
    relationships are witnessed by the paths information follows; a
    one-path absence claim is an unwitnessed edge).
 
-   Worked example (§6 of the case study): on 2026-09-30 the analyst
+   Worked example (Section 1 of the case study): on 2026-09-30 the analyst
    searched arXiv for the literal string "Jonathan Castillo", found
    nothing, and reported no such author — operationalizing a negative
    finding off a single unwitnessed path. The paper was there all along:
@@ -199,6 +199,13 @@ def verify_claim(check: ClaimCheck) -> VerificationResult:
     Rule order: official record first, then established denial, then root
     counting. The corroboration score is the tier-weighted count of
     independent affirming roots, scaled so two established roots score 1.0.
+
+    Tradecraft: this gate is ICD 203 as code — Office of the Director of
+    National Intelligence (2015), *Intelligence Community Directive 203:
+    Analytic Standards*: describe the quality and credibility of
+    underlying sources (tier-weighted roots, independence discounting,
+    official-record rule) and express/explain uncertainties through the
+    verdicts themselves.
     """
     sightings = [s for s in check.sightings if not s.denies]
     denials = [s for s in check.sightings if s.denies]
@@ -916,7 +923,7 @@ def filter_ghost_jobs(
 
 
 # ---------------------------------------------------------------------------
-# Search-path provenance for negative findings (§6: the analyst's miss)
+# Search-path provenance for negative findings (Section 1: the analyst's miss)
 # ---------------------------------------------------------------------------
 
 MIN_ABSENCE_PATHS = 2  # independent search paths that must corroborate an absence
@@ -927,7 +934,7 @@ class SearchPath:
     """One attempted search path logged against a claim — the witnessed path
     of a negative finding.
 
-    Worked example (case study §6): on 2026-09-30 the analyst searched arXiv
+    Worked example (case study Section 1): on 2026-09-30 the analyst searched arXiv
     for the literal string "Jonathan Castillo", found nothing, and reported
     no such author — operationalizing a negative finding off a single
     unwitnessed path. The paper was there all along: "Inductive Diagrams for
@@ -1012,13 +1019,22 @@ def _independent_absence_paths(paths: list[SearchPath]) -> set[tuple[str, str]]:
 
 
 def gate_negative_finding(claim_id: str) -> tuple[bool, str]:
-    """The §6 gate: may this negative existential be reported as a finding?
+    """The Section 1 gate: may this negative existential be reported as a finding?
 
     A "no X exists" claim enters UNVERIFIED like any other claim and stays
     gated until at least ``MIN_ABSENCE_PATHS`` independent search paths
     corroborate the absence. Any path that found the target contradicts the
     absence outright — the finding is refuted, not gated. Returns
     (allowed, reason); the reason is the audit line.
+
+    Tradecraft: reporting a negative existential without describing what
+    was checked and how sure the absence is would violate ICD 203's
+    standards to properly describe the quality and credibility of
+    underlying sources and to properly express and explain uncertainties
+    (Office of the Director of National Intelligence, 2015,
+    *Intelligence Community Directive 203: Analytic Standards*). The
+    recorded search paths are the source-quality description; the
+    gated-or-cleared outcome is the expressed uncertainty.
     """
     paths = search_paths(claim_id)
     hits = [p for p in paths if p.found]
@@ -1053,7 +1069,7 @@ def gate_negative_finding(claim_id: str) -> tuple[bool, str]:
 
 
 def require_negative_finding(claim_id: str) -> tuple[bool, str]:
-    """Enforce the §6 negative-finding gate, raising instead of returning False.
+    """Enforce the Section 1 negative-finding gate, raising instead of returning False.
 
     Returns (True, reason) when the absence is cleared to report. Raises
     :class:`~vessell.provenance.ClaimGateBlocked` when
