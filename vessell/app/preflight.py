@@ -7,6 +7,7 @@ import importlib.util
 import json
 import os
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +18,14 @@ from .scanner_adapters import _scanner_executable
 
 
 def _result(name: str, ready: bool, detail: str) -> dict[str, Any]:
-    return {"name": name, "ready": ready, "detail": detail}
+    # observed_at is the provenance tag: every readiness judgment says
+    # when it was made, so a stale preflight cannot pass as current.
+    return {
+        "name": name,
+        "ready": ready,
+        "detail": detail,
+        "observed_at": datetime.now(UTC).isoformat(timespec="seconds"),
+    }
 
 
 def _configured(value: str | None) -> bool:
