@@ -1,1 +1,102 @@
-{"$id":"https://vessellframework.local/schemas/weight.record.schema.json","$schema":"https://json-schema.org/draft/2020-12/schema","additionalProperties":false,"description":"Auditable evidence weight produced by vessell.weights. Every weight carries the provenance of the weight itself: the model/table that produced it, its component factors, and a human-readable rationale.","properties":{"description":{"type":"string"},"flags":{"items":{"type":"string"},"type":"array"},"independence_factor":{"exclusiveMinimum":0,"maximum":1,"type":"number"},"llama_score":{"maximum":1,"minimum":0,"type":["number","null"]},"normalized_weight":{"maximum":1,"minimum":0,"type":"number"},"provenance_state":{"enum":["RESOLVED","UNRESOLVED_PARENT","CYCLE","CONFLICT","MISSING_RECORD"],"type":"string"},"rationale":{"type":"string"},"root_id":{"type":["string","null"]},"source_id":{"minLength":1,"type":"string"},"static_weight":{"minimum":0,"type":"number"},"status":{"enum":["SOURCE-ESTABLISHED","FRAMEWORK SYNTHESIS","WORKING HYPOTHESIS","ILLUSTRATIVE"],"type":"string"},"table_version":{"minLength":1,"type":"string"},"weight":{"minimum":0,"type":"number"},"weight_model":{"minLength":1,"type":"string"}},"required":["source_id","description","status","provenance_state","weight","normalized_weight","static_weight","independence_factor","weight_model","table_version","rationale","flags"],"title":"WeightRecord","type":"object"}
+{
+  "$id": "https://vessellframework.local/schemas/weight.record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Auditable evidence weight produced by vessell.weights. Every weight carries the provenance of the weight itself: the model/table that produced it, its component factors, and a human-readable rationale.",
+  "properties": {
+    "claim_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "flags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "independence_factor": {
+      "exclusiveMinimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "llama_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "normalized_weight": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": "number"
+    },
+    "provenance_state": {
+      "enum": [
+        "RESOLVED",
+        "UNRESOLVED_PARENT",
+        "CYCLE",
+        "CONFLICT",
+        "MISSING_RECORD"
+      ],
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "root_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "static_weight": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "status": {
+      "enum": [
+        "SOURCE-ESTABLISHED",
+        "FRAMEWORK SYNTHESIS",
+        "WORKING HYPOTHESIS",
+        "ILLUSTRATIVE"
+      ],
+      "type": "string"
+    },
+    "table_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "weight": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "weight_model": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_id",
+    "description",
+    "status",
+    "provenance_state",
+    "weight",
+    "normalized_weight",
+    "static_weight",
+    "independence_factor",
+    "weight_model",
+    "table_version",
+    "rationale",
+    "flags"
+  ],
+  "title": "WeightRecord",
+  "type": "object"
+}
