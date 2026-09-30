@@ -1,4 +1,4 @@
-# How an Unverified Sentence Became System Behavior — and How to Stop It
+# From AI to SI: Claim Provenance and Correction Propagation
 
 **A VessellFramework case study in claim provenance, correction propagation, and lawful correction**
 *Christopher R. Vessell — September 30, 2026*
