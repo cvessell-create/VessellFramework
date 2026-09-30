@@ -6,6 +6,8 @@ from __future__ import annotations
 from typing import Any
 
 from vessell.provenance import (
+    ClaimKind,
+    ClaimRecord,
     EvidenceItem,
     EvidenceSet,
     MaskirovkaAssessment,
@@ -13,6 +15,8 @@ from vessell.provenance import (
     ProvenanceRegistry,
     SourceStatus,
     assess_maskirovka_convergence,
+    intake_claim,
+    register_dependent,
 )
 
 from .models import PipelineCounts, PipelineResult
@@ -103,7 +107,43 @@ def _derive_confidence_ceiling(counts: PipelineCounts) -> str:
     return "VERY LOW"
 
 
-def run_case_pipeline(case: dict[str, Any]) -> PipelineResult:
+def intake_case_evidence(case: dict[str, Any]) -> list[ClaimRecord]:
+    """Intake every evidence row of a case document as a provenance claim.
+
+    Evidence rows may carry an optional ``provenance`` mapping with
+    ``source`` (description), ``is_official_record`` (bool), and
+    ``observed_at`` keys; rows without one are intaked with a generic
+    case-evidence source tag. The row's status string maps to the claim's
+    source tier, so the claim lifecycle mirrors the evidence standing.
+    """
+    records: list[ClaimRecord] = []
+    subject = str(case.get("title", "case"))
+    for index, row in enumerate(case.get("evidence", [])):
+        provenance = row.get("provenance")
+        if not isinstance(provenance, dict):
+            provenance = {}
+        record = intake_claim(
+            text=str(row["description"]),
+            subject=subject,
+            source=str(provenance.get("source") or f"case evidence row {index}"),
+            source_tier=_parse_status(str(row.get("status", ""))),
+            recorded_at=str(provenance.get("observed_at") or ""),
+            is_official_record=bool(provenance.get("is_official_record", False)),
+            kind=ClaimKind.REPORT,
+            note=f"source_id: {row.get('source_id', 'unknown')}",
+        )
+        records.append(record)
+    return records
+
+
+def run_case_pipeline(case: dict[str, Any], *, track_provenance: bool = True) -> PipelineResult:
+    """Run one end-to-end case execution.
+
+    With ``track_provenance`` (default), every evidence row is intaked as
+    a provenance claim and the resulting PipelineResult registers itself
+    as a downstream dependent of those claims — doctrine's rule that
+    every operational use of a claim registers itself.
+    """
     registry = ProvenanceRegistry()
     evidence_set = _build_evidence_set(case, registry)
     status_counts = _status_counts(evidence_set)
@@ -135,6 +175,19 @@ def run_case_pipeline(case: dict[str, Any]) -> PipelineResult:
 
     posture = str(case.get("analysis", {}).get("posture", "Posture not provided in input."))
 
+    claim_ids: tuple[str, ...] = ()
+    if track_provenance:
+        title = str(case.get("title", "Untitled Case"))
+        claim_ids = tuple(
+            record.id for record in intake_case_evidence(case)
+        )
+        for claim_id in claim_ids:
+            register_dependent(
+                claim_id,
+                artifact="vessell.app.pipeline.PipelineResult",
+                location=title,
+            )
+
     return PipelineResult(
         title=str(case.get("title", "Untitled Case")),
         subject=str(case.get("subject", "Unknown subject")),
@@ -144,4 +197,5 @@ def run_case_pipeline(case: dict[str, Any]) -> PipelineResult:
         counts=counts,
         notes=notes,
         convergence_note=convergence_note,
+        claim_ids=claim_ids,
     )
