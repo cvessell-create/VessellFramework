@@ -422,7 +422,7 @@ def test_planted_report_to_dict_is_auditable() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Search-path provenance for negative findings (§6: the analyst's miss)
+# Search-path provenance for negative findings (Section 1: the analyst's miss)
 # ---------------------------------------------------------------------------
 
 from vessell.provenance import (
@@ -493,7 +493,7 @@ def test_zero_paths_stays_gated(_clean_search_paths: None) -> None:
 
 
 def test_single_search_path_stays_gated(_clean_search_paths: None) -> None:
-    """The §6 failure mode, exactly: one literal search, reported as a finding."""
+    """The Section 1 failure mode, exactly: one literal search, reported as a finding."""
     claim_id = _absence_claim()
     record_search_path(
         claim_id,
@@ -574,7 +574,7 @@ def test_found_path_contradicts_the_absence(_clean_search_paths: None) -> None:
 
 
 def test_castello_worked_example_end_to_end(_clean_search_paths: None) -> None:
-    """§6 as the machine would have run it: the single-path miss stays gated."""
+    """Section 1 as the machine would have run it: the single-path miss stays gated."""
     claim_id = _absence_claim()
     # The analyst's actual (deficient) search history.
     record_search_path(

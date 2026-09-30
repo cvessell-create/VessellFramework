@@ -1,4 +1,4 @@
-"""Causal-path correction semantics: §4 causal-order rules as executable tests.
+"""Causal-path correction semantics: Section 4 causal-order rules as executable tests.
 
 Grounded in Lamport (1978) happens-before and Castello/Redmond/Kuper
 (2024) causal separation diagrams — causal relationships are witnessed by
@@ -223,7 +223,7 @@ def test_confirm_unknown_correction_id_raises_keyerror() -> None:
 
 
 def test_causal_order_happy_path_deliver_confirm_in_sequence() -> None:
-    """C1 then C2, delivered and confirmed in causal order: the full §4 rule-5 walk."""
+    """C1 then C2, delivered and confirmed in causal order: the full Section 4 rule-5 walk."""
     original, c1, c2 = _disavow_chain()
     register_dependent(original.id, "GOAL.md", "Constraints")
 
