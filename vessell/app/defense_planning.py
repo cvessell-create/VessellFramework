@@ -10,6 +10,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from vessell.provenance import (
+    ClaimKind,
+    SourceStatus,
+    add_corroboration,
+    intake_claim,
+    register_dependent,
+)
+
 
 def _text(value: object, field_name: str) -> str:
     if not isinstance(value, str) or not value.strip():
@@ -82,8 +90,16 @@ def build_defense_plan(
     catalog: dict[str, Any],
     *,
     generated_at: datetime | None = None,
+    track_provenance: bool = True,
 ) -> dict[str, Any]:
-    """Build reviewable containment and remediation actions without executing them."""
+    """Build reviewable containment and remediation actions without executing them.
+
+    With ``track_provenance`` (default), the plan is intaked as a
+    JUDGMENT claim sourced to the planner and corroborated by the KEV
+    catalog as an official record — so the plan carries its standing,
+    and the written plan file registers as its dependent for
+    correction propagation.
+    """
     timestamp = generated_at or datetime.now(UTC)
     actions: list[dict[str, Any]] = []
 
@@ -126,16 +142,46 @@ def build_defense_plan(
             )
 
     actions.sort(key=lambda action: (action["priority"] != "CRITICAL", action["due_date"]))
-    return {
+    catalog_version = catalog.get("catalogVersion", "unknown")
+    plan: dict[str, Any] = {
         "generated_at": timestamp.astimezone(UTC).isoformat(timespec="seconds"),
         "source": "CISA Known Exploited Vulnerabilities catalog",
-        "catalog_version": catalog.get("catalogVersion", "unknown"),
+        "catalog_version": catalog_version,
         "asset_count": len(assets),
         "matched_action_count": len(actions),
         "approval_required": True,
         "execution_status": "PENDING_APPROVAL",
         "actions": actions,
+        "claim_id": "",
     }
+    if track_provenance and actions:
+        critical = sum(1 for action in actions if action["priority"] == "CRITICAL")
+        record = intake_claim(
+            text=(
+                f"Defense plan: {len(actions)} remediation actions "
+                f"({critical} CRITICAL) from CISA KEV catalog "
+                f"{catalog_version} against {len(assets)} authorized assets"
+            ),
+            subject="defense-plan",
+            source="vessell.app.defense_planning.build_defense_plan",
+            source_tier=SourceStatus.FRAMEWORK_SYNTHESIS,
+            kind=ClaimKind.JUDGMENT,
+            note="Match types: scanner_confirmed_cve is scanner-verified; vendor_only/vendor_and_product require confirmation.",
+        )
+        record = add_corroboration(
+            record,
+            source="CISA Known Exploited Vulnerabilities catalog",
+            source_tier=SourceStatus.SOURCE_ESTABLISHED,
+            is_official_record=True,
+            note=f"catalog version {catalog_version}",
+        )
+        register_dependent(
+            record.id,
+            artifact="vessell.app.defense_planning.defense-plan",
+            location=f"catalog {catalog_version}",
+        )
+        plan["claim_id"] = record.id
+    return plan
 
 
 def approve_plan(plan: dict[str, Any], approver: str) -> dict[str, Any]:
