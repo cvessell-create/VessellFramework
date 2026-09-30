@@ -31,3 +31,4 @@ class PipelineResult:
     counts: PipelineCounts
     notes: list[str]
     convergence_note: str
+    claim_ids: tuple[str, ...] = ()  # provenance claims this result was derived from
