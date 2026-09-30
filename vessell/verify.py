@@ -40,11 +40,20 @@ from __future__ import annotations
 import difflib
 import hashlib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 from enum import Enum
+from typing import Any
 
-from vessell.provenance import SourceStatus
+from vessell.provenance import (
+    ClaimKind,
+    ClaimRecord,
+    SourceStatus,
+    add_corroboration,
+    intake_claim,
+    register_dependent,
+    require_gate,
+)
 from vessell.weights import SOURCE_TIER_WEIGHTS
 
 __all__ = [
@@ -62,9 +71,12 @@ __all__ = [
     "Verdict",
     "VerificationResult",
     "analyze_planted_news",
+    "analyze_planted_news_and_record",
     "detect_ghost_job",
+    "detect_ghost_job_and_record",
     "filter_ghost_jobs",
     "group_postings_by_role",
+    "verify_and_record",
     "verify_claim",
 ]
 
@@ -103,6 +115,18 @@ class SourceSighting:
         """Sightings sharing a root are one evidentiary ancestor."""
         return self.root or self.source_name
 
+    def to_corroboration(self) -> dict[str, Any]:
+        """Render this sighting as ``add_corroboration`` keyword arguments,
+        so a verification pass can record its evidence on the claim."""
+        return {
+            "source": self.source_name,
+            "source_tier": self.tier,
+            "root": self.root,
+            "observed_at": self.seen_at,
+            "is_official_record": self.is_official_record,
+            "note": self.note,
+        }
+
 
 @dataclass(frozen=True)
 class ClaimCheck:
@@ -123,6 +147,7 @@ class VerificationResult:
     official_record: bool
     rationale: str
     signals: tuple[str, ...] = ()
+    claim_id: str = ""  # provenance claim id, set by verify_and_record
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -133,6 +158,7 @@ class VerificationResult:
             "official_record": self.official_record,
             "rationale": self.rationale,
             "signals": list(self.signals),
+            "claim_id": self.claim_id,
         }
 
 
@@ -234,6 +260,49 @@ def verify_claim(check: ClaimCheck) -> VerificationResult:
     )
 
 
+def verify_and_record(
+    check: ClaimCheck,
+    subject: str = "",
+    *,
+    kind: ClaimKind = ClaimKind.REPORT,
+) -> tuple[VerificationResult, ClaimRecord]:
+    """Run :func:`verify_claim` and intake the outcome as a provenance claim.
+
+    The recorded claim is the *verification outcome* ("claim X came back
+    VERIFIED/CONTRADICTED ..."), with every sighting attached as a
+    corroboration via :meth:`SourceSighting.to_corroboration`. The claim's
+    evidentiary root is anchored in the sightings — the analyzer records
+    the outcome but does not count as evidence for it, so a single
+    sighting cannot corroborate by itself. A VERIFIED outcome backed by an
+    official record (or 2+ independent roots) is CORROBORATED and passes
+    the consequential-use gate for acting on the outcome; weaker outcomes
+    stay UNVERIFIED and are blocked until corroborated or explicitly
+    waived. The result carries the claim id.
+    """
+    result = verify_claim(check)
+    sighting_roots = [s.effective_root() for s in check.sightings]
+    record = intake_claim(
+        text=(
+            f"Verification of {check.claim!r}: {result.verdict.value} — "
+            f"{result.rationale}"
+        ),
+        subject=subject or check.claim,
+        source="vessell.verify.verify_claim",
+        source_tier=SourceStatus.FRAMEWORK_SYNTHESIS,
+        source_root=sighting_roots[0] if sighting_roots else None,
+        kind=kind,
+        note=f"{result.independent_roots} independent root(s); score {result.corroboration_score:.2f}",
+    )
+    for sighting in check.sightings:
+        record = add_corroboration(record, **sighting.to_corroboration())
+    register_dependent(
+        record.id,
+        artifact="vessell.verify.VerificationResult",
+        location=subject or check.claim,
+    )
+    return replace(result, claim_id=record.id), record
+
+
 def _signal_line(sighting: SourceSighting) -> str:
     stance = "denies" if sighting.denies else "affirms"
     official = ", official record" if sighting.is_official_record else ""
@@ -287,6 +356,7 @@ class PlantedNewsReport:
     single_origin: bool  # every sighting traces to one low root
     clone_army_size: int  # largest near-identical-text group, distinct sources
     corroboration: VerificationResult  # the base planted-news check, embedded
+    claim_id: str = ""  # provenance claim id, set by analyze_planted_news_and_record
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -300,6 +370,7 @@ class PlantedNewsReport:
             "single_origin": self.single_origin,
             "clone_army_size": self.clone_army_size,
             "corroboration": self.corroboration.to_dict(),
+            "claim_id": self.claim_id,
         }
 
 
@@ -470,6 +541,48 @@ def analyze_planted_news(check: ClaimCheck) -> PlantedNewsReport:
     )
 
 
+def analyze_planted_news_and_record(
+    check: ClaimCheck,
+    subject: str = "",
+    *,
+    kind: ClaimKind = ClaimKind.JUDGMENT,
+) -> tuple[PlantedNewsReport, ClaimRecord]:
+    """Run :func:`analyze_planted_news` and intake the outcome as a claim.
+
+    The hostile-spread analysis is a framework judgment, so the claim is
+    intaked as a JUDGMENT sourced to the analyzer; every sighting becomes
+    a corroboration, with the claim's root anchored in the sightings (the
+    analyzer does not count as evidence for its own outcome). A
+    LIKELY_PLANTED or AUTHENTIC outcome backed by 2+ independent roots
+    (or an official record) is CORROBORATED and passes the
+    consequential-use gate for acting on the outcome (e.g. dropping the
+    claim from an edition); anything weaker stays gated. The report
+    carries the claim id.
+    """
+    report = analyze_planted_news(check)
+    sighting_roots = [s.effective_root() for s in check.sightings]
+    record = intake_claim(
+        text=(
+            f"Planted-news analysis of {check.claim!r}: {report.verdict.value} "
+            f"— {report.rationale}"
+        ),
+        subject=subject or check.claim,
+        source="vessell.verify.analyze_planted_news",
+        source_tier=SourceStatus.FRAMEWORK_SYNTHESIS,
+        source_root=sighting_roots[0] if sighting_roots else None,
+        kind=kind,
+        note=f"indicators: {', '.join(report.indicators) or 'none'}",
+    )
+    for sighting in check.sightings:
+        record = add_corroboration(record, **sighting.to_corroboration())
+    register_dependent(
+        record.id,
+        artifact="vessell.verify.PlantedNewsReport",
+        location=subject or check.claim,
+    )
+    return replace(report, claim_id=record.id), record
+
+
 # ---------------------------------------------------------------------------
 # Ghost-job detection and filtering
 # ---------------------------------------------------------------------------
@@ -529,6 +642,7 @@ class GhostJobReport:
     distinct_listing_ids: int = 0
     circulation_days: int | None = None
     freshness_gap_days: int | None = None
+    claim_id: str = ""  # provenance claim id, set by detect_ghost_job_and_record
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -538,6 +652,7 @@ class GhostJobReport:
             "verdict": self.verdict.value,
             "rationale": self.rationale,
             "signals": list(self.signals),
+            "claim_id": self.claim_id,
             "text_groups": self.text_groups,
             "largest_group_size": self.largest_group_size,
             "distinct_sources": self.distinct_sources,
@@ -691,21 +806,77 @@ def detect_ghost_job(postings: list[JobPosting]) -> GhostJobReport:
     )
 
 
+def detect_ghost_job_and_record(
+    postings: list[JobPosting],
+    *,
+    kind: ClaimKind = ClaimKind.JUDGMENT,
+) -> tuple[GhostJobReport, ClaimRecord]:
+    """Run :func:`detect_ghost_job` and intake the verdict as a claim.
+
+    Each observed ghost signal becomes one corroboration on its own
+    evidentiary root, so the 2+-independent-roots rule applies directly:
+    a LIKELY_GHOST verdict (3+ signals by construction) is CORROBORATED
+    and passes the consequential-use gate for exclusion; SUSPECT and
+    NO_SIGNAL verdicts stay gated. The claim's root is anchored in the
+    first signal — the detector records the outcome but does not count
+    as evidence for it. The report carries the claim id.
+    """
+    report = detect_ghost_job(postings)
+    subject = f"{report.employer} — {report.title} ({report.location})"
+    record = intake_claim(
+        text=f"Ghost-job analysis: {report.verdict.value} — {report.rationale}",
+        subject=subject,
+        source="vessell.verify.detect_ghost_job",
+        source_tier=SourceStatus.FRAMEWORK_SYNTHESIS,
+        source_root="ghost-signal-0" if report.signals else None,
+        kind=kind,
+        note=f"{len(report.signals)} ghost signal(s) observed",
+    )
+    for index, signal in enumerate(report.signals):
+        record = add_corroboration(
+            record,
+            source=f"ghost-job signal {index + 1}",
+            source_tier=SourceStatus.WORKING_HYPOTHESIS,
+            root=f"ghost-signal-{index}",
+            note=signal,
+        )
+    register_dependent(
+        record.id,
+        artifact="vessell.verify.GhostJobReport",
+        location=subject,
+    )
+    return replace(report, claim_id=record.id), record
+
+
 def filter_ghost_jobs(
     postings: list[JobPosting],
+    *,
+    track_provenance: bool = True,
 ) -> tuple[list[JobPosting], list[GhostJobReport]]:
     """Split postings into (kept, ghost_reports).
 
     Roles judged LIKELY_GHOST are dropped from the kept set and reported;
     SUSPECT roles are kept but flagged in their report. Every decision is
     auditable through the returned reports.
+
+    With ``track_provenance`` (default), each role's verdict is intaked as
+    a claim, and the exclusion of a LIKELY_GHOST role passes through the
+    consequential-use gate — the drop only happens when the verdict's
+    claim is corroborated (3+ independent ghost signals), otherwise
+    :class:`ClaimGateBlocked` is raised instead of silently dropping.
     """
     kept: list[JobPosting] = []
     reports: list[GhostJobReport] = []
     for role_postings in group_postings_by_role(postings).values():
-        report = detect_ghost_job(role_postings)
+        record: ClaimRecord | None = None
+        if track_provenance:
+            report, record = detect_ghost_job_and_record(role_postings)
+        else:
+            report = detect_ghost_job(role_postings)
         reports.append(report)
         if report.verdict is GhostVerdict.LIKELY_GHOST:
+            if record is not None:
+                require_gate(record, "consequential")
             continue
         kept.extend(role_postings)
     # Deterministic order for auditability.
