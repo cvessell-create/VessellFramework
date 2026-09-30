@@ -58,6 +58,11 @@ relationship is witnessed by the path the information followed. Concretely:
   (:class:`CausalOrderingError`). This is the causal-broadcast guarantee
   of Redmond et al. (2022) in miniature: no dependent applies a
   correction for a claim version it never saw.
+* every lifecycle transition is recorded as a hash-chained event
+  (:func:`record_event`): each event's SHA-256 commits to its
+  predecessor's hash, so the claim's history is a tamper-evident
+  happens-before order — causal order reified as data, verifiable with
+  :func:`verify_event_chain`.
 
 Worked example: the "blacklisted" claim
 ----------------------------------------
@@ -76,6 +81,7 @@ configs (``daily-job-hunt``, ``morning-news-edition``,
 original record kept, marked DISAVOWED, never deleted.
 """
 
+import hashlib
 import sys
 import uuid
 from dataclasses import dataclass, replace
@@ -111,6 +117,7 @@ assess_maskirovka_convergence = _reference.assess_maskirovka_convergence
 
 __all__ = [
     "CausalOrderingError",
+    "ClaimEvent",
     "ClaimGateBlocked",
     "ClaimKind",
     "ClaimRecord",
@@ -130,6 +137,7 @@ __all__ = [
     "SourceStatus",
     "add_corroboration",
     "assess_maskirovka_convergence",
+    "claim_events",
     "confirm_dependent_update",
     "deliver_correction",
     "disavow",
@@ -138,11 +146,13 @@ __all__ = [
     "intake_claim",
     "pending_corrections",
     "propagate_correction",
+    "record_event",
     "record_waiver",
     "register_dependent",
     "require_gate",
     "reset_claim_lifecycle",
     "revalidate_claim",
+    "verify_event_chain",
 ]
 
 
@@ -391,9 +401,138 @@ _DEPENDENTS: dict[str, list[Dependent]] = {}
 
 
 def reset_claim_lifecycle() -> None:
-    """Clear the claim and dependent registries. Test/support utility."""
+    """Clear the claim, dependent, and event registries. Test/support utility."""
     _CLAIMS.clear()
     _DEPENDENTS.clear()
+    _EVENTS.clear()
+
+
+# ---------------------------------------------------------------------------
+# Hash-chained claim-event log: causal order as data
+# ---------------------------------------------------------------------------
+#
+# Every lifecycle transition is recorded as an event and hashed into a
+# per-claim chain: each event's hash commits to its predecessor's hash,
+# so the log is a tamper-evident happens-before order (Lamport, 1978)
+# made auditable. Reordering, deleting, or editing an event breaks the
+# chain, and verify_event_chain() reports exactly where. The chain is the
+# claim's witnessed causal history — the Section 4 rule-4/5 path from
+# intake to correction, reified as data rather than narrative.
+
+_GENESIS_HASH = "GENESIS"
+
+
+@dataclass(frozen=True)
+class ClaimEvent:
+    """One recorded lifecycle transition, hash-chained to its predecessor.
+
+    ``event_hash`` is the SHA-256 of the canonical payload
+    ``seq|timestamp|claim_id|event_type|detail|prev_hash``; ``prev_hash``
+    is the previous event's ``event_hash`` for the same claim, or
+    ``GENESIS`` for the claim's first event.
+    """
+
+    seq: int
+    timestamp: str
+    claim_id: str
+    event_type: str
+    detail: str
+    prev_hash: str
+    event_hash: str
+
+
+_EVENTS: dict[str, list[ClaimEvent]] = {}
+
+
+def _hash_event(
+    seq: int,
+    timestamp: str,
+    claim_id: str,
+    event_type: str,
+    detail: str,
+    prev_hash: str,
+) -> str:
+    payload = "|".join(
+        (str(seq), timestamp, claim_id, event_type, detail, prev_hash)
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def record_event(
+    claim_id: str,
+    event_type: str,
+    detail: str = "",
+    recorded_at: str = "",
+) -> ClaimEvent:
+    """Record a lifecycle event for a claim and hash it into the claim's chain.
+
+    Event types: ``INTAKE``, ``CORROBORATION``, ``WAIVER``,
+    ``GATE_DECISION``, ``DISAVOWAL``, ``DEPENDENT_REGISTERED``,
+    ``CORRECTION_DELIVERED``, ``UPDATE_CONFIRMED``, ``REVALIDATED``.
+    The lifecycle functions record their own events automatically; call
+    this directly only for transitions outside those functions.
+    """
+    chain = _EVENTS.setdefault(claim_id, [])
+    prev_hash = chain[-1].event_hash if chain else _GENESIS_HASH
+    seq = len(chain) + 1
+    timestamp = recorded_at or _utcnow()
+    event = ClaimEvent(
+        seq=seq,
+        timestamp=timestamp,
+        claim_id=claim_id,
+        event_type=event_type,
+        detail=detail,
+        prev_hash=prev_hash,
+        event_hash=_hash_event(
+            seq, timestamp, claim_id, event_type, detail, prev_hash
+        ),
+    )
+    chain.append(event)
+    return event
+
+
+def claim_events(claim_id: str) -> list[ClaimEvent]:
+    """The recorded event chain for a claim, oldest first."""
+    return list(_EVENTS.get(claim_id, []))
+
+
+def verify_event_chain(claim_id: str) -> tuple[bool, str]:
+    """Verify a claim's event chain: every hash recomputes, every link holds.
+
+    Returns ``(True, ...)`` when the chain is intact, ``(False, reason)``
+    naming the first broken link otherwise. An empty chain verifies
+    ``True`` — nothing was recorded, so nothing was altered.
+    """
+    chain = _EVENTS.get(claim_id, [])
+    prev_hash = _GENESIS_HASH
+    for event in chain:
+        if event.seq < 1 or event.prev_hash != prev_hash:
+            return (
+                False,
+                (
+                    f"chain broken at event {event.seq} ({event.event_type}): "
+                    "prev_hash does not match the previous event's hash — "
+                    "an event was reordered or removed."
+                ),
+            )
+        recomputed = _hash_event(
+            event.seq,
+            event.timestamp,
+            event.claim_id,
+            event.event_type,
+            event.detail,
+            event.prev_hash,
+        )
+        if recomputed != event.event_hash:
+            return (
+                False,
+                (
+                    f"chain broken at event {event.seq} ({event.event_type}): "
+                    "event hash does not recompute — the event was altered."
+                ),
+            )
+        prev_hash = event.event_hash
+    return True, f"chain intact: {len(chain)} event(s) verified."
 
 
 def _utcnow() -> str:
@@ -443,23 +582,32 @@ def intake_claim(
         if source_tier is SourceStatus.SOURCE_ESTABLISHED and is_official_record
         else ClaimStatus.UNVERIFIED
     )
-    return _store(
-        ClaimRecord(
-            id=_new_claim_id(),
-            text=text,
-            subject=subject,
-            source=source,
-            source_tier=source_tier,
-            recorded_at=recorded_at or _utcnow(),
-            status=status,
-            source_root=source_root,
-            is_official_record=is_official_record,
-            note=note,
-            kind=kind,
-            uncertainty=uncertainty,
-            valid_until=valid_until,
-        )
+    record = ClaimRecord(
+        id=_new_claim_id(),
+        text=text,
+        subject=subject,
+        source=source,
+        source_tier=source_tier,
+        recorded_at=recorded_at or _utcnow(),
+        status=status,
+        source_root=source_root,
+        is_official_record=is_official_record,
+        note=note,
+        kind=kind,
+        uncertainty=uncertainty,
+        valid_until=valid_until,
     )
+    _store(record)
+    record_event(
+        record.id,
+        "INTAKE",
+        detail=(
+            f"source={source} status={status.value} "
+            f"official_record={is_official_record}"
+        ),
+        recorded_at=record.recorded_at,
+    )
+    return record
 
 
 def add_corroboration(
@@ -500,7 +648,17 @@ def add_corroboration(
     )
     if has_official or updated.independent_roots() >= 2:
         updated = replace(updated, status=ClaimStatus.CORROBORATED)
-    return _store(updated)
+    updated = _store(updated)
+    record_event(
+        updated.id,
+        "CORROBORATION",
+        detail=(
+            f"source={source} independent_roots={updated.independent_roots()} "
+            f"status={updated.status.value}"
+        ),
+        recorded_at=sighting.observed_at,
+    )
+    return updated
 
 
 def record_waiver(
@@ -520,17 +678,20 @@ def record_waiver(
         )
     if not waived_by.strip() or not reason.strip():
         raise ValueError("record_waiver needs who waived and why.")
-    return _store(
-        replace(
-            live,
-            waiver=ClaimWaiver(
-                waived_by=waived_by, reason=reason, waived_at=waived_at or _utcnow()
-            ),
-        )
+    waiver = ClaimWaiver(
+        waived_by=waived_by, reason=reason, waived_at=waived_at or _utcnow()
     )
+    updated = _store(replace(live, waiver=waiver))
+    record_event(
+        updated.id,
+        "WAIVER",
+        detail=f"waived_by={waived_by} reason={reason}",
+        recorded_at=waiver.waived_at,
+    )
+    return updated
 
 
-def gate_for_use(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
+def _gate_for_use(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
     """Decide whether a claim may drive a decision.
 
     ``stakes`` is "consequential" (the decision changes what the system
@@ -617,6 +778,24 @@ class ClaimGateBlocked(Exception):
     """Raised by require_gate when a claim fails its consequential-use gate."""
 
 
+def gate_for_use(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
+    """Decide whether a claim may drive a decision; the decision is recorded.
+
+    Same contract as the underlying gate: ``stakes`` is "consequential"
+    or "low", returns ``(allowed, reason)``. The decision itself is hashed
+    into the claim's event chain as a ``GATE_DECISION`` event, so the
+    audit trail shows not only the claim's standing but every
+    consequential-use decision made about it.
+    """
+    allowed, reason = _gate_for_use(record, stakes)
+    record_event(
+        record.id,
+        "GATE_DECISION",
+        detail=f"stakes={stakes} allowed={allowed}: {reason}",
+    )
+    return allowed, reason
+
+
 class CausalOrderingError(Exception):
     """A correction was applied (or delivered) to a dependent out of causal order.
 
@@ -701,6 +880,15 @@ def disavow(
             superseded_by=correction.id,
         )
     )
+    record_event(
+        live.id,
+        "DISAVOWAL",
+        detail=(
+            f"disavowed_by={disavowed_by} reason={reason} "
+            f"superseded_by={correction.id}"
+        ),
+        recorded_at=stamp,
+    )
     return correction
 
 
@@ -730,6 +918,12 @@ def register_dependent(
         via=via,
     )
     _DEPENDENTS.setdefault(claim_id, []).append(dependent)
+    record_event(
+        claim_id,
+        "DEPENDENT_REGISTERED",
+        detail=f"artifact={artifact} location={location} via={via}",
+        recorded_at=dependent.noted_at,
+    )
     return dependent
 
 
@@ -819,6 +1013,13 @@ def deliver_correction(claim_id: str, correction_id: str) -> list[Dependent]:
         updated = replace(dependent, delivered_correction=correction_id)
         dependents[index] = updated
         delivered.append(updated)
+    record_event(
+        claim_id,
+        "CORRECTION_DELIVERED",
+        detail=(
+            f"correction={correction_id} dependents={len(delivered)}"
+        ),
+    )
     return delivered
 
 
@@ -895,6 +1096,15 @@ def confirm_dependent_update(
                 ),
             )
             dependents[index] = updated
+            record_event(
+                claim_id,
+                "UPDATE_CONFIRMED",
+                detail=(
+                    f"artifact={artifact} location={location} "
+                    f"correction={correction_id}"
+                ),
+                recorded_at=updated.confirmed_at,
+            )
             return updated
     raise KeyError(f"No dependent {artifact!r} / {location!r} registered for claim {claim_id}.")
 
@@ -930,4 +1140,10 @@ def revalidate_claim(
         note=(live.note + "\n" + note).strip() if note else live.note,
         valid_until=valid_until,
     )
-    return _store(updated)
+    updated = _store(updated)
+    record_event(
+        updated.id,
+        "REVALIDATED",
+        detail=f"valid_until={valid_until} note={note}",
+    )
+    return updated
