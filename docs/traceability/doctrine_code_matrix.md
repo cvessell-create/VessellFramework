@@ -16,21 +16,28 @@ Purpose: provide committee-visible evidence that doctrine claims are mapped to e
 2. Add one benchmark-linked row per failure class: governance, authority, efficacy, operator-risk.
 3. Add external-validation row references once benchmark outcomes are reviewed.
 
-## Causal-path correction semantics (§4, redone 2026-09-30)
+## Causal-path correction semantics (Section 4, redone 2026-09-30)
 
 Grounded in Lamport (1978) happens-before and Castello/Redmond/Kuper (2024) causal separation diagrams: causal relationships are witnessed by the paths information follows.
 
-| §4 rule | Code implementation | Conformance test | Status |
+| Section 4 rule | Code implementation | Conformance test | Status |
 |---|---|---|---|
 | 4. Correction carries its causal predecessor (the witnessed path) | `vessell.provenance.ClaimRecord.causal_path` / `causal_predecessor()`; stamped by `disavow()` (chains across correction-of-correction; falls back to `supersedes` for legacy records) | `tests/test_causal_paths.py::test_disavow_correction_carries_causal_path`, `test_causal_path_chains_across_correction_of_correction`, `test_causal_predecessor_falls_back_to_supersedes_for_legacy_records` | Mapped |
 | 5. Dependents record HOW the claim reached them | `vessell.provenance.register_dependent(..., via=)` — the witnessed path (artifact + location + via) | `tests/test_causal_paths.py::test_register_dependent_records_via_witnessed_path`, `test_via_defaults_to_empty_for_existing_callers` | Mapped |
 | 5. Causal-order delivery; no silent out-of-order completion (causal broadcast, Redmond et al. 2022) | `vessell.provenance.deliver_correction()` / `propagate_correction(..., correction_id=)` (delivery-order guard); `confirm_dependent_update(..., correction_id=)` (never-delivered + application-order guard); `CausalOrderingError` | `tests/test_causal_paths.py` (11 tests: delivery stamping, never-delivered rejection, out-of-order delivery/application rejection, wrong-claim rejection, causal-order happy path) | Mapped |
 
-## Meta-note mechanism (§6: the analyst's miss, 2026-09-30)
+## Meta-note mechanism (Section 1: the analyst's miss, 2026-09-30)
 
-| §6 rule | Code implementation | Conformance test | Status |
+| Section 1 rule | Code implementation | Conformance test | Status |
 |---|---|---|---|
 | A negative existential ("no X exists") enters UNVERIFIED and may not be reported/operationalized until ≥2 independent search paths corroborate the absence; every attempted path is recorded provenance | `vessell.verify.SearchPath`, `record_search_path()`, `search_paths()`, `gate_negative_finding()` / `require_negative_finding()` (independence = distinct strategy+source; any hit contradicts the absence; `MIN_ABSENCE_PATHS = 2`) | `tests/test_verify.py` (10 tests incl. the Castello worked example end-to-end) | Mapped |
+
+## Tradecraft standards (ICD 203; ICPM-2020-200-01)
+
+| Tradecraft standard | Code implementation | Conformance test | Status |
+|---|---|---|---|
+| ICD 203: properly describe the quality and credibility of underlying sources; properly express and explain uncertainties | `vessell.verify.verify_claim` — tier-weighted independent-root counting, independence discounting, official-record rule; verdicts express uncertainty. `gate_negative_finding()` / `require_negative_finding()` — recorded search paths are the source-quality description for negative findings; the gated-or-cleared outcome is the expressed uncertainty | `tests/test_verify.py` (corroboration scoring, official-record rule, independence discount; 10 Section 1 gate tests incl. the Castello worked example) | Mapped |
+| ICPM-2020-200-01: revision/recall notices go to *all recipients of the original product* | `vessell.provenance.deliver_correction()` / `propagate_correction(..., correction_id=)` — correction delivered to every registered dependent in causal order; `confirm_dependent_update` verifies receipt (`CausalOrderingError` on never-delivered or out-of-order) | `tests/test_causal_paths.py` (delivery stamping, never-delivered rejection, out-of-order delivery/application rejection, causal-order happy path) | Mapped |
 
 ## Claim-Correction Playbook (governing doctrine: docs/claim-correction-case-study.md)
 

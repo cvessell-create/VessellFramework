@@ -1,6 +1,7 @@
 # References — works VessellFramework builds on
 
-The framework operationalizes three published results, applied to the
+The framework operationalizes three published results and two
+intelligence-tradecraft standards, applied to the
 problem of claim correction: claims enter, harden, get disavowed, and get
 corrected, and the failure modes of that lifecycle are failures of
 causal order. Each entry below is followed by what the framework takes
@@ -41,6 +42,29 @@ dependents registry (`register_dependent` / `deliver_correction` /
 violations) is that guarantee in miniature: no dependent applies a
 correction for a claim it never received, and no dependent is silently
 marked corrected out of order.
+
+## Intelligence tradecraft standards
+
+**Office of the Director of National Intelligence. (2015).**
+*Intelligence Community Directive 203: Analytic standards.*
+https://donohueintellaw.ll.georgetown.edu/sites/default/files/assets/ICD%20203%20Analytic%20Standards.pdf
+
+*What the framework takes from it:* the IC's codified analytic tradecraft
+— properly describe the quality and credibility of underlying sources;
+properly express and explain uncertainties. The corroboration gate
+(`verify_claim`'s tier-weighted, independence-discounted root counting
+with the official-record rule; verdicts as the expressed uncertainty) is
+that standard as code.
+
+**Office of the Director of National Intelligence. (2020).**
+*Intelligence Community policy memorandum 2020-200-01: Standards and
+procedures for revised or recalled intelligence products.*
+https://www.dni.gov/files/documents/ICPM/ICPM-2020-200-01-Redacted.pdf
+
+*What the framework takes from it:* a revision/recall notice must go to
+*all recipients of the original product*. The dependents registry is the
+recipient list; `deliver_correction` / `propagate_correction(...,
+correction_id=)` delivering in causal order is the notice.
 
 ## The framework's own paper
 
