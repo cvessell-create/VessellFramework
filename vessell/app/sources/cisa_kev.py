@@ -81,6 +81,17 @@ def build_case_from_kev(
             ),
             "status": "SOURCE-ESTABLISHED",
             "source_id": entry.get("cveID") or f"kev-{index}",
+            # Provenance tag for the intake boundary (doctrine step 1):
+            # every row names its source, tier, observation date, and
+            # official-record standing, so downstream intake needs no
+            # guessing.
+            "provenance": {
+                "source": "CISA Known Exploited Vulnerabilities catalog",
+                "url": KEV_FEED_URL,
+                "tier": "SOURCE-ESTABLISHED",
+                "observed_at": entry.get("dateAdded", ""),
+                "is_official_record": True,
+            },
         }
         for index, entry in enumerate(selected, start=1)
     ]
