@@ -41,6 +41,26 @@ is the governing spec for this codebase. Its six-step playbook is implemented he
 
 Step-by-step traceability lives in [docs/traceability/doctrine_code_matrix.md](docs/traceability/doctrine_code_matrix.md).
 
+## Foundations — works this builds on
+
+The correction playbook operationalizes three published results. Full
+citations are in [docs/references.md](docs/references.md):
+
+- **Lamport (1978)** — the happens-before relation (*a → b*): every rule of
+  the playbook is a rule about causal paths — which events may follow which,
+  and what must travel the path between them.
+- **Castello, Redmond & Kuper (2024)** — *Inductive diagrams for causal
+  reasoning* (arXiv:2307.10484): causal relationships are *witnessed by the
+  paths information follows* — happens-before as paths, mechanized in Agda.
+  The spine of the case study's Section 4; correction records carry
+  `causal_path`, dependents register *how* a claim reached them, and a
+  negative finding's search history is its witnessed path.
+- **Redmond, Shen, Vazou & Kuper (2022)** — *Verified causal broadcast with
+  Liquid Haskell* (arXiv:2206.14767): the machine-checked guarantee that no
+  message is delivered in an order violating causality. The dependents
+  registry is that guarantee in miniature — `CausalOrderingError` instead of
+  silent out-of-order completion.
+
 ## Quick start
 
 ```powershell

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: VessellFramework
+version: 3.8.1
+authors:
+  - family-names: Vessell
+    given-names: Christopher R.
+repository-code: https://github.com/cvessell-create/VessellFramework
+license: Apache-2.0
+message: >-
+  If you use VessellFramework, please cite it as below. The framework
+  operationalizes Lamport (1978) happens-before, Castello/Redmond/Kuper
+  (2024) causal separation diagrams, and Redmond et al. (2022) verified
+  causal broadcast; see docs/references.md.
