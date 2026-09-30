@@ -40,6 +40,25 @@ A claim is a liability until corroborated. The lifecycle is:
    register as dependents; when the claim is disavowed, the registry
    lists exactly what needs updating. No silent downstream rot.
 
+Causal order (§4 of the case study)
+----------------------------------
+Lifecycle events are ordered by Lamport's (1978) happens-before relation,
+and — following Castello, Redmond, and Kuper (2024) — every causal
+relationship is witnessed by the path the information followed. Concretely:
+
+* a correction record carries ``causal_path``: the ids of the records
+  causally before it, originator first, immediate predecessor last
+  (:meth:`ClaimRecord.causal_predecessor`);
+* a dependent records ``via``: how the claim reached it (the witnessed path);
+* corrections are *delivered* (:func:`deliver_correction`, or
+  :func:`propagate_correction` with ``correction_id``) along every
+  dependency path in causal order, and :func:`confirm_dependent_update`
+  refuses to mark a dependent corrected for a correction it never
+  received — or one that arrives out of causal order
+  (:class:`CausalOrderingError`). This is the causal-broadcast guarantee
+  of Redmond et al. (2022) in miniature: no dependent applies a
+  correction for a claim version it never saw.
+
 Worked example: the "blacklisted" claim
 ----------------------------------------
 On 2026-09-24 a single self-report at intake — "I am blacklisted from
@@ -91,6 +110,7 @@ SourceStatus = _reference.SourceStatus
 assess_maskirovka_convergence = _reference.assess_maskirovka_convergence
 
 __all__ = [
+    "CausalOrderingError",
     "ClaimGateBlocked",
     "ClaimKind",
     "ClaimRecord",
@@ -111,6 +131,7 @@ __all__ = [
     "add_corroboration",
     "assess_maskirovka_convergence",
     "confirm_dependent_update",
+    "deliver_correction",
     "disavow",
     "gate_for_use",
     "get_claim",
@@ -231,13 +252,24 @@ class Disavowal:
 @dataclass(frozen=True)
 class Dependent:
     """A downstream artifact/location that consumed a claim and must be
-    updated when the claim is corrected."""
+    updated when the claim is corrected.
+
+    ``via`` is the witnessed path: how the claim reached this dependent
+    (e.g. "intake note -> goal constraint -> cron config"). Causal-path
+    semantics (§4 rule 5): a dependent tracks which corrections it has
+    been *delivered* (:func:`deliver_correction`) and which it has
+    *confirmed* consuming (:func:`confirm_dependent_update`), so a
+    correction can never be marked applied out of causal order.
+    """
 
     artifact: str  # e.g. "cron:daily-job-hunt", "GOAL.md"
     location: str  # where inside the artifact, e.g. "filters block"
     noted_at: str = ""  # ISO date/datetime
     status: DependentStatus = DependentStatus.PENDING
     confirmed_at: str = ""  # ISO date/datetime the update was confirmed
+    via: str = ""  # witnessed path: how the claim reached this dependent
+    delivered_correction: str | None = None  # correction id delivered, not yet confirmed
+    confirmed_correction: str | None = None  # correction id last confirmed consumed
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -246,6 +278,9 @@ class Dependent:
             "noted_at": self.noted_at,
             "status": self.status.value,
             "confirmed_at": self.confirmed_at,
+            "via": self.via,
+            "delivered_correction": self.delivered_correction,
+            "confirmed_correction": self.confirmed_correction,
         }
 
 
@@ -277,6 +312,11 @@ class ClaimRecord:
     kind: ClaimKind = ClaimKind.REPORT  # ICD 203: report vs assumption vs judgment
     uncertainty: str = ""  # ICD 203 uncertainty expression, in the analyst's own words
     valid_until: str = ""  # ISO date/datetime; empty means no scheduled revalidation
+    causal_path: tuple[str, ...] = ()  # witnessed causal path: ids of the records
+    # causally before this one — the originating claim first, the immediate
+    # predecessor last. Empty for records at the head of their lineage.
+    # (Lamport 1978 happens-before, reified as data; Castello/Redmond/Kuper
+    # 2024: the causal relationship is witnessed by this path.)
 
     def effective_root(self) -> str:
         """The intake source's evidentiary root."""
@@ -304,6 +344,19 @@ class ClaimRecord:
             cutoff = cutoff.replace(tzinfo=UTC)
         return cutoff < datetime.now(UTC)
 
+    def causal_predecessor(self) -> str | None:
+        """Id of the record this one was caused by — the witnessed path's
+        last hop.
+
+        Falls back to ``supersedes`` for records written before
+        ``causal_path`` existed, so legacy correction records still resolve
+        their predecessor sensibly. ``None`` for records at the head of
+        their lineage (no causal predecessor).
+        """
+        if self.causal_path:
+            return self.causal_path[-1]
+        return self.supersedes
+
     def to_dict(self) -> dict[str, object]:
         return {
             "id": self.id,
@@ -312,6 +365,8 @@ class ClaimRecord:
             "kind": self.kind.value,
             "uncertainty": self.uncertainty,
             "valid_until": self.valid_until,
+            "causal_path": list(self.causal_path),
+            "causal_predecessor_id": self.causal_predecessor(),
             "source": {
                 "description": self.source,
                 "tier": self.source_tier.value,  # type: ignore[attr-defined]
@@ -562,6 +617,17 @@ class ClaimGateBlocked(Exception):
     """Raised by require_gate when a claim fails its consequential-use gate."""
 
 
+class CausalOrderingError(Exception):
+    """A correction was applied (or delivered) to a dependent out of causal order.
+
+    Raised instead of silently marking a dependent corrected when the
+    correction was never delivered to it, belongs to a different claim, or
+    arrives before the correction it causally follows. The §4 rule-5
+    guarantee: no dependent applies a correction for a claim version it
+    never received.
+    """
+
+
 def require_gate(record: ClaimRecord, stakes: str) -> tuple[bool, str]:
     """Enforce the consequential-use gate, raising instead of returning False.
 
@@ -611,7 +677,17 @@ def disavow(
         uncertainty=live.uncertainty,
         valid_until=live.valid_until,
     )
-    correction = _store(replace(correction, supersedes=live.id))
+    # §4 rule 4: the correction event is causally after the claim it
+    # corrects, and the supersedes link is the witnessed path between them.
+    # The causal path extends the predecessor's own path, so chains of
+    # corrections (a correction of a correction) keep the full lineage.
+    correction = _store(
+        replace(
+            correction,
+            supersedes=live.id,
+            causal_path=live.causal_path + (live.id,),
+        )
+    )
     _store(
         replace(
             live,
@@ -633,24 +709,126 @@ def register_dependent(
     artifact: str,
     location: str,
     noted_at: str = "",
+    via: str = "",
 ) -> Dependent:
     """Register a downstream artifact/location that consumed a claim, so
-    corrections know where to propagate."""
+    corrections know where to propagate.
+
+    ``via`` is the witnessed path: how the claim reached this dependent
+    (e.g. "intake note -> goal constraint -> cron config"). §4 rule 5 —
+    causal relationships are witnessed by the paths information follows —
+    so the registry records the path, not just the destination.
+    """
     if claim_id not in _CLAIMS:
         raise ValueError(f"Unknown claim id: {claim_id}")
     if not artifact.strip() or not location.strip():
         raise ValueError("register_dependent needs an artifact and a location.")
     dependent = Dependent(
-        artifact=artifact, location=location, noted_at=noted_at or _utcnow()
+        artifact=artifact,
+        location=location,
+        noted_at=noted_at or _utcnow(),
+        via=via,
     )
     _DEPENDENTS.setdefault(claim_id, []).append(dependent)
     return dependent
 
 
-def propagate_correction(claim_id: str) -> list[Dependent]:
+def _causal_predecessor_of(correction_id: str) -> str | None:
+    """The causal predecessor of a correction record (§4 rule 4)."""
+    correction = _CLAIMS[correction_id]
+    return correction.causal_predecessor()
+
+
+def _check_causal_delivery(
+    claim_id: str, correction_id: str, dependent: Dependent
+) -> None:
+    """Reject *delivering* a correction out of causal order.
+
+    A dependent may only be delivered a correction whose causal
+    predecessor is the correction it was last delivered — or the claim
+    itself when nothing has been delivered yet. Delivery order is the
+    causal-broadcast guarantee: no dependent receives a later correction
+    before the earlier one it causally follows.
+    """
+    predecessor = _causal_predecessor_of(correction_id)
+    if predecessor is None:
+        return  # record at the head of its lineage; nothing to order against
+    last_delivered = dependent.confirmed_correction or dependent.delivered_correction
+    if last_delivered == predecessor:
+        return  # next hop in the witnessed path: in order
+    if predecessor == claim_id and last_delivered is None:
+        return  # first correction for this claim: in order
+    raise CausalOrderingError(
+        f"Out-of-order delivery to dependent {dependent.artifact!r} / "
+        f"{dependent.location!r}: correction {correction_id} causally follows "
+        f"{predecessor}, but the dependent was last delivered "
+        f"{last_delivered}. Deliver and confirm the predecessor first."
+    )
+
+
+def _check_causal_application(
+    claim_id: str, correction_id: str, dependent: Dependent
+) -> None:
+    """Reject *applying* (confirming) a correction out of causal order.
+
+    Marking a dependent corrected is application, not delivery: it is
+    allowed only when the correction's causal predecessor is the
+    correction the dependent last confirmed — or the claim itself when
+    nothing has been confirmed yet. Skipping a hop in the witnessed path
+    is an ordering violation, never a silent completion.
+    """
+    predecessor = _causal_predecessor_of(correction_id)
+    if predecessor is None:
+        return
+    if dependent.confirmed_correction == predecessor:
+        return
+    if predecessor == claim_id and dependent.confirmed_correction is None:
+        return
+    raise CausalOrderingError(
+        f"Out-of-order application for dependent {dependent.artifact!r} / "
+        f"{dependent.location!r}: correction {correction_id} causally follows "
+        f"{predecessor}, but the dependent last confirmed "
+        f"{dependent.confirmed_correction}. Confirm the predecessor first."
+    )
+
+
+def deliver_correction(claim_id: str, correction_id: str) -> list[Dependent]:
+    """Deliver a correction along every dependency path of a claim, in causal order.
+
+    §4 rule 5 (causal broadcast in miniature): the correction is delivered
+    to each registered dependent, and delivery that would arrive out of
+    causal order is rejected with :class:`CausalOrderingError` instead of
+    queued. Delivery is not application: the dependent is still
+    PENDING until :func:`confirm_dependent_update` verifies the update
+    landed. Returns the updated dependents.
+    """
+    if correction_id not in _CLAIMS:
+        raise KeyError(f"Unknown correction id: {correction_id}")
+    dependents = _DEPENDENTS.get(claim_id, [])
+    delivered: list[Dependent] = []
+    for index, dependent in enumerate(dependents):
+        _check_causal_delivery(claim_id, correction_id, dependent)
+        updated = replace(dependent, delivered_correction=correction_id)
+        dependents[index] = updated
+        delivered.append(updated)
+    return delivered
+
+
+def propagate_correction(
+    claim_id: str, *, correction_id: str | None = None
+) -> list[Dependent]:
     """List every downstream artifact/location that consumed the claim
     and needs updating after a disavowal. Empty list: nothing consumed
-    it, nothing to fix."""
+    it, nothing to fix.
+
+    With ``correction_id`` given, this is the delivery step of §4 rule 5:
+    the correction is delivered to every dependent in causal order
+    (see :func:`deliver_correction`), raising :class:`CausalOrderingError`
+    on any ordering violation. Without it, this is the pure enumeration
+    of the TMS dependents registry.
+    """
+    if correction_id is not None:
+        return deliver_correction(claim_id, correction_id)
     return list(_DEPENDENTS.get(claim_id, []))
 
 
@@ -659,20 +837,49 @@ def confirm_dependent_update(
     artifact: str,
     location: str,
     confirmed_at: str = "",
+    *,
+    correction_id: str | None = None,
 ) -> Dependent:
     """Confirm that a downstream dependent consumed a propagated correction
     (playbook step 5: propagate, then verify the update landed).
 
     Marks the matching dependent UPDATED; raises KeyError when no such
     dependent is registered.
+
+    With ``correction_id`` given, this is the causal-broadcast guard (§4
+    rule 5): the dependent is marked corrected only for a correction it
+    was actually delivered (:func:`deliver_correction`), and only when
+    that correction arrives in causal order — after the correction it
+    causally follows. Out-of-order application raises
+    :class:`CausalOrderingError` instead of being silently marked
+    complete. A dependent must never be marked corrected for a claim
+    version it never received.
     """
     dependents = _DEPENDENTS.get(claim_id, [])
     for index, dependent in enumerate(dependents):
         if dependent.artifact == artifact and dependent.location == location:
+            if correction_id is not None:
+                if correction_id not in _CLAIMS:
+                    raise KeyError(f"Unknown correction id: {correction_id}")
+                if dependent.delivered_correction != correction_id:
+                    raise CausalOrderingError(
+                        f"Dependent {artifact!r} / {location!r} was never "
+                        f"delivered correction {correction_id}; refusing to "
+                        "mark it corrected. Deliver the correction first."
+                    )
+                _check_causal_application(claim_id, correction_id, dependent)
             updated = replace(
                 dependent,
                 status=DependentStatus.UPDATED,
                 confirmed_at=confirmed_at or _utcnow(),
+                delivered_correction=(
+                    None if correction_id is not None else dependent.delivered_correction
+                ),
+                confirmed_correction=(
+                    correction_id
+                    if correction_id is not None
+                    else dependent.confirmed_correction
+                ),
             )
             dependents[index] = updated
             return updated

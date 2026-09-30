@@ -33,6 +33,28 @@ implements the verification pass first used in the evening news editions:
 Both paths return auditable records: every verdict carries its rationale
 and the raw signals stay visible. Verification informs; the analyst (or
 the calling pipeline) decides.
+
+4. **Search-path provenance for negative findings**
+   (:func:`record_search_path`, :func:`gate_negative_finding`). A negative
+   existential ("no X exists") is a claim like any other: it enters
+   UNVERIFIED and may not be reported/operationalized as a finding until
+   at least two independent search paths corroborate the absence — with
+   every attempted path recorded as the claim's provenance. The analyst's
+   own search history is the witnessed path (§4 rule 5: causal
+   relationships are witnessed by the paths information follows; a
+   one-path absence claim is an unwitnessed edge).
+
+   Worked example (§6 of the case study): on 2026-09-30 the analyst
+   searched arXiv for the literal string "Jonathan Castillo", found
+   nothing, and reported no such author — operationalizing a negative
+   finding off a single unwitnessed path. The paper was there all along:
+   "Inductive Diagrams for Causal Reasoning" by Jonathan **Castello**,
+   Patrick Redmond, and Lindsey **Kuper** (arXiv:2307.10484) — one letter
+   off on both names. The paths never walked: spelling variants,
+   co-author cross-check ("Redmond" + "Kuper"), title-keyword search.
+   Under this gate the absence stays UNVERIFIED and unreportable until a
+   second independent path corroborates it; a path that finds the target
+   contradicts the absence outright.
 """
 
 from __future__ import annotations
@@ -41,15 +63,17 @@ import difflib
 import hashlib
 import re
 from dataclasses import dataclass, replace
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from enum import Enum
 from typing import Any
 
 from vessell.provenance import (
+    ClaimGateBlocked,
     ClaimKind,
     ClaimRecord,
     SourceStatus,
     add_corroboration,
+    get_claim,
     intake_claim,
     register_dependent,
     require_gate,
@@ -60,6 +84,7 @@ __all__ = [
     "BURST_MIN_SOURCES",
     "BURST_WINDOW_MINUTES",
     "CLONE_ARMY_MIN_SOURCES",
+    "MIN_ABSENCE_PATHS",
     "NEAR_DUPLICATE_THRESHOLD",
     "ClaimCheck",
     "GhostJobReport",
@@ -67,6 +92,7 @@ __all__ = [
     "JobPosting",
     "PlantedNewsReport",
     "PlantedVerdict",
+    "SearchPath",
     "SourceSighting",
     "Verdict",
     "VerificationResult",
@@ -75,7 +101,12 @@ __all__ = [
     "detect_ghost_job",
     "detect_ghost_job_and_record",
     "filter_ghost_jobs",
+    "gate_negative_finding",
     "group_postings_by_role",
+    "record_search_path",
+    "require_negative_finding",
+    "reset_search_paths",
+    "search_paths",
     "verify_and_record",
     "verify_claim",
 ]
@@ -882,3 +913,156 @@ def filter_ghost_jobs(
     # Deterministic order for auditability.
     reports.sort(key=lambda r: (r.employer, r.title, r.location))
     return kept, reports
+
+
+# ---------------------------------------------------------------------------
+# Search-path provenance for negative findings (§6: the analyst's miss)
+# ---------------------------------------------------------------------------
+
+MIN_ABSENCE_PATHS = 2  # independent search paths that must corroborate an absence
+
+
+@dataclass(frozen=True)
+class SearchPath:
+    """One attempted search path logged against a claim — the witnessed path
+    of a negative finding.
+
+    Worked example (case study §6): on 2026-09-30 the analyst searched arXiv
+    for the literal string "Jonathan Castillo", found nothing, and reported
+    no such author — operationalizing a negative finding off a single
+    unwitnessed path. The paper was there all along: "Inductive Diagrams for
+    Causal Reasoning" by Jonathan Castello, Patrick Redmond, and Lindsey
+    Kuper (arXiv:2307.10484), one letter off on both names. The paths never
+    walked: spelling variants, co-author cross-check, title-keyword search.
+    Every path attempted — hits and misses — is recorded here, because the
+    analyst's search history is the witnessed path an absence claim stands on.
+    """
+
+    query: str  # what was searched for, e.g. "Jonathan Castillo"
+    strategy: str  # how it was searched, e.g. "literal-author-name"
+    source: str  # where it was searched, e.g. "arxiv.org"
+    date: str = ""  # ISO date/datetime the search ran; defaults to now
+    result_summary: str = ""  # what came back, in the analyst's own words
+    found: bool = False  # True when this path surfaced the target
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "query": self.query,
+            "strategy": self.strategy,
+            "source": self.source,
+            "date": self.date,
+            "result_summary": self.result_summary,
+            "found": self.found,
+        }
+
+
+_SEARCH_PATHS: dict[str, list[SearchPath]] = {}
+
+
+def reset_search_paths() -> None:
+    """Clear the search-path registry. Test/support utility."""
+    _SEARCH_PATHS.clear()
+
+
+def record_search_path(
+    claim_id: str,
+    query: str,
+    strategy: str,
+    source: str,
+    date: str = "",
+    result_summary: str = "",
+    found: bool = False,
+) -> SearchPath:
+    """Log one attempted search path against a claim's provenance.
+
+    Hits and misses alike: the analyst's search history is the witnessed
+    path of a negative finding, and a negative existential may not be
+    reported until :func:`gate_negative_finding` clears it. Raises
+    KeyError for an unknown claim id.
+    """
+    get_claim(claim_id)  # KeyError if unknown
+    if not query.strip() or not strategy.strip() or not source.strip():
+        raise ValueError("record_search_path needs a query, a strategy, and a source.")
+    path = SearchPath(
+        query=query,
+        strategy=strategy,
+        source=source,
+        date=date or datetime.now(UTC).isoformat(timespec="seconds"),
+        result_summary=result_summary,
+        found=found,
+    )
+    _SEARCH_PATHS.setdefault(claim_id, []).append(path)
+    return path
+
+
+def search_paths(claim_id: str) -> list[SearchPath]:
+    """Every search path attempted against a claim, in the order walked."""
+    get_claim(claim_id)  # KeyError if unknown
+    return list(_SEARCH_PATHS.get(claim_id, []))
+
+
+def _independent_absence_paths(paths: list[SearchPath]) -> set[tuple[str, str]]:
+    """Distinct (strategy, source) pairs among paths corroborating the absence.
+
+    Re-running the same literal query on the same source is one path, not
+    two; a spelling variant, a co-author cross-check, or a different index
+    is a new one.
+    """
+    return {(p.strategy, p.source) for p in paths if not p.found}
+
+
+def gate_negative_finding(claim_id: str) -> tuple[bool, str]:
+    """The §6 gate: may this negative existential be reported as a finding?
+
+    A "no X exists" claim enters UNVERIFIED like any other claim and stays
+    gated until at least ``MIN_ABSENCE_PATHS`` independent search paths
+    corroborate the absence. Any path that found the target contradicts the
+    absence outright — the finding is refuted, not gated. Returns
+    (allowed, reason); the reason is the audit line.
+    """
+    paths = search_paths(claim_id)
+    hits = [p for p in paths if p.found]
+    if hits:
+        return (
+            False,
+            (
+                "Negative finding contradicted: "
+                + "; ".join(f"{p.source} via {p.strategy} ({p.query!r})" for p in hits)
+                + ". The absence claim is refuted; disavow it instead of reporting it."
+            ),
+        )
+    independent = _independent_absence_paths(paths)
+    if len(independent) < MIN_ABSENCE_PATHS:
+        return (
+            False,
+            (
+                f"Negative finding gated: {len(independent)} independent search "
+                f"path(s) corroborate the absence, need {MIN_ABSENCE_PATHS}. A "
+                "single-path absence is an unwitnessed edge — walk another "
+                "independent path (spelling variant, co-author cross-check, "
+                "different index) before reporting."
+            ),
+        )
+    return (
+        True,
+        (
+            f"{len(independent)} independent search paths corroborate the absence; "
+            "cleared to report as a finding."
+        ),
+    )
+
+
+def require_negative_finding(claim_id: str) -> tuple[bool, str]:
+    """Enforce the §6 negative-finding gate, raising instead of returning False.
+
+    Returns (True, reason) when the absence is cleared to report. Raises
+    :class:`~vessell.provenance.ClaimGateBlocked` when
+    :func:`gate_negative_finding` would return False, so callers cannot
+    silently report a single-path absence.
+    """
+    allowed, reason = gate_negative_finding(claim_id)
+    if not allowed:
+        raise ClaimGateBlocked(
+            f"Negative finding for claim {claim_id} blocked: {reason}"
+        )
+    return True, reason
