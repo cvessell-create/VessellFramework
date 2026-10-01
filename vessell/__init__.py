@@ -48,6 +48,7 @@ from vessell.provenance import (
     verify_event_chain,
 )
 from vessell.validation import require_provenance_fields
+from vessell.report import event_matrix
 from vessell.verify import (
     BURST_MIN_SOURCES,
     BURST_WINDOW_MINUTES,
@@ -151,6 +152,7 @@ __all__ = [
     "deliver_correction",
     "detect_ghost_job",
     "detect_ghost_job_and_record",
+    "event_matrix",
     "disavow",
     "filter_ghost_jobs",
     "gate_for_use",

@@ -141,6 +141,12 @@ class SourceSighting:
     denies: bool = False  # this sighting contradicts the claim
     is_official_record: bool = False  # authoritative record (USGS event page, ...)
     note: str = ""
+    event_clock: str | None = None  # position on the event's own clock, e.g. "10'", "HT", "Q3"
+    # For live/developing events: two sightings taken at different points on
+    # the event clock (10' vs 41') may show different values for the same
+    # claim because the event evolved, not because the sources disagree.
+    # detect_clock_drift() surfaces that so it is never misread as
+    # contradiction.
 
     def effective_root(self) -> str:
         """Sightings sharing a root are one evidentiary ancestor."""
@@ -149,13 +155,16 @@ class SourceSighting:
     def to_corroboration(self) -> dict[str, Any]:
         """Render this sighting as ``add_corroboration`` keyword arguments,
         so a verification pass can record its evidence on the claim."""
+        note = self.note
+        if self.event_clock:
+            note = f"[event clock {self.event_clock}] {note}".rstrip()
         return {
             "source": self.source_name,
             "source_tier": self.tier,
             "root": self.root,
             "observed_at": self.seen_at,
             "is_official_record": self.is_official_record,
-            "note": self.note,
+            "note": note,
         }
 
 
@@ -193,6 +202,28 @@ class VerificationResult:
         }
 
 
+def detect_clock_drift(check: ClaimCheck) -> str | None:
+    """Flag event-clock drift across a claim's sightings.
+
+    When two or more affirming sightings carry distinct ``event_clock``
+    values, the claim is being observed at different points in a live
+    event's evolution (a 10' snapshot vs a 41' snapshot). Differences in
+    reported values across those snapshots are evolution, not
+    contradiction. Returns a human-readable signal line, or None when
+    there is nothing to flag.
+    """
+    clocks = sorted(
+        {s.event_clock for s in check.sightings if not s.denies and s.event_clock}
+    )
+    if len(clocks) < 2:
+        return None
+    return (
+        f"event-clock drift ({' vs '.join(clocks)}): sightings span the "
+        "event's evolution — value differences across clocks are the event "
+        "moving, not sources disagreeing"
+    )
+
+
 def verify_claim(check: ClaimCheck) -> VerificationResult:
     """Run the planted-news check on a claim.
 
@@ -209,6 +240,9 @@ def verify_claim(check: ClaimCheck) -> VerificationResult:
     """
     sightings = [s for s in check.sightings if not s.denies]
     denials = [s for s in check.sightings if s.denies]
+    drift_signal = detect_clock_drift(check)
+    base_signals = tuple(_signal_line(s) for s in check.sightings)
+    signals = base_signals + ((drift_signal,) if drift_signal else ())
 
     if not check.sightings:
         return VerificationResult(
@@ -230,7 +264,7 @@ def verify_claim(check: ClaimCheck) -> VerificationResult:
             independent_roots=len({s.effective_root() for s in sightings}),
             official_record=True,
             rationale=f"Official record affirms the claim: {names}.",
-            signals=tuple(_signal_line(s) for s in check.sightings),
+            signals=signals,
         )
 
     established_denials = [
@@ -245,7 +279,7 @@ def verify_claim(check: ClaimCheck) -> VerificationResult:
             independent_roots=len({s.effective_root() for s in sightings}),
             official_record=False,
             rationale=f"Established source(s) deny the claim: {names}.",
-            signals=tuple(_signal_line(s) for s in check.sightings),
+            signals=signals,
         )
 
     # Independence discount: one root counts once, at its strongest tier.
@@ -294,7 +328,7 @@ def verify_claim(check: ClaimCheck) -> VerificationResult:
         independent_roots=len(best_per_root),
         official_record=False,
         rationale=rationale,
-        signals=tuple(_signal_line(s) for s in check.sightings),
+        signals=signals,
     )
 
 
