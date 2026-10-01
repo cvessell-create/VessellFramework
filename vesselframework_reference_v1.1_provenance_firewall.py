@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class SourceStatus(Enum):
@@ -60,7 +61,7 @@ class ProvenanceRegistry:
     independence.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._records: dict[str, EvidenceItem] = {}
         self._conflicts: set[str] = set()
 
@@ -129,7 +130,7 @@ class ProvenanceRegistry:
 
             current_id = current.upstream_of
 
-    def compare_independence(self, source_ids: list[str]) -> dict:
+    def compare_independence(self, source_ids: list[str]) -> dict[str, Any]:
         resolutions = [self.resolve(s) for s in source_ids]
         unresolved = [r for r in resolutions if r.state != ProvenanceState.RESOLVED]
         if unresolved:

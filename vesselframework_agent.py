@@ -11,6 +11,7 @@ import os
 import socket
 import sys
 from html.parser import HTMLParser
+from http.client import HTTPException
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -25,6 +26,10 @@ DEFAULT_MODEL = "gpt-4o-mini"
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_MAX_TOOL_ROUNDS = 6
 USER_AGENT = "VesselFramework-OSINT-Agent/1.0"
+
+
+class ModelResponseError(RuntimeError):
+    """The model endpoint was unreachable or returned an unusable response."""
 
 
 class SearchResultsParser(HTMLParser):
@@ -118,7 +123,7 @@ def load_case(case_path: Path) -> str:
     with case_path.open("r", encoding="utf-8") as file:
         case = json.load(file)
     if not isinstance(case, dict):
-        raise ValueError("Case file must contain a JSON object.")
+        raise TypeError("Case file must contain a JSON object.")
     return json.dumps(case, indent=2, ensure_ascii=True)
 
 
@@ -244,7 +249,7 @@ def execute_tool(name: str, arguments: str) -> dict[str, Any]:
     try:
         parsed = json.loads(arguments)
         if not isinstance(parsed, dict):
-            raise ValueError("Tool arguments must be a JSON object.")
+            raise TypeError("Tool arguments must be a JSON object.")
         if name == "search_web":
             return search_web(**parsed)
         if name == "fetch_webpage":
@@ -277,19 +282,30 @@ def call_model(
     )
     try:
         with urlopen(request, timeout=120) as response:
-            body = json.loads(response.read().decode("utf-8"))
+            raw_body = response.read()
     except HTTPError as error:
         detail = error.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Model request failed ({error.code}): {detail}") from error
+        raise ModelResponseError(f"Model request failed ({error.code}): {detail}") from error
     except URLError as error:
-        raise RuntimeError(f"Unable to reach model endpoint: {error.reason}") from error
+        raise ModelResponseError(f"Unable to reach model endpoint: {error.reason}") from error
+    except (HTTPException, OSError) as error:
+        raise ModelResponseError(f"Model connection failed: {error}") from error
+    try:
+        body = json.loads(raw_body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ModelResponseError("Model endpoint did not return JSON.") from error
 
     try:
         message = body["choices"][0]["message"]
     except (KeyError, IndexError, TypeError) as error:
-        raise RuntimeError("Model response did not contain choices[0].message.") from error
+        raise ModelResponseError("Model response did not contain choices[0].message.") from error
     if not isinstance(message, dict):
-        raise RuntimeError("Model returned an invalid message.")
+        raise ModelResponseError("Model returned an invalid message.")
+    tool_calls = message.get("tool_calls")
+    if tool_calls is not None and (
+        not isinstance(tool_calls, list) or not all(isinstance(call, dict) for call in tool_calls)
+    ):
+        raise ModelResponseError("Model returned malformed tool_calls.")
     return message
 
 
@@ -343,7 +359,9 @@ def run_session(
                     print(final_answer.strip())
                     break
                 for tool_call in tool_calls:
-                    function = tool_call.get("function", {})
+                    function = tool_call.get("function")
+                    if not isinstance(function, dict):
+                        function = {}
                     result = execute_tool(function.get("name", ""), function.get("arguments", "{}"))
                     messages.append({
                         "role": "tool",
@@ -362,9 +380,17 @@ def run_session(
             return 0
         if request.lower() == "/reset":
             messages = [{"role": "system", "content": read_instructions()}]
-            request = input("New request> ").strip()
-        if not request:
-            continue
+            try:
+                request = input("New request> ").strip()
+            except EOFError:
+                return 0
+        while not request:
+            try:
+                request = input("VesselFramework> ").strip()
+            except EOFError:
+                return 0
+            if request.lower() in {"/quit", "/exit"}:
+                return 0
 
 
 def main() -> int:
@@ -388,7 +414,7 @@ def main() -> int:
 
     try:
         case_json = load_case(args.case) if args.case else None
-    except (OSError, json.JSONDecodeError, ValueError) as error:
+    except (OSError, TypeError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
 

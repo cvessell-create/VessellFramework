@@ -28,7 +28,7 @@ def load_manifest(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as file:
         manifest = json.load(file)
     if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), list):
-        raise ValueError("Manifest must be an object containing a 'files' list.")
+        raise TypeError("Manifest must be an object containing a 'files' list.")
     return manifest
 
 
@@ -90,7 +90,7 @@ def main() -> int:
     try:
         manifest = load_manifest(manifest_path)
         results, failures = verify_manifest(manifest_path)
-    except (OSError, ValueError, json.JSONDecodeError) as error:
+    except (OSError, TypeError, ValueError) as error:
         print(f"{STATUS_INVALID}: {manifest_path}: {error}")
         return 2
 

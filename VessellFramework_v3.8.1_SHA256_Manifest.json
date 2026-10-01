@@ -37,11 +37,11 @@
     },
     {
       "path": "verify_manifest.py",
-      "sha256": "135da4213af82f4194c1c2ffdd1846cca10c28e6d79354d4e209df86e4b2a3f9"
+      "sha256": "873a3fdc73de5fd792dcc9c1b2a7469159ea81382ef36c1ff1211009d4f005dc"
     },
     {
       "path": "vesselframework_case_runner.py",
-      "sha256": "fea578a5ab7c7458e88d3ca9fea9f8983e4f20b5f23a6231650f49a605aff20c"
+      "sha256": "bc4175b2567fa1f1930990152cd484c41e9f999a000ba456568b1d420f1db787"
     },
     {
       "path": "example_case.json",
@@ -77,7 +77,7 @@
     },
     {
       "path": "vesselframework_reference_v1.1_provenance_firewall.py",
-      "sha256": "6bea4a7b0f84111b3e4b2cf47a9147a61f9e6e215f17df6a2eb49e25bff4a523"
+      "sha256": "60707ef396806b52fab326445b04d00772c7267c98ce15af94426c12a3b04efc"
     },
     {
       "path": "vessell/weights.py",

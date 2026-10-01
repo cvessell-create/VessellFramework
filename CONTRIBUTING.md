@@ -17,7 +17,7 @@ Python 3.13+ is required.
 ## What merge-ready looks like
 
 1. **Tests** — new behavior ships with regression tests in `tests/`.
-2. **Clean gates** — `mypy` and `ruff` pass on every touched file.
+2. **Clean gates** — `ruff check .`, `mypy` (strict), `python verify_manifest.py`, and `pytest` all pass; CI enforces all four.
 3. **Schemas** — new machine-readable records get a JSON schema in
    `schemas/` plus a validation test.
 4. **Provenance honesty** — never weaken the provenance firewall, the

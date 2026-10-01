@@ -73,10 +73,14 @@ python -m pip install -r requirements\dev.txt -r requirements\core.txt
 Run the assurance gate:
 
 ```powershell
-ruff check vessell tests
-mypy vessell
+ruff check .
+mypy
+python verify_manifest.py
 pytest
 ```
+
+CI runs the same four gates on every push and pull request. `mypy` is strict and
+covers both the `vessell` package and the root-level runner scripts.
 
 Validate a case record:
 
@@ -175,7 +179,7 @@ The original flat launchers and doctrine files remain the compatibility layer fo
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 
-1. `python -m pytest tests/ -q` — 231-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, verification and attack-surface heat maps, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
+1. `python -m pytest tests/ -q` — 264-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, root-script input validation, hostile-spread intel, ghost-job filtering, verification and attack-surface heat maps, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
 2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
 3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
 4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.
