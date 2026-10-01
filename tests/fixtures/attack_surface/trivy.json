@@ -1,0 +1,4 @@
+{"SchemaVersion":2,"ArtifactName":"registry.example.internal/app:1.4","ArtifactType":"container_image","Results":[
+{"Target":"app.jar","Class":"lang-pkgs","Type":"jar","Vulnerabilities":[{"VulnerabilityID":"CVE-2021-44228","PkgName":"org.apache.logging.log4j:log4j-core","InstalledVersion":"2.14.1","Severity":"CRITICAL","CVSS":{"nvd":{"V3Score":10.0}}},{"VulnerabilityID":"GHSA-xxxx-yyyy-zzzz","PkgName":"com.example:lib","InstalledVersion":"1.0","Severity":"LOW"}]},
+{"Target":"Dockerfile","Class":"config","Type":"dockerfile","Misconfigurations":[{"ID":"DS002","Title":"Image user should not be 'root'","Severity":"HIGH","Status":"FAIL"},{"ID":"DS001","Title":"ok","Severity":"LOW","Status":"PASS"}]},
+{"Target":"/app/.env","Class":"secret","Secrets":[{"RuleID":"aws-access-key-id","Title":"AWS Access Key ID","Severity":"CRITICAL"}]}]}

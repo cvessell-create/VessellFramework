@@ -294,6 +294,51 @@ def create_app() -> Any:
     def dashboard() -> str:
         return Path(__file__).with_name("remediation_dashboard.html").read_text(encoding="utf-8")
 
+    @app.get("/attack-surface", response_class=HTMLResponse)
+    def attack_surface() -> str:
+        """Render the attack-surface heat map from operator-supplied scanner exports.
+
+        Reads every report in ``ATTACK_SURFACE_DIR`` (a fixed, configured
+        directory — no path comes from the request), maps hosts onto
+        ``INVENTORY_FILE``, and applies the optional local KEV catalog in
+        ``ATTACK_SURFACE_KEV_FILE``.
+        """
+        from vessell.attack_surface import (
+            Finding,
+            apply_inventory,
+            apply_kev,
+            build_attack_surface,
+            kev_cve_ids,
+            load_report,
+            render_html,
+        )
+
+        report_dir = Path(os.environ.get("ATTACK_SURFACE_DIR", "outputs/attack_surface/reports"))
+        findings: list[Finding] = []
+        skipped: list[str] = []
+        if report_dir.is_dir():
+            for path in sorted(p for p in report_dir.iterdir() if p.is_file()):
+                try:
+                    findings.extend(load_report(path))
+                except (OSError, TypeError, ValueError):
+                    skipped.append(path.name)
+        try:
+            kev_file = os.environ.get("ATTACK_SURFACE_KEV_FILE")
+            if kev_file:
+                catalog = json.loads(Path(kev_file).read_text(encoding="utf-8"))
+                if isinstance(catalog, dict):
+                    findings = apply_kev(findings, kev_cve_ids(catalog))
+            if inventory_path.is_file():
+                inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+                if isinstance(inventory, dict):
+                    findings = apply_inventory(findings, inventory)
+        except (OSError, TypeError, ValueError) as error:
+            raise HTTPException(500, f"Attack-surface enrichment failed: {error}") from error
+        title = "Attack surface heat map"
+        if skipped:
+            title += f" ({len(skipped)} unreadable report(s) skipped)"
+        return render_html(build_attack_surface(findings), title=title)
+
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "time": _now()}

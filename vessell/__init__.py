@@ -9,7 +9,9 @@ the calibrated live-Llama weighter (:mod:`vessell.weighter`), and claim
 verification — planted-news checks, hostile-spread intel, and ghost-job
 filtering (:mod:`vessell.verify`), and the claim x source verification
 matrix (:mod:`vessell.report`) with its heat map renderer
-(:mod:`vessell.heatmap`, CLI ``vf-heatmap``).
+(:mod:`vessell.heatmap`, CLI ``vf-heatmap``), and the attack-surface
+heat map over open-source scanner output (:mod:`vessell.attack_surface`,
+CLI ``vf-attack-surface``).
 """
 
 from vessell.malware_triage import triage_source_and_record

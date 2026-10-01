@@ -1,0 +1,2 @@
+{"host":"app.example.internal","ip":"192.0.2.20","port":443,"protocol":"tcp"}
+{"host":"app.example.internal","ip":"192.0.2.20","port":5432,"protocol":"tcp"}

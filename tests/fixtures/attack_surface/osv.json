@@ -1,0 +1,1 @@
+{"results":[{"source":{"path":"/src/requirements.txt","type":"lockfile"},"packages":[{"package":{"name":"jinja2","version":"2.10","ecosystem":"PyPI"},"vulnerabilities":[{"id":"GHSA-462w-v97r-4m45","aliases":["CVE-2019-10906"],"database_specific":{"severity":"HIGH"}}],"groups":[{"ids":["GHSA-462w-v97r-4m45"],"max_severity":"8.6"}]}]}]}

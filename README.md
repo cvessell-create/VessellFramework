@@ -113,6 +113,36 @@ listing every event clock. In code: `vessell.report.event_matrix(checks)`
 builds the grid and `vessell.heatmap.render_html / render_text / render_csv`
 render it.
 
+### Attack-surface scanner heat map
+
+`vf-attack-surface` turns the output of open-source scanners into an
+asset × exposure heat map (worst risk per cell on a 0–10 ColorBrewer
+`YlOrRd` scale; CISA KEV hits are outlined). VesselFramework does not bundle
+the scanners. You run them yourself, **only against assets you are
+authorized to test**, and point the CLI at their exported reports:
+
+| Tool | Export flag | What it adds to the map | Project / license |
+| --- | --- | --- | --- |
+| [Nmap](https://nmap.org) | `-sV --script vulners -oX nmap.xml` | open services (remote-admin, database, file-share, web, mail) + CVEs | Nmap Public Source License |
+| [Nuclei](https://github.com/projectdiscovery/nuclei) | `-jsonl -o nuclei.jsonl` | known vulns, misconfigurations, exposed panels/secrets | MIT |
+| [naabu](https://github.com/projectdiscovery/naabu) | `-json -o naabu.jsonl` | open ports | MIT |
+| [httpx](https://github.com/projectdiscovery/httpx) | `-json -o httpx.jsonl` | live web endpoints + tech | MIT |
+| [Trivy](https://github.com/aquasecurity/trivy) | `--format json -o trivy.json` | vulnerable dependencies, misconfigs, leaked secrets | Apache-2.0 |
+| [Grype](https://github.com/anchore/grype) | `-o json > grype.json` | vulnerable dependencies | Apache-2.0 |
+| [OSV-Scanner](https://github.com/google/osv-scanner) | `--format json > osv.json` | vulnerable dependencies | Apache-2.0 |
+
+```powershell
+vf-attack-surface tests/fixtures/attack_surface/nmap.xml tests/fixtures/attack_surface/nuclei.jsonl `
+  tests/fixtures/attack_surface/trivy.json --inventory tests/fixtures/attack_surface/inventory.json `
+  --kev tests/fixtures/attack_surface/kev.json --format html -o outputs/attack_surface/surface.html
+```
+
+- The format is detected automatically (`--input-format` overrides it).
+- `--kev FILE` or `--fetch-kev` raises any CVE in the CISA Known Exploited Vulnerabilities catalog to 10.0.
+- `--inventory` maps hostnames and IPs onto asset IDs (via optional `hostnames` / `addresses` lists). It flags network hosts nobody has inventoried as `shadow-asset`.
+- `--scan-local trivy|osv-scanner PATH` runs a locally installed code scanner.
+- In the remediation control room (`vf-remediator`), `GET /attack-surface` renders the same heat map from the reports in `ATTACK_SURFACE_DIR`.
+
 Use it as a library:
 
 ```python
@@ -145,7 +175,7 @@ The original flat launchers and doctrine files remain the compatibility layer fo
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 
-1. `python -m pytest tests/ -q` — 210-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
+1. `python -m pytest tests/ -q` — 231-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, verification and attack-surface heat maps, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
 2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
 3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
 4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.

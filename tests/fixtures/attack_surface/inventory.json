@@ -1,0 +1,5 @@
+{"assets":[
+{"asset_id":"edge-gateway","hostnames":["gw.example.internal"],"addresses":["192.0.2.10"],"authorized":true,"criticality":"critical"},
+{"asset_id":"customer-app","hostnames":["app.example.internal"],"addresses":["192.0.2.20"],"authorized":true,"criticality":"high"},
+{"asset_id":"app-image","hostnames":["registry.example.internal/app:1.4"],"authorized":true,"criticality":"high"}
+]}
