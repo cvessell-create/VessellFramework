@@ -95,6 +95,24 @@ The recognition gate quarantines name-only matches, classifies recognition
 stages, and counts independent provenance roots rather than search-result
 quantity.
 
+Render the verification heat map (claim x source matrix) for a batch of
+claim checks — terminal, standalone HTML, CSV, or raw JSON:
+
+```powershell
+python -m vessell.heatmap example_event_checks.json                      # colour terminal grid
+python -m vessell.heatmap example_event_checks.json --format html -o outputs/heatmaps/event.html
+python -m vessell.heatmap example_event_checks.json --format csv
+```
+
+(Installed entry point: `vf-heatmap`.) Each row is a claim run through
+`verify_claim` (verdict + independence-discounted score); each cell is the
+source's tier weight — blue affirms, red denies, grey is silent — on the
+colour-blind-safe ColorBrewer `RdBu` diverging scale. Repeat sightings from
+one source (e.g. at 10' and 41' of a live event) are merged into one cell
+listing every event clock. In code: `vessell.report.event_matrix(checks)`
+builds the grid and `vessell.heatmap.render_html / render_text / render_csv`
+render it.
+
 Use it as a library:
 
 ```python
@@ -127,7 +145,7 @@ The original flat launchers and doctrine files remain the compatibility layer fo
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 
-1. `python -m pytest tests/ -q` — 144-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
+1. `python -m pytest tests/ -q` — 210-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
 2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
 3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
 4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.

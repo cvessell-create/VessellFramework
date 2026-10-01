@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "claim": "St. Louis City SC lead the NY Red Bulls 1-0 (live, first half)",
+      "sightings": [
+        {"source_name": "Sporting Life", "tier": "SOURCE_ESTABLISHED", "text": "NY Red Bulls 0 - St. Louis City SC 1", "event_clock": "10'"},
+        {"source_name": "Elbotola", "tier": "SOURCE_ESTABLISHED", "text": "New York Red Bulls 0-1 St. Louis City SC", "event_clock": "41'"},
+        {"source_name": "LiveScore", "tier": "SOURCE_ESTABLISHED", "text": "New York Red Bulls 0 - 1 St. Louis City", "event_clock": "45'"}
+      ]
+    },
+    {
+      "claim": "Rafael Navarro scored for St. Louis in the 5th minute",
+      "sightings": [
+        {"source_name": "Sporting Life", "tier": "SOURCE_ESTABLISHED", "text": "5' Rafael Navarro", "event_clock": "10'"},
+        {"source_name": "Elbotola", "tier": "SOURCE_ESTABLISHED", "text": "Goal Rafael Navarro Leal 5'", "event_clock": "41'"}
+      ]
+    },
+    {
+      "claim": "Corners are 0 NYRB / 2 STL",
+      "sightings": [
+        {"source_name": "Elbotola", "tier": "SOURCE_ESTABLISHED", "text": "0 Corners 2", "event_clock": "41'"}
+      ]
+    },
+    {
+      "claim": "NY Red Bulls lead St. Louis City SC 2-1",
+      "sightings": [
+        {"source_name": "footballpredictions.ai", "tier": "WORKING_HYPOTHESIS", "text": "2 - 1", "note": "Stale prediction page, not a live feed"},
+        {"source_name": "LiveScore", "tier": "SOURCE_ESTABLISHED", "text": "New York Red Bulls 0 - 1 St. Louis City", "denies": true, "event_clock": "45'"}
+      ]
+    }
+  ]
+}

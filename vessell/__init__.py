@@ -7,7 +7,9 @@ disavowal, and correction propagation (:mod:`vessell.provenance`),
 deterministic + LLM-calibrated evidence weighting (:mod:`vessell.weights`),
 the calibrated live-Llama weighter (:mod:`vessell.weighter`), and claim
 verification — planted-news checks, hostile-spread intel, and ghost-job
-filtering (:mod:`vessell.verify`).
+filtering (:mod:`vessell.verify`), and the claim x source verification
+matrix (:mod:`vessell.report`) with its heat map renderer
+(:mod:`vessell.heatmap`, CLI ``vf-heatmap``).
 """
 
 from vessell.malware_triage import triage_source_and_record
@@ -47,8 +49,8 @@ from vessell.provenance import (
     revalidate_claim,
     verify_event_chain,
 )
-from vessell.validation import require_provenance_fields
 from vessell.report import event_matrix
+from vessell.validation import require_provenance_fields
 from vessell.verify import (
     BURST_MIN_SOURCES,
     BURST_WINDOW_MINUTES,
@@ -67,6 +69,8 @@ from vessell.verify import (
     VerificationResult,
     analyze_planted_news,
     analyze_planted_news_and_record,
+    clock_sort_key,
+    detect_clock_drift,
     detect_ghost_job,
     detect_ghost_job_and_record,
     filter_ghost_jobs,
@@ -147,13 +151,15 @@ __all__ = [
     "analyze_planted_news",
     "analyze_planted_news_and_record",
     "claim_events",
+    "clock_sort_key",
     "combine_factors",
     "confirm_dependent_update",
     "deliver_correction",
+    "detect_clock_drift",
     "detect_ghost_job",
     "detect_ghost_job_and_record",
-    "event_matrix",
     "disavow",
+    "event_matrix",
     "filter_ghost_jobs",
     "gate_for_use",
     "gate_negative_finding",

@@ -17,7 +17,7 @@
     },
     {
       "path": "VesselFramework_Path_Sync_Log.jsonl",
-      "sha256": "6bdb12fd0f535266fe4abaaba003d510116f3f0df49a4486cbb2e67b708ad731"
+      "sha256": "107c01e92dbec583e9b63196ad5b733cc016dd554a30e26b3d936663ce8362e2"
     },
     {
       "path": "VesselFramework_Path_Sync_Log_v3.8.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "run_framework.bat",
-      "sha256": "9ef43ceb22046c7ba0e475c4802dbea0bbe6e76cc73985ccd33ba3feaff4b16a"
+      "sha256": "a02446f20043c6f57a4d17198526e2c0fc46d0891f59a5d8cf63162f3431ae22"
     },
     {
       "path": "memory_payloads/areas__bottleneck-thesis.md.managed.md",
@@ -97,7 +97,7 @@
     },
     {
       "path": "vessell/verify.py",
-      "sha256": "996ddfee8d7a0509b5d19058d43a366f6a5a17ce9c442ea928bee69bf39eb586"
+      "sha256": "cc14580b0480e11cfc1e54f8d00a7d1ad3095442389344d36dfda5ef57132722"
     },
     {
       "path": "tests/test_verify.py",

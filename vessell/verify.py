@@ -98,6 +98,8 @@ __all__ = [
     "VerificationResult",
     "analyze_planted_news",
     "analyze_planted_news_and_record",
+    "clock_sort_key",
+    "detect_clock_drift",
     "detect_ghost_job",
     "detect_ghost_job_and_record",
     "filter_ghost_jobs",
@@ -202,6 +204,28 @@ class VerificationResult:
         }
 
 
+_CLOCK_TOKEN = re.compile(r"(\d+)")
+
+
+def clock_sort_key(clock: str) -> tuple[tuple[int, int | str], ...]:
+    """Natural ordering for event-clock labels.
+
+    Plain string sorting puts ``"10'"`` before ``"5'"``; this key compares
+    digit runs numerically so ``5' < 10' < 45+2' < 90'``. Non-numeric
+    labels (``"HT"``, ``"FT"``) sort after numeric ones at the same
+    position and are compared case-insensitively.
+    """
+    parts: list[tuple[int, int | str]] = []
+    for token in _CLOCK_TOKEN.split(clock.strip()):
+        if not token:
+            continue
+        if token.isdigit():
+            parts.append((0, int(token)))
+        else:
+            parts.append((1, token.casefold()))
+    return tuple(parts)
+
+
 def detect_clock_drift(check: ClaimCheck) -> str | None:
     """Flag event-clock drift across a claim's sightings.
 
@@ -213,7 +237,8 @@ def detect_clock_drift(check: ClaimCheck) -> str | None:
     there is nothing to flag.
     """
     clocks = sorted(
-        {s.event_clock for s in check.sightings if not s.denies and s.event_clock}
+        {s.event_clock for s in check.sightings if not s.denies and s.event_clock},
+        key=clock_sort_key,
     )
     if len(clocks) < 2:
         return None

@@ -12,10 +12,33 @@ from __future__ import annotations
 
 from typing import Any
 
-from vessell.verify import ClaimCheck, verify_claim
+from vessell.verify import ClaimCheck, SourceSighting, clock_sort_key, verify_claim
 from vessell.weights import SOURCE_TIER_WEIGHTS
 
 __all__ = ["event_matrix"]
+
+
+def _cell(sightings: list[SourceSighting]) -> dict[str, Any]:
+    """Collapse every sighting one source made of one claim into a cell.
+
+    A source can sight the same claim more than once on a live event
+    (e.g. at 10' and again at 41'), or affirm and later deny it. The cell
+    keeps all of that: ``weight`` is the strongest affirming tier weight
+    minus the strongest denying tier weight (so a lone denial is negative
+    and a self-contradicting source nets toward zero), ``clock`` lists
+    every distinct event clock in natural order, and ``denies`` is set if
+    any sighting denies the claim.
+    """
+    affirm = max(
+        (SOURCE_TIER_WEIGHTS[s.tier] for s in sightings if not s.denies), default=0.0
+    )
+    deny = max((SOURCE_TIER_WEIGHTS[s.tier] for s in sightings if s.denies), default=0.0)
+    clocks = sorted({s.event_clock for s in sightings if s.event_clock}, key=clock_sort_key)
+    return {
+        "weight": round(affirm - deny, 4),
+        "clock": " / ".join(clocks) if clocks else None,
+        "denies": any(s.denies for s in sightings),
+    }
 
 
 def event_matrix(checks: list[ClaimCheck]) -> dict[str, Any]:
@@ -24,8 +47,9 @@ def event_matrix(checks: list[ClaimCheck]) -> dict[str, Any]:
     Returns ``{"sources": [...], "rows": [...]}`` where each row holds the
     claim text, verdict, corroboration score, independent-root count, the
     rationale, and ``cells`` mapping each source name to its
-    ``{"weight", "clock", "denies"}`` triple. Sources silent on a claim
-    simply have no cell.
+    ``{"weight", "clock", "denies"}`` triple (see :func:`_cell` for how
+    repeat sightings from one source are combined). Sources silent on a
+    claim simply have no cell. Render it with :mod:`vessell.heatmap`.
     """
     sources: list[str] = []
     for check in checks:
@@ -36,16 +60,9 @@ def event_matrix(checks: list[ClaimCheck]) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     for check in checks:
         result = verify_claim(check)
-        cells: dict[str, dict[str, Any]] = {}
+        by_source: dict[str, list[SourceSighting]] = {}
         for sighting in check.sightings:
-            weight = SOURCE_TIER_WEIGHTS[sighting.tier]
-            if sighting.denies:
-                weight = -weight
-            cells[sighting.source_name] = {
-                "weight": round(weight, 4),
-                "clock": sighting.event_clock,
-                "denies": sighting.denies,
-            }
+            by_source.setdefault(sighting.source_name, []).append(sighting)
         rows.append(
             {
                 "claim": result.claim,
@@ -54,7 +71,7 @@ def event_matrix(checks: list[ClaimCheck]) -> dict[str, Any]:
                 "independent_roots": result.independent_roots,
                 "rationale": result.rationale,
                 "signals": list(result.signals),
-                "cells": cells,
+                "cells": {name: _cell(group) for name, group in by_source.items()},
             }
         )
     return {"sources": sources, "rows": rows}
