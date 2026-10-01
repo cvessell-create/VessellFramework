@@ -37,11 +37,11 @@ import gzip
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -78,7 +78,7 @@ Challenge it using:
 9. FAILURE MODE — how can the control or reasoning fail?
 10. DISCONFIRMER — what observation would show the primary analysis is wrong?
 
-Do not expose private framework taxonomy in an external deliverable unless asked.
+In external deliverables, use the target domain's terminology; cite framework labels with attribution.
 Do not manufacture attacks, evidence, credentials, or facts. This is a critique layer.
 Return: challenges, severity, what survives challenge, and what must be tested.
 """
@@ -155,7 +155,7 @@ def run_legacy(script_name: str, passthrough: list[str]) -> int:
         script = root / script_name
         if not script.is_file():
             raise FileNotFoundError(f"Embedded runner not found: {script_name}")
-        proc = subprocess.run([_python(), str(script), *passthrough], cwd=root)
+        proc = subprocess.run([_python(), str(script), *passthrough], cwd=root, check=False)
         return int(proc.returncode)
 
 

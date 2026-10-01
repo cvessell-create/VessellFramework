@@ -6,7 +6,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/run_live_kev_case.py",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true
     },
@@ -15,7 +15,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/run_operational_master.py",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [
@@ -27,7 +27,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/run_preflight.py",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [
@@ -39,7 +39,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/run_active_defense.py",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [
@@ -52,7 +52,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/run_scanner_ingest.py",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [
@@ -71,7 +71,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/run_scanner_ingest.py",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [
@@ -90,7 +90,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "vessell.app.remediation_orchestrator",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
       "justMyCode": true,
@@ -164,7 +164,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "vessell.app.main",
-      "python": "${workspaceFolder}/.venv313/bin/python",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [

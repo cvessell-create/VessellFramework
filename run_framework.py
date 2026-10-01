@@ -6,10 +6,9 @@ from __future__ import annotations
 
 import argparse
 import os
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 INSTALLER = PACKAGE_DIR / "install_vesselframework_v3_8.py"

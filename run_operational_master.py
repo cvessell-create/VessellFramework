@@ -5,12 +5,16 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
-from pathlib import Path
 import subprocess
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
 
-from vessell.app.defense_planning import build_defense_plan, load_asset_inventory, write_defense_plan
+from vessell.app.defense_planning import (
+    build_defense_plan,
+    load_asset_inventory,
+    write_defense_plan,
+)
 from vessell.app.pipeline import run_case_pipeline
 from vessell.app.reporting import write_outputs
 from vessell.app.sources.cisa_kev import build_case_from_kev, fetch_kev_catalog
@@ -38,7 +42,7 @@ def main() -> int:
         print(f"RUN FAILED: {error}")
         return 1
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     case_directory = args.output_dir / "case_runs"
     defense_directory = args.output_dir / "defense_plans"
     report_path, case_json_path = write_outputs(case_result, case_directory, f"{timestamp}_operational-master-kev")

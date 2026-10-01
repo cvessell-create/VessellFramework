@@ -11,6 +11,6 @@
 - Shared private paths are synchronized only after an explicit installer apply succeeds and post-write hashes verify the writes. Until then, synchronization status is UNVERIFIED/NOT APPLIED.
 <!-- VESSELFRAMEWORK MANAGED END -->
 
-- Internal-analysis boundary: proprietary/original analytical methods, including Maskirovka mechanics and taxonomy, remain internal unless the operator explicitly authorizes disclosure.
-- External academic/professional outputs translate internal findings into appropriate domain terminology rather than exposing private analytical machinery.
-- Disclosure boundary: required disclosure of external tools (for example, generative AI) does not by itself require disclosure of a privately developed analytical framework.
+- Public release: VesselFramework, including the Maskirovka check architecture, is published under Apache-2.0 with attribution to Christopher R. Vessell.
+- External academic/professional outputs lead with the target domain's terminology; framework labels are cited with attribution when used.
+- Disclosure: academic-integrity, citation, source, and generative-AI disclosure requirements always apply.

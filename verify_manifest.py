@@ -10,7 +10,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 STATUS_PASS = "PASS"
 STATUS_CHANGED = "CHANGED"
 STATUS_MISSING = "MISSING"

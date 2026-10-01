@@ -16,7 +16,7 @@ Provide an auditable mechanism that can synchronize the canonical package with r
 
 ## Package files
 
-- `VesselFramework_MetaMatrix_Framework_v3.8.md`
+- `VesselFramework_MetaMatrix_Framework_v3.8_v3.9_Combined.md`
 - `SKILL.md`
 - `VesselFramework_Forecasting_SKILL_v1.0.md`
 - `vesselframework_reference_v1.1_provenance_firewall.py`

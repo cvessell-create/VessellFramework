@@ -7,10 +7,9 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
-
 
 REFERENCE_NAME = "vesselframework_reference_v1.1_provenance_firewall.py"
 SOURCE_STATUSES = {

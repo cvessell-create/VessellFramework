@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 
 class SourceStatus(Enum):
@@ -40,13 +39,13 @@ class EvidenceItem:
     description: str
     status: SourceStatus
     source_id: str
-    upstream_of: Optional[str] = None
+    upstream_of: str | None = None
 
 
 @dataclass
 class ProvenanceResolution:
     source_id: str
-    root_id: Optional[str]
+    root_id: str | None
     state: ProvenanceState
     path: list[str] = field(default_factory=list)
     note: str = ""
@@ -154,7 +153,7 @@ class EvidenceSet:
     def __init__(
         self,
         registry: ProvenanceRegistry,
-        items: Optional[list[EvidenceItem]] = None
+        items: list[EvidenceItem] | None = None
     ):
         self.registry = registry
         self.items = items or []
@@ -180,7 +179,7 @@ class EvidenceSet:
             if r.state != ProvenanceState.RESOLVED
         )
 
-    def explicit_dependency_stream_count(self) -> Optional[int]:
+    def explicit_dependency_stream_count(self) -> int | None:
         """
         Returns None when any lineage is unresolved.
         This prevents missing provenance from silently becoming independence.
@@ -229,7 +228,7 @@ def assess_maskirovka_convergence(
 ) -> str:
     eligible = []
     for a in assessments:
-        ok, reason = a.eligibility()
+        ok, _reason = a.eligibility()
         if ok:
             eligible.append(a)
 
@@ -309,7 +308,7 @@ def _run_tests() -> int:
         "Missing parent returns unresolved provenance",
         orphan_set.unresolved_count() == 1
     )
-    ok, reason = MaskirovkaAssessment(
+    ok, _reason = MaskirovkaAssessment(
         MaskirovkaVariant.BUDGETARY, True, orphan_set
     ).eligibility()
     check("Unresolved provenance blocks eligibility", ok is False)

@@ -5,18 +5,17 @@
 from __future__ import annotations
 
 import argparse
-from html.parser import HTMLParser
 import ipaddress
 import json
 import os
-from pathlib import Path
 import socket
 import sys
-from urllib.parse import parse_qs, urlencode, urljoin, urlparse
+from html.parser import HTMLParser
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qs, urlencode, urljoin, urlparse
 from urllib.request import Request, urlopen
-
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 SKILL_FILE = PACKAGE_DIR / "SKILL.md"

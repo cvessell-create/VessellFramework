@@ -8,7 +8,13 @@ import argparse
 import json
 from pathlib import Path
 
-from vessell.app.scanner_adapters import authorized_asset, import_confirmed_cves, load_report, run_local_scan, write_inventory
+from vessell.app.scanner_adapters import (
+    authorized_asset,
+    import_confirmed_cves,
+    load_report,
+    run_local_scan,
+    write_inventory,
+)
 
 
 def main() -> int:

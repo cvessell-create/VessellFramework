@@ -5,10 +5,15 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from vessell.app.defense_planning import approve_plan, build_defense_plan, load_asset_inventory, write_defense_plan
+from vessell.app.defense_planning import (
+    approve_plan,
+    build_defense_plan,
+    load_asset_inventory,
+    write_defense_plan,
+)
 from vessell.app.sources.cisa_kev import fetch_kev_catalog
 
 
@@ -30,7 +35,7 @@ def main() -> int:
     if args.approve:
         plan = approve_plan(plan, args.approve)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     output_path = write_defense_plan(plan, args.output_dir / f"{timestamp}_active-defense-plan.json")
     print("RUN COMPLETE")
     print(f"- defense_plan: {output_path}")

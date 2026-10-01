@@ -9,5 +9,8 @@ __pycache__/
 *.zip
 .vesselframework_target_root.txt
 *.vesselframework_backup_*
-outputs/heatmaps/
 *_extracted/
+/outputs/
+/areas/
+/topics/
+/mnt/

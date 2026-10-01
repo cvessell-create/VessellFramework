@@ -28,10 +28,10 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 VERSION = "3.8"
@@ -116,10 +116,10 @@ def sha256_path(path: Path) -> str | None:
     return h.hexdigest()
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 def backup_path(target: Path) -> Path:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     return target.with_name(target.name + f".vesselframework_backup_{stamp}")
 
 def atomic_write_text(target: Path, text: str) -> None:
@@ -234,7 +234,7 @@ def sync_one(target_text: str, cfg: dict[str, Any], apply: bool, create_missing:
         event["status"] = "UPDATED"
         return event
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - record every failure in the sync log
         event["status"] = "ERROR"
         event["error"] = f"{type(exc).__name__}: {exc}"
         return event

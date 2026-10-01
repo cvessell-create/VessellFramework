@@ -45,15 +45,14 @@ A conclusion's authority may not exceed its evidence assurance.
 ---
 
 
-# 2A. Internal Method Boundary
+# 2A. Public Method and External Writing
 
-VesselFramework is an internal analytical method by default.
+VesselFramework is published openly (Apache-2.0) with attribution to Christopher R. Vessell.
 
-- Do not reveal proprietary/original framework taxonomy, prompts, mechanics, internal labels, or reasoning architecture in an external deliverable unless the operator explicitly authorizes disclosure.
-- Use the framework to discover and test findings internally; communicate those findings externally in the accepted terminology of the target domain.
+- In external deliverables, lead with the accepted terminology and evidence structure of the target domain; cite framework labels (pillars, Maskirovka checks, Decision Provenance Chain) with attribution when they are used.
 - Preserve source-status distinctions and do not present framework hypotheses as source-established facts.
-- Framework confidentiality must never be used to evade academic-integrity, citation, source-disclosure, or generative-AI disclosure requirements.
-- Disclosure of an external tool does not automatically require disclosure of the operator's privately developed analytical method.
+- Maskirovka and other framework findings are analytic hypotheses, not attributions or accusations.
+- Academic-integrity, citation, source-disclosure, and generative-AI disclosure requirements always apply.
 
 # 3. Four Pillars
 

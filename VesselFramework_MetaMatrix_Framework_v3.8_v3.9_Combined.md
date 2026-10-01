@@ -10,8 +10,8 @@ This patch corrects a stale-state ambiguity in v3.8:
 1. A packaged skill or continuity payload is not evidence that the corresponding live/private path has been updated.
 2. Runtime synchronization may be claimed only after an explicit write succeeds and post-write verification confirms the target hash/state.
 3. Until verified, runtime installation state is `UNVERIFIED/NOT APPLIED`.
-4. Proprietary/original analytical methods are internal by default. External deliverables should communicate findings in the target domain's accepted terminology unless the operator explicitly authorizes framework disclosure.
-5. Internal-method confidentiality does not override academic-integrity, citation, external-source, or generative-AI disclosure obligations.
+4. The framework and its original analytical methods are published openly (Apache-2.0) with attribution to Christopher R. Vessell. External deliverables lead with the target domain's accepted terminology and cite framework labels with attribution when used.
+5. Academic-integrity, citation, external-source, and generative-AI disclosure obligations always apply.
 6. Tool disclosure must be accurate: do not name a generative-AI system or external source that was not actually consulted.
 
 
