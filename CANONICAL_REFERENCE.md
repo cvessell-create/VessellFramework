@@ -7,7 +7,7 @@
 - `VesselFramework_Forecasting_SKILL_v1.0.md`
 - `vesselframework_reference_v1.1_provenance_firewall.py`
 - `vesselframework_case_runner.py`
-- `schemas/` and `tests/`
+- `vessell/schemas/` and `tests/`
 
 ## Operational version statement
 

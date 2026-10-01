@@ -5,13 +5,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
-
-SCHEMA_ROOT = Path(__file__).parents[1] / "schemas"
+SCHEMA_ROOT = Path(__file__).with_name("schemas")
 
 
 def load_schema(name: str) -> dict[str, Any]:
     path = SCHEMA_ROOT / name
+    if path.parent != SCHEMA_ROOT or path.suffix != ".json":
+        raise ValueError(f"Unknown schema: {name}")
     with path.open("r", encoding="utf-8") as file:
         schema = json.load(file)
     if not isinstance(schema, dict):
@@ -20,6 +20,12 @@ def load_schema(name: str) -> dict[str, Any]:
 
 
 def validate_record(record: Any, schema_name: str) -> None:
+    try:
+        from jsonschema import Draft202012Validator
+    except ImportError as error:
+        raise RuntimeError(
+            "Schema validation needs jsonschema: pip install 'vessell-framework[core]'"
+        ) from error
     validator = Draft202012Validator(load_schema(schema_name))
     errors = sorted(validator.iter_errors(record), key=lambda error: list(error.path))
     if errors:

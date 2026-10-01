@@ -19,7 +19,7 @@ Python 3.13+ is required.
 1. **Tests** — new behavior ships with regression tests in `tests/`.
 2. **Clean gates** — `ruff check .`, `mypy` (strict), `python verify_manifest.py`, and `pytest` all pass; CI enforces all four.
 3. **Schemas** — new machine-readable records get a JSON schema in
-   `schemas/` plus a validation test.
+   `vessell/schemas/` plus a validation test.
 4. **Provenance honesty** — never weaken the provenance firewall, the
    harm gate, or the rule that the framework structures evidence but does
    not invent conclusions.

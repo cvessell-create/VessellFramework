@@ -14,7 +14,7 @@
 
 - `vesselframework_reference_v1.1_provenance_firewall.py`
 - `vesselframework_case_runner.py`
-- `schemas/case.schema.json`
+- `vessell/schemas/case.schema.json`
 - `tests/test_provenance.py`
 - `tests/test_validation.py`
 

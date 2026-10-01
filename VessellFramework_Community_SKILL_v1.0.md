@@ -33,7 +33,7 @@ Every PR must satisfy all of these:
    The repo's own `run_framework.py` health gate runs mypy on the
    installer; keep it passing.
 3. **Schemas.** New machine-readable records get a JSON schema under
-   `schemas/` and a validation test.
+   `vessell/schemas/` and a validation test.
 4. **Provenance honesty.** Framework code must never invent evidence,
    conclusions, or verification. The case report boundary ("structures
    supplied evidence; does not independently verify conclusions") is

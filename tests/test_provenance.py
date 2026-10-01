@@ -303,7 +303,7 @@ def test_worked_example_full_lifecycle() -> None:
 def test_claim_record_validates_against_schema() -> None:
     jsonschema = pytest.importorskip("jsonschema")
     schema_path = (
-        Path(__file__).parents[1] / "schemas" / "claim.record.schema.json"
+        Path(__file__).parents[1] / "vessell" / "schemas" / "claim.record.schema.json"
     )
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     record = _intake_blacklisted()

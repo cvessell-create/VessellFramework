@@ -20,6 +20,9 @@ def main() -> int:
     except (OSError, ValueError, json.JSONDecodeError) as error:
         print(f"VALIDATION FAILED: {error}")
         return 1
+    except RuntimeError as error:
+        print(f"VALIDATION UNAVAILABLE: {error}")
+        return 2
     print(f"VALIDATION PASSED: {args.record}")
     return 0
 

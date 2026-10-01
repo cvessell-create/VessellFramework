@@ -5,13 +5,13 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
-import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
-REFERENCE_NAME = "vesselframework_reference_v1.1_provenance_firewall.py"
+from vessell import provenance_firewall
+
 SOURCE_STATUSES = {
     "SOURCE-ESTABLISHED",
     "FRAMEWORK SYNTHESIS",
@@ -32,15 +32,9 @@ PRIMARY_MASKIROVKA_CHECK = "Brute-Force Stealth"
 PRIMARY_MASKIROVKA_AUTHOR = "Christopher R. Vessell"
 
 
-def load_reference_module(package_root: Path) -> Any:
-    reference_path = package_root / REFERENCE_NAME
-    spec = importlib.util.spec_from_file_location("vessel_reference", reference_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Unable to load reference implementation: {reference_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+def load_reference_module() -> ModuleType:
+    """Return the packaged v1.1 provenance firewall (``vessell.provenance_firewall``)."""
+    return provenance_firewall
 
 
 def optional_bool(mapping: dict[str, Any], key: str, default: bool) -> bool:
@@ -370,7 +364,7 @@ def main() -> int:
     try:
         case = load_case(args.case)
         validate_evidence(case)
-        report, blocked = markdown_report(case, load_reference_module(args.case.resolve().parent))
+        report, blocked = markdown_report(case, load_reference_module())
     except (OSError, RuntimeError, TypeError, ValueError) as error:
         print(f"ERROR: {error}")
         return 2

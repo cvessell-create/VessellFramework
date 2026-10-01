@@ -174,7 +174,7 @@ def test_every_weight_carries_its_provenance() -> None:
 
 def test_weight_record_serializes_to_schema() -> None:
     jsonschema = pytest.importorskip("jsonschema")
-    schema_path = Path(__file__).parents[1] / "schemas" / "weight.record.schema.json"
+    schema_path = Path(__file__).parents[1] / "vessell" / "schemas" / "weight.record.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
 
     registry = _registry_with(EvidenceItem("e", SourceStatus.SOURCE_ESTABLISHED, "e"))

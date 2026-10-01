@@ -82,38 +82,22 @@ original record kept, marked DISAVOWED, never deleted.
 """
 
 import hashlib
-import sys
 import uuid
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from enum import Enum
-from importlib.util import module_from_spec, spec_from_file_location
-from pathlib import Path
-from types import ModuleType
-from typing import Any
 
-
-def _load_reference() -> ModuleType:
-    reference_path = Path(__file__).parents[1] / "vesselframework_reference_v1.1_provenance_firewall.py"
-    spec = spec_from_file_location("vessel_reference", reference_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load reference implementation: {reference_path}")
-    module = module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-_reference: Any = _load_reference()
-EvidenceItem = _reference.EvidenceItem
-EvidenceSet = _reference.EvidenceSet
-MaskirovkaAssessment = _reference.MaskirovkaAssessment
-MaskirovkaVariant = _reference.MaskirovkaVariant
-ProvenanceRegistry = _reference.ProvenanceRegistry
-ProvenanceResolution = _reference.ProvenanceResolution
-ProvenanceState = _reference.ProvenanceState
-SourceStatus = _reference.SourceStatus
-assess_maskirovka_convergence = _reference.assess_maskirovka_convergence
+from vessell.provenance_firewall import (
+    EvidenceItem,
+    EvidenceSet,
+    MaskirovkaAssessment,
+    MaskirovkaVariant,
+    ProvenanceRegistry,
+    ProvenanceResolution,
+    ProvenanceState,
+    SourceStatus,
+    assess_maskirovka_convergence,
+)
 
 __all__ = [
     "CausalOrderingError",
@@ -156,12 +140,6 @@ __all__ = [
 ]
 
 
-# NOTE ON TYPING: SourceStatus is re-exported from the dynamically loaded
-# v1.1 reference module (see _load_reference), so mypy sees it as a variable
-# rather than a type. The targeted `type: ignore` comments below are scoped
-# to that single limitation; runtime behavior is unaffected (verify.py already
-# relies on the same re-export).
-
 # ---------------------------------------------------------------------------
 # Claim lifecycle: provenance-tagged claims with correction propagation
 # ---------------------------------------------------------------------------
@@ -202,7 +180,7 @@ class Corroboration:
     """One sighting corroborating a claim."""
 
     source: str
-    tier: SourceStatus  # type: ignore[valid-type]
+    tier: SourceStatus
     root: str | None = None  # shared evidentiary root, e.g. "intake-thread"
     observed_at: str = ""  # ISO date/datetime
     is_official_record: bool = False
@@ -215,7 +193,7 @@ class Corroboration:
     def to_dict(self) -> dict[str, object]:
         return {
             "source": self.source,
-            "tier": self.tier.value,  # type: ignore[attr-defined]
+            "tier": self.tier.value,
             "root": self.root,
             "observed_at": self.observed_at,
             "is_official_record": self.is_official_record,
@@ -308,7 +286,7 @@ class ClaimRecord:
     text: str
     subject: str
     source: str  # description of where the claim came from
-    source_tier: SourceStatus  # type: ignore[valid-type]
+    source_tier: SourceStatus
     recorded_at: str  # ISO date/datetime of intake
     status: ClaimStatus
     source_root: str | None = None  # shared evidentiary root of the intake
@@ -379,7 +357,7 @@ class ClaimRecord:
             "causal_predecessor_id": self.causal_predecessor(),
             "source": {
                 "description": self.source,
-                "tier": self.source_tier.value,  # type: ignore[attr-defined]
+                "tier": self.source_tier.value,
                 "recorded_at": self.recorded_at,
                 "root": self.source_root,
                 "is_official_record": self.is_official_record,
@@ -557,7 +535,7 @@ def intake_claim(
     text: str,
     subject: str,
     source: str,
-    source_tier: SourceStatus,  # type: ignore[valid-type]
+    source_tier: SourceStatus,
     recorded_at: str = "",
     source_root: str | None = None,
     is_official_record: bool = False,
@@ -613,7 +591,7 @@ def intake_claim(
 def add_corroboration(
     record: ClaimRecord,
     source: str,
-    source_tier: SourceStatus,  # type: ignore[valid-type]
+    source_tier: SourceStatus,
     root: str | None = None,
     observed_at: str = "",
     is_official_record: bool = False,

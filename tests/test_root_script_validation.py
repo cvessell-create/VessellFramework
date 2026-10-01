@@ -40,7 +40,6 @@ BASE_CASE: dict[str, Any] = json.loads((ROOT / "example_case.json").read_text(en
 def _run_case(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, case: Any) -> int:
     case_path = tmp_path / "case.json"
     case_path.write_text(json.dumps(case), encoding="utf-8")
-    (tmp_path / runner.REFERENCE_NAME).write_bytes((ROOT / runner.REFERENCE_NAME).read_bytes())
     monkeypatch.setattr(sys, "argv", ["vesselframework_case_runner.py", str(case_path)])
     return int(runner.main())
 

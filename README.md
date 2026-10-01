@@ -16,7 +16,7 @@ If you are reviewing this as an academic rough-working submission, read in this 
 2. `VesselFramework_MetaMatrix_Framework_v3.8_v3.9_Combined.md` (integrated doctrine and methods)
 3. `SKILL.md` (operational analyst execution layer)
 4. `VesselFramework_Forecasting_SKILL_v1.0.md` (forecasting controls and calibration form)
-5. `vesselframework_reference_v1.1_provenance_firewall.py` + `tests/` (executable reference and regression checks)
+5. `vessell/provenance_firewall.py` + `tests/` (executable reference and regression checks; `vesselframework_reference_v1.1_provenance_firewall.py` remains as the documented entry point)
 
 For package boundaries and canonical scope, see `CANONICAL_REFERENCE.md`.
 
@@ -173,7 +173,7 @@ for record in weighted.records:
     print(record.source_id, round(record.normalized_weight, 3))
 ```
 
-The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
+The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `vessell/schemas/` (shipped in the wheel), and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
 
 ## What this demonstrates
 

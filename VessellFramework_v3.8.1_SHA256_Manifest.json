@@ -41,7 +41,7 @@
     },
     {
       "path": "vesselframework_case_runner.py",
-      "sha256": "bc4175b2567fa1f1930990152cd484c41e9f999a000ba456568b1d420f1db787"
+      "sha256": "4cd2b68aad617aca9851e2324681a90e1ad2c0c8cf61b2bbf6595b87a297a86c"
     },
     {
       "path": "example_case.json",
@@ -77,7 +77,15 @@
     },
     {
       "path": "vesselframework_reference_v1.1_provenance_firewall.py",
-      "sha256": "60707ef396806b52fab326445b04d00772c7267c98ce15af94426c12a3b04efc"
+      "sha256": "8f56222677f98cdb0a0de1472b6355f420df52fe1fb3f3f01a39f86fd339bef3"
+    },
+    {
+      "path": "vessell/provenance_firewall.py",
+      "sha256": "031c38dd88e489bb5df508f126923c6a773a6fcbe91ac188bb74ce5ceffcffbb"
+    },
+    {
+      "path": "vessell/provenance.py",
+      "sha256": "8c84463cb35ffd130ab4ac929b66bec9d6700d7148e9ab1fe1a028448f289b74"
     },
     {
       "path": "vessell/weights.py",
@@ -89,7 +97,7 @@
     },
     {
       "path": "tests/test_weights.py",
-      "sha256": "4c460550f4d186cb4bbecaaa2df42aea4402fe7ce6496dd772b9baad774bee5a"
+      "sha256": "229092d542099a85b917efa2886f272dce3ca4b4de79409d47cbb02316b52b09"
     },
     {
       "path": "tests/test_weighter.py",
@@ -104,15 +112,15 @@
       "sha256": "a4969916c1d61d7573846ae705c3a5915cfe81029185f56d7b4dccf00bda0f45"
     },
     {
-      "path": "schemas/verification.record.schema.json",
+      "path": "vessell/schemas/verification.record.schema.json",
       "sha256": "599976a541bc21dde10ab900ee2547248750b9dc6ab42060e999939a0a617b08"
     },
     {
-      "path": "schemas/weight.record.schema.json",
+      "path": "vessell/schemas/weight.record.schema.json",
       "sha256": "af83f681e7f0508929960f5819684093b9a3e1816232a6d06ddea68b44254e9a"
     },
     {
-      "path": "schemas/claim.record.schema.json",
+      "path": "vessell/schemas/claim.record.schema.json",
       "sha256": "24fa4c5a26d7cab54762bb23f8fc7eb0f4fadc5a16b3a1e5b388fd1d1f1bd5c8"
     },
     {
