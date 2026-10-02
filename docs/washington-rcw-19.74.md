@@ -15,5 +15,3 @@ Official statutory references:
 
 - [Washington State Legislature: RCW 19.74](https://app.leg.wa.gov/rcw/default.aspx?cite=19.74)
 - [Missouri Revisor of Statutes: Mo. Rev. Stat. § 432.230](https://revisor.mo.gov/main/OneSection.aspx?section=432.230)
-
-This note is not legal advice.
