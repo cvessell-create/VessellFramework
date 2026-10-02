@@ -1,11 +1,287 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-09-30T16:48:55Z",
+  "generated_utc": "2026-10-02T20:24:58+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
+      "path": ".env.example",
+      "sha256": "5616a4379db603b40d5fed575784a60eda94897940eaa4fb2982957c2eff0860"
+    },
+    {
+      "path": ".github/FUNDING.yml",
+      "sha256": "17e534c09856804c892b1a95089fe9806a494cf74591a5178dfb85bf20389d43"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "d939c03ee8fd4d4e43e71dc5a35c8afb8a6be6aba0be80b2d51a901d838f5d15"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "d360f049b5db1b11d97aa90f970e3da4961bda8c0cb95a1f091a6304e30eab38"
+    },
+    {
+      "path": ".vscode/extensions.json",
+      "sha256": "3ac5007e77cbbb8ca681f0ec1c236dc7a8943cf28a4c56d285929cb6ddb7f15f"
+    },
+    {
+      "path": ".vscode/launch.json",
+      "sha256": "51ba58b2eb156f99cbd459d5825adccead1fdefd98c97d83715a0a604448e8aa"
+    },
+    {
+      "path": ".vscode/settings.json",
+      "sha256": "1d73fc998c70e029da3e8ada72d5176bfaa50de235d7c54804e102037a8f1513"
+    },
+    {
+      "path": ".vscode/tasks.json",
+      "sha256": "1b98d9c3b590775b7bbfc702b62fa2fcd887d16c7b199e30c2379cb6eaa58fb1"
+    },
+    {
+      "path": "6972090122f12179507291.pdf",
+      "sha256": "0d85b87ff385ad623cbd94cc2c3650e60e939ba43787436f5d4a0f96ca9711ba"
+    },
+    {
+      "path": "CANONICAL_REFERENCE.md",
+      "sha256": "52755f4df7358379cab160de1f969082c8d1274e14722d870015d1ca56e9abc8"
+    },
+    {
+      "path": "CITATION.cff",
+      "sha256": "9e0a6fbbe3b2d956871bce38c58335defdb77137e5c4b91761a1afdd754f8a79"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "d5ac0139c2d12cad6be8d2e5bc9a23f9152f6060561e7d5895a9544d8dd6cf51"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "META_REVIEW_AND_ROADMAP.md",
+      "sha256": "b0fad4362cfbdc075a6a0d286b89bf22e34153a5e6087964b647b223f64995f8"
+    },
+    {
+      "path": "PROFESSOR_PACKET_MANIFEST.md",
+      "sha256": "4efd9760a7b2e3f0819975559fee87cb69d7973e318c33973b823c5ef35d323c"
+    },
+    {
+      "path": "PROFESSOR_README.md",
+      "sha256": "1c8bf18d651d3867af1ba3f154f9fd20c721cc8eb694dff41fad1b4e08f29bc5"
+    },
+    {
+      "path": "Player's Quick Start Guide.docx",
+      "sha256": "01e19ed0d3743ff16a4081c89d432293c19a0c17a9df5f71d5acc3858065750d"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/[Content_Types].xml",
+      "sha256": "b5469cc65459a5ea328ad96a87d432830566a3056e763bb3d3fbb985813649ce"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/_rels/.rels",
+      "sha256": "1cc87395d4a229f21c23af406724de12dd9454071925f983e4b648a7b2be8cc5"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/_rels/document.xml.rels",
+      "sha256": "68d3f9ebb937c48f4b8a2abe0d69bc58db3664ce02b5478d574bf15139760d20"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/_rels/fontTable.xml.rels",
+      "sha256": "09977a85ffa731bc9d062a1ba56e33fe795bd95b3d59f68c940d2a85174b26ec"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/_rels/footer1.xml.rels",
+      "sha256": "6da7a486da2022851359dddebe4d23b4799d05acbf35790f6c5fbcde09ac3ec9"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/_rels/footer2.xml.rels",
+      "sha256": "6da7a486da2022851359dddebe4d23b4799d05acbf35790f6c5fbcde09ac3ec9"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/_rels/header1.xml.rels",
+      "sha256": "6da7a486da2022851359dddebe4d23b4799d05acbf35790f6c5fbcde09ac3ec9"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/_rels/header2.xml.rels",
+      "sha256": "6da7a486da2022851359dddebe4d23b4799d05acbf35790f6c5fbcde09ac3ec9"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/document.xml",
+      "sha256": "f87cfbf0ffc3f780c213d06753014f4b521b67fad9bf7be33226216218442368"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/fontTable.xml",
+      "sha256": "073ede0f3e05b57517f21c21533399d6631216721c240d9816b230ca9f3a79c1"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/fonts/ProximaNova-bold.ttf",
+      "sha256": "b0e85dffe165a769651dc67bbf0dcec43c72e644f4bbc7ff36dfc21485c1ff2f"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/fonts/ProximaNova-boldItalic.ttf",
+      "sha256": "7b02a729704c800c4a94ae5a6758dd8a6a287a74195ce5cb15e38b068f995d73"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/fonts/ProximaNova-italic.ttf",
+      "sha256": "993164289af3675ac9259b8c73a916f687c074131d74bfd04298c2f6e8097521"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/fonts/ProximaNova-regular.ttf",
+      "sha256": "4c67935d355ba39648d614ef21434123cae62fb059180f97c586d70f78d38ab5"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/footer1.xml",
+      "sha256": "e1a1b883305604fdb2f8ff995cb3b4d95fbfb4f757e73654749b63a23a753405"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/footer2.xml",
+      "sha256": "2a26a1cf2a5c1cb0e18ede6a3f8b8b76d34a90c4d5a4ec0540d47ee47697f83e"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/footnotes.xml",
+      "sha256": "d790d7141ee9c26e00fb62477ef49abb6b85590583b65fd5e6fe862e1f15dcb2"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/header1.xml",
+      "sha256": "284cc86069f76a4b093685108869a87d9d2f8d47481055c22545004e77c1e7bf"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/header2.xml",
+      "sha256": "7590f413d8993f58cf84d31a754cc5c21b89affabfb1936eaaeee8a2b9785e4c"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image1.png",
+      "sha256": "76ae1354737b016f7a3a3db4ed76199b9a89932e8ca71118d38eea09f744bb6a"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image10.png",
+      "sha256": "61ca632b0bf797683f1816f4b29dc708b9f660a4048e02494f1a11b7ba04f804"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image11.png",
+      "sha256": "f745c114eb72d0beb5916a3ec05c6bc9409075d0d0ab1a348f9317c0abc58273"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image12.png",
+      "sha256": "0240373f3ccc44bdf3d2a32b5aeb2568ce1feb75d93b3ebda5f9c40d5076ee0b"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image13.png",
+      "sha256": "5590006449488ede817f263f1a83003f8b35f578a3c4783db0df0793b2e4d3ca"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image14.png",
+      "sha256": "05980ad0a50b7a0d3f3f29245d401259ebce470646e271bc0de136491bebab10"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image15.png",
+      "sha256": "3724ca78b0cf0b0643965e9b4120df887e7556656eb466fa566262e3c5acad8d"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image16.png",
+      "sha256": "ff96ee3a19bdadccdef00470222b6971889e45facd35ed813841490e10061fb8"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image17.png",
+      "sha256": "3b96eedbe2de0ecfd763424f50b0d1bdd1fa848308fed3c358ee71aa267baba8"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image18.png",
+      "sha256": "9e59093ca42bf034136b7a4c500f107d5635bce0e2e8c87ced24cdc5c08c61fa"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image19.png",
+      "sha256": "1e4e33cfefbb78444fef840fdd4c6913bc3f19cebfb472b9cd5c33d20d083d7b"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image2.png",
+      "sha256": "ec7d967d8b8c59a55a28e70860a37108d79dfd6e90b7b8e88fbc931dbe385cb4"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image20.png",
+      "sha256": "0b90a468e237ae80344c95f11808fc9338b6504d56d629a11aeef3ed34d43710"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image21.png",
+      "sha256": "6cdbe8544b80af73dd122b84e91710a96d11ead0f1c1e222b1d5e1433d14ad61"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image3.png",
+      "sha256": "35ebc8f736b594484a6f199ccbf0abc6cd0afd59dcbe1c99a8dd685bfacfa47b"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image4.png",
+      "sha256": "675d93c59e367a3294aecd7ae1501c7de8d5555e7409f9dbd93773eb48b0d1a5"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image5.png",
+      "sha256": "57c5a6996784fd91bc8ad4441ec559ffa69fbc54b0cdec5ee40e7ee113753c7a"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image6.png",
+      "sha256": "95734333893623775b65e25afdc084c389d63c7edf624ae09e88dc0d185cccbb"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image7.png",
+      "sha256": "2a03de0937ad2ac58756bebe7812d0d5f7e9d000ba6a838652d62045f4ed7f00"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image8.png",
+      "sha256": "0ce1de9c1162da7d942db1dbcfa73ae8571e38ff11eddd50713af6f32e5585df"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/media/image9.png",
+      "sha256": "1ee9648e4cf4c015d1dac14e88a4ea94868c6cdc8935dc7b11dcb94f7a1e39e5"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/numbering.xml",
+      "sha256": "957ed16fa93faf28e51ea18a163275581b787805145a157cc9a517bca5515b57"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/settings.xml",
+      "sha256": "26f2853fde05b88d4b0a9da0bb016d56a896901f60c9272dddf33c3f3fa61e4a"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/styles.xml",
+      "sha256": "a87a72b0775935f9723642f7678c4e9d51dd74e2ff64f037f3c68911ce68066c"
+    },
+    {
+      "path": "Player's Quick Start Guide_extracted/word/theme/theme1.xml",
+      "sha256": "b2295d3198893d2c03f5e584c749a15751b798aefdcd9bee2889f13903d68cb2"
+    },
+    {
+      "path": "Player's Quick Start Guide_plain.txt",
+      "sha256": "f0f4aa0709b618c9e7c1198d620042167fa47a58df2f8d4c7e5a63b5c88d6ff7"
+    },
+    {
+      "path": "README.md",
+      "sha256": "032d41a7ab1006c5ff2115e28410fd883b8952404efdaae480c61d3d26b8a575"
+    },
+    {
       "path": "SKILL.md",
       "sha256": "503e8eafa9073151786d14fec852258405bd75671ed01b94779a8e92f94bd85e"
+    },
+    {
+      "path": "Security_Control_Selection_Placement_Analyst_SKILL_v0.1.md",
+      "sha256": "97d540b0447290704cea2c7cd65613447c361e6da23fa47cf7425633ce1f7b82"
+    },
+    {
+      "path": "VesselFramework_Agent.md",
+      "sha256": "1a09aba70e0a362d25a524e25e68db55218d3cd8a057eb29f6d80f8fbf91205b"
+    },
+    {
+      "path": "VesselFramework_Agentic_SOC_Analyst_SKILL_v0.1.md",
+      "sha256": "43f3fe0a2793b697d313c63e067ae3d39d0c708c8f88d5e24bbf46ad470cf5ce"
+    },
+    {
+      "path": "VesselFramework_Evil_Twin_Adversarial_Analyst_SKILL_v0.1.md",
+      "sha256": "864df4cec47f07ad73f2ccdcd1f893ef5670de345ca6a41ec4086886dd945b8f"
+    },
+    {
+      "path": "VesselFramework_Forecasting_SKILL_v1.0.md",
+      "sha256": "aae71a9403ce26ef47a83085313b738baa58a001518fb2bac50d8bbae7a7ba65"
+    },
+    {
+      "path": "VesselFramework_Ghost_Job_Filter_SKILL_v0.1.md",
+      "sha256": "7f046807d813349c6993d750d16edeaf0e9559c2dc88647c20356aad9a54acbb"
     },
     {
       "path": "VesselFramework_Hardening_Patch_Registry_v3.8.md",
@@ -16,12 +292,32 @@
       "sha256": "0862f490715551b1dda95241069a3f9260ff76480fde76e34010dc431b10ff41"
     },
     {
+      "path": "VesselFramework_News_Edition_Report_SKILL_v0.1.md",
+      "sha256": "461c997091797e8662abf31f2d55b1e721505f989cd2968cd16f5f227215f5be"
+    },
+    {
       "path": "VesselFramework_Path_Sync_Log.jsonl",
-      "sha256": "6bdb12fd0f535266fe4abaaba003d510116f3f0df49a4486cbb2e67b708ad731"
+      "sha256": "76b97649afc6c9d8c631c820cef59b1630820daa2dd72ead8f718e86252a65ed"
     },
     {
       "path": "VesselFramework_Path_Sync_Log_v3.8.md",
       "sha256": "01aacf2ca3eb852d617f7a05baee6b8b9a3b86a2ad3c715d992b01a3696101bc"
+    },
+    {
+      "path": "VesselFramework_Planted_News_Intel_SKILL_v0.1.md",
+      "sha256": "5cbf322855a462c36aedba689661f9e2c27807a4522143e5fd62433a2bd5d265"
+    },
+    {
+      "path": "VesselFramework_SingleFile_EvilTwin_v0.2.py",
+      "sha256": "6422829f49bbef2aec308c2eb79e62b1d235148019e27fcce7a00fc3041d0691"
+    },
+    {
+      "path": "VesselFramework_Skill_Creator_SKILL_v0.1.md",
+      "sha256": "b84130f940d50dd9a99743097e5ee38ac6303ca8e052c95ce524575b3914dc35"
+    },
+    {
+      "path": "VesselFramework_Startle_Gate_Defence.md",
+      "sha256": "0d2c3bb4ab9b3b034e5df3bf05dd6e99ce0f4e6505f0003c4ef190a99eaf8e47"
     },
     {
       "path": "VesselFramework_v3.8.1_Stale_State_Correction.md",
@@ -32,32 +328,92 @@
       "sha256": "8738f02d4c0c9192f1de2c55aa9da34c5de5b5b5201d83a3c864db78f8f73370"
     },
     {
-      "path": "install_vesselframework_v3_8.py",
-      "sha256": "8a5e62e97a173e10720a8aeebda2ba725a81a1eebce353a2d888adbb35808aaf"
+      "path": "Vessel_Evidence_Assurance_Validation_Orchestrator_SKILL_v0.1.md",
+      "sha256": "861a6a74284d7bd530a507191374916d6f159ee6ff29d7389cd077e1ebd7f28e"
     },
     {
-      "path": "verify_manifest.py",
-      "sha256": "c5c44bfc8c87502cefc487354cbeeb2b41d66042ffaff845ee4e66037e78143b"
+      "path": "Vessel_Evidence_Product_Record_Template_v0.1.md",
+      "sha256": "08b1bffb436951ce66529178de04c51eb29390a592de0e639e5b820f945992bf"
     },
     {
-      "path": "vesselframework_case_runner.py",
-      "sha256": "77156e1b0fe9ce81cf23a581b609fb735989fb8fc8ca8d54bc0f034b383e18e5"
+      "path": "Vessel_Intelligence_Briefing_Policy_SKILL_v0.1.md",
+      "sha256": "20f36444ba307ab6b04044320983c7088f3ff55706255bdce317c896414fb0bc"
+    },
+    {
+      "path": "VessellFramework_Community_SKILL_v1.0.md",
+      "sha256": "e7cea6e25d692431105c08418cf7b4d56e8ccbb0cf86f862e6c14773ae35302b"
+    },
+    {
+      "path": "VessellFramework_Portfolio_Showcase_SKILL_v1.0.md",
+      "sha256": "5703a9161e4e2c7acea1564eb5fd039824da24530d3007064740951940b3f7bd"
+    },
+    {
+      "path": "XP_Cyber_Range_Challenge_Analyst_SKILL_v0.1.md",
+      "sha256": "c9b0321ea43bc38ed403ef9f12dad78e6d7cb4b01ee91fba7080309884cdf0ff"
+    },
+    {
+      "path": "XP_Cyber_Range_Challenge_Framework_v0.1.md",
+      "sha256": "d5a9049aa62034fc14ee7474e500ea01b5cbcf6cf96e5fbf0c467c6fc4b8bbf8"
+    },
+    {
+      "path": "XP_Cyber_Range_Master_Challenge_Skill_v0.2.md",
+      "sha256": "ad96b13ff4fec6cdb0de292c6b1494fa45aa75e6d7c253653bf4496289d3945b"
+    },
+    {
+      "path": "areas/bottleneck-thesis.md",
+      "sha256": "36bf64481d7c46781ebf3c600b691ff0f1174528deee284dcf215744b646b8ba"
+    },
+    {
+      "path": "areas/maskirovka-paper.md",
+      "sha256": "bb39f9242fb04b6b62d5e8afe3bec3e869ddadb637ec1e6e26ea87915c60a989"
+    },
+    {
+      "path": "areas/vessel-framework.md",
+      "sha256": "2b003dfb6f4acc7fcbaecabe77ae3bd5c2ab1526c36e64cf43631de458858e86"
+    },
+    {
+      "path": "docs/claim-correction-case-study.md",
+      "sha256": "d823849749d17b3698332a24b811fca7371a1d255a8e79d1b587985c01b09cf0"
+    },
+    {
+      "path": "docs/claim-lifecycle.md",
+      "sha256": "dc9d689a2aa636bc621a462d73108756d225ad2d0589b3b08b3cab91fd3dc488"
+    },
+    {
+      "path": "docs/commercialization-strategy.md",
+      "sha256": "093cd1bc25527616085d09614fa6a2e89034f785161140b436940a9a8b945fe9"
+    },
+    {
+      "path": "docs/grad-school-prospectus.md",
+      "sha256": "34d16c5b29acda1784732e2c1f4fd4256dba68f407ef3c1a4dc12b28b9bf5c2a"
+    },
+    {
+      "path": "docs/references.md",
+      "sha256": "8076e0f7a996af057d4b435d257a65f9ab1d337312f5e0a176aeb5ef74b0e517"
+    },
+    {
+      "path": "docs/traceability/doctrine_code_matrix.md",
+      "sha256": "dee4b4c9920139feff290840d056357d92a060f791a542d2402813892742d4d6"
+    },
+    {
+      "path": "example_asset_inventory.json",
+      "sha256": "94a76d34ab96114ae25776a7f15a5f21096d42411b67b9dd7e8b50dd75041ae9"
     },
     {
       "path": "example_case.json",
       "sha256": "e900d67ffd5545bbd074b2c2c5e2489046d00ce62da6377d8d5bb9937fdf1e03"
     },
     {
-      "path": "run_framework.py",
-      "sha256": "02537f95f129ed12f471df82a9441287b99d721780433a729ffd60fc751547a0"
+      "path": "example_case_report.md",
+      "sha256": "b39a2fc0ab201a090b0a2ca11b61d5d1ec78bade24a1588db59675bb0999073e"
     },
     {
-      "path": "run_framework.ps1",
-      "sha256": "384c6854a00fb2f1b57901514c43fde739c6668acf5e646f2cbaeb5501c620c0"
+      "path": "example_recognition_evidence.json",
+      "sha256": "07046a9b93315c7a8f56171e6c68293ce2cabb96a9810ab8528a8c87613caf1b"
     },
     {
-      "path": "run_framework.bat",
-      "sha256": "9ef43ceb22046c7ba0e475c4802dbea0bbe6e76cc73985ccd33ba3feaff4b16a"
+      "path": "install_vesselframework_v3_8.py",
+      "sha256": "8a5e62e97a173e10720a8aeebda2ba725a81a1eebce353a2d888adbb35808aaf"
     },
     {
       "path": "memory_payloads/areas__bottleneck-thesis.md.managed.md",
@@ -76,32 +432,256 @@
       "sha256": "980b191acd5325d928e19659450379c1b8dbe4900b393edd8c301b253f7335c3"
     },
     {
-      "path": "vesselframework_reference_v1.1_provenance_firewall.py",
-      "sha256": "b489d3eb919cf8de833cc861f79ecae91645144c99ee210c7e950e38184cd38f"
+      "path": "mnt/skills/user/vessel-framework-analyst/SKILL.md",
+      "sha256": "503e8eafa9073151786d14fec852258405bd75671ed01b94779a8e92f94bd85e"
     },
     {
-      "path": "vessell/weights.py",
-      "sha256": "5d6f09042e695fb98b7136a6de136e68bcbd843bc7b580e456a8c05420516dfe"
+      "path": "outputs/case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
     },
     {
-      "path": "vessell/weighter.py",
-      "sha256": "1b0f98089398e8e94b85cfa08cf4f0a56f4faf9dfdd2b78d767ddec2386dd8a5"
+      "path": "outputs/case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
     },
     {
-      "path": "tests/test_weights.py",
-      "sha256": "4c460550f4d186cb4bbecaaa2df42aea4402fe7ce6496dd772b9baad774bee5a"
+      "path": "outputs/case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
     },
     {
-      "path": "tests/test_weighter.py",
-      "sha256": "f0c84f9748c36a26e422135280f5c38dfb0eed08ed0a1372a5bf30cb2c6f79b8"
+      "path": "outputs/case_runs/20260923T010123Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
     },
     {
-      "path": "vessell/verify.py",
-      "sha256": "996ddfee8d7a0509b5d19058d43a366f6a5a17ce9c442ea928bee69bf39eb586"
+      "path": "outputs/case_runs/20260923T010845Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
     },
     {
-      "path": "tests/test_verify.py",
-      "sha256": "a4969916c1d61d7573846ae705c3a5915cfe81029185f56d7b4dccf00bda0f45"
+      "path": "outputs/case_runs/20260923T010845Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T010949Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T010949Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T011001Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T011001Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T011029Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T011029Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T011343Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T011343Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T015021Z_live-cisa-kev-case.json",
+      "sha256": "8810b35021041f298812426f2f029b0d279ff15836e0978cb848a21b76b636f8"
+    },
+    {
+      "path": "outputs/case_runs/20260923T015021Z_live-cisa-kev-case.md",
+      "sha256": "fc3ac76f03e65e8e8355fd50a7a902cdee097465cd3d33c93931c485273059b1"
+    },
+    {
+      "path": "outputs/case_runs/20260923T022022Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T022022Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T032056Z_live-cisa-kev-case.json",
+      "sha256": "e2a2ddc5a8c1501d2efc952958a6bc67a013599f7c35909600449a4b4f1871ec"
+    },
+    {
+      "path": "outputs/case_runs/20260923T032056Z_live-cisa-kev-case.md",
+      "sha256": "562d619447e040589b9e44153a4253b55c5691ea229786117231855a7d2ea0d6"
+    },
+    {
+      "path": "outputs/case_runs/20260923T032123Z_live-cisa-kev-case.json",
+      "sha256": "e2a2ddc5a8c1501d2efc952958a6bc67a013599f7c35909600449a4b4f1871ec"
+    },
+    {
+      "path": "outputs/case_runs/20260923T032123Z_live-cisa-kev-case.md",
+      "sha256": "562d619447e040589b9e44153a4253b55c5691ea229786117231855a7d2ea0d6"
+    },
+    {
+      "path": "outputs/case_runs/20260923T032723Z_live-cisa-kev-case.json",
+      "sha256": "e2a2ddc5a8c1501d2efc952958a6bc67a013599f7c35909600449a4b4f1871ec"
+    },
+    {
+      "path": "outputs/case_runs/20260923T032723Z_live-cisa-kev-case.md",
+      "sha256": "562d619447e040589b9e44153a4253b55c5691ea229786117231855a7d2ea0d6"
+    },
+    {
+      "path": "outputs/case_runs/20260923T034113Z_live-cisa-kev-case.json",
+      "sha256": "e2a2ddc5a8c1501d2efc952958a6bc67a013599f7c35909600449a4b4f1871ec"
+    },
+    {
+      "path": "outputs/case_runs/20260923T034113Z_live-cisa-kev-case.md",
+      "sha256": "562d619447e040589b9e44153a4253b55c5691ea229786117231855a7d2ea0d6"
+    },
+    {
+      "path": "outputs/case_runs/20260923T040550Z_operational-master-kev.json",
+      "sha256": "e2a2ddc5a8c1501d2efc952958a6bc67a013599f7c35909600449a4b4f1871ec"
+    },
+    {
+      "path": "outputs/case_runs/20260923T040550Z_operational-master-kev.md",
+      "sha256": "562d619447e040589b9e44153a4253b55c5691ea229786117231855a7d2ea0d6"
+    },
+    {
+      "path": "outputs/case_runs/20260923T191113Z_live-cisa-kev-case.json",
+      "sha256": "8810b35021041f298812426f2f029b0d279ff15836e0978cb848a21b76b636f8"
+    },
+    {
+      "path": "outputs/case_runs/20260923T191113Z_live-cisa-kev-case.md",
+      "sha256": "fc3ac76f03e65e8e8355fd50a7a902cdee097465cd3d33c93931c485273059b1"
+    },
+    {
+      "path": "outputs/case_runs/20260923T192008Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T192008Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T192245Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T192245Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/case_runs/20260923T192257Z_illustrative-provenance-and-posture-review.json",
+      "sha256": "f6ca2551e19f55dbb967bda0ee293f95b3905c3e325f7f4b3df5482b945fea08"
+    },
+    {
+      "path": "outputs/case_runs/20260923T192257Z_illustrative-provenance-and-posture-review.md",
+      "sha256": "2d1af5b9b4ec56e453b6d2a88d4638d0dae08f4bcad6d03a59504af34320dd7b"
+    },
+    {
+      "path": "outputs/defense_plans/20260923T032526Z_active-defense-plan.json",
+      "sha256": "4f4b69310fe1bb58ff4f694576e7d175580f6501dc8fe29f3ce1dccc90d7003b"
+    },
+    {
+      "path": "outputs/defense_plans/20260923T032658Z_active-defense-plan.json",
+      "sha256": "bc61ab443064cf9446bda9d6824915964212ac2a28fe49bcd9dd33b914cb6752"
+    },
+    {
+      "path": "outputs/defense_plans/20260923T040550Z_operational-master-plan.json",
+      "sha256": "ec177f4160cefd1d3dab7c38b0f4046f8e7a992b579df0bcb93c1c1388dc4e07"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "9c643a3c0e31adcb2a3c989d840bb1d6f9d694f29ad31e1a68ce6abd6bbbf081"
+    },
+    {
+      "path": "requirements/agent.txt",
+      "sha256": "6e8d7d9b0e50d61419df31da9515eb5e8d8c718150ccfe120bf9b6af49f85d4f"
+    },
+    {
+      "path": "requirements/core.txt",
+      "sha256": "8f7727332acf5de93da7e343ed840b2f45d1cc044761efa381ed739970565042"
+    },
+    {
+      "path": "requirements/dev.txt",
+      "sha256": "cbb3d1a9ccb506efa9a503e39ba9cc02576ae4c252550a2a1a904519f54d64d8"
+    },
+    {
+      "path": "requirements/documents.txt",
+      "sha256": "bc5e151bf002f974ba9b6ee65c4f90e0d98f8ac8c8d8337215e62e5e90f763b2"
+    },
+    {
+      "path": "requirements/orchestrator.txt",
+      "sha256": "93beee83dbe29e77035044cbc2fe52f11fdc3e2bc9aa923c07c2c9099434f110"
+    },
+    {
+      "path": "requirements/research.txt",
+      "sha256": "9d57b2d9a037546b52d6689a423ab9377183002b9aefbb8b9c596c467f76b642"
+    },
+    {
+      "path": "requirements/soc.txt",
+      "sha256": "e306f11dc19d76f8c7560a2f2eb20d29f97ad0cb213294652c59d5c03d85d7ac"
+    },
+    {
+      "path": "run_active_defense.py",
+      "sha256": "03e69af0fc9ffa10116109d56f499d1efd94da4f6b552a6a35a514f148b4f69f"
+    },
+    {
+      "path": "run_agent.bat",
+      "sha256": "9b4e0f401b8a5167c09c22632ec9a1831d79472b43c8c13c3c7bce8429bc5853"
+    },
+    {
+      "path": "run_agent.ps1",
+      "sha256": "19a9681a21c6de4439e9b361eb34ec8579bd4f238b6bac4833009f98e2bd5f64"
+    },
+    {
+      "path": "run_framework.bat",
+      "sha256": "9ef43ceb22046c7ba0e475c4802dbea0bbe6e76cc73985ccd33ba3feaff4b16a"
+    },
+    {
+      "path": "run_framework.ps1",
+      "sha256": "384c6854a00fb2f1b57901514c43fde739c6668acf5e646f2cbaeb5501c620c0"
+    },
+    {
+      "path": "run_framework.py",
+      "sha256": "02537f95f129ed12f471df82a9441287b99d721780433a729ffd60fc751547a0"
+    },
+    {
+      "path": "run_live_kev_case.py",
+      "sha256": "548d27480c4739f42b294e48aebb771fc35f072b96a4cd7b0998e7d5c20ae2fa"
+    },
+    {
+      "path": "run_operational_master.py",
+      "sha256": "1cd7459b20af61be5b5108eef4bec8582643cac20a3f945e8bc1024e7a4f223a"
+    },
+    {
+      "path": "run_preflight.py",
+      "sha256": "c53192dd6172705028e0189a2c186a405620b8ee19fdc0fac7707ce53aa9d825"
+    },
+    {
+      "path": "run_scanner_ingest.py",
+      "sha256": "9d6302f873220be6226509fe2f2bae31ce79dcfc90202328c09733fc5f879e81"
+    },
+    {
+      "path": "schemas/case.schema.json",
+      "sha256": "2485e7511da8b99557ac888a88d9a5bde0143d239f4653595f37b16c5a1763b9"
+    },
+    {
+      "path": "schemas/claim.record.schema.json",
+      "sha256": "9d49224474204b6a9c0a1afd0ffeadaeddf8458fdf737db775c519ff9f78c875"
+    },
+    {
+      "path": "schemas/evidence_product.schema.json",
+      "sha256": "1363a7ffa769d4fdb131da99165e6028eb326b4a0e7fb14aada129284681db84"
+    },
+    {
+      "path": "schemas/forecast.schema.json",
+      "sha256": "db9c0d6ad951a9ce3b5eacbac48bc5899e2b436a9498ce7b8222fbd45cd7aab3"
+    },
+    {
+      "path": "schemas/skill_record.schema.json",
+      "sha256": "e09e6f99e040ba504e048173fa95d6c768ed5c6a3216f9cd70276d7ecd584aba"
     },
     {
       "path": "schemas/verification.record.schema.json",
@@ -112,16 +692,236 @@
       "sha256": "af83f681e7f0508929960f5819684093b9a3e1816232a6d06ddea68b44254e9a"
     },
     {
-      "path": "schemas/claim.record.schema.json",
-      "sha256": "24fa4c5a26d7cab54762bb23f8fc7eb0f4fadc5a16b3a1e5b388fd1d1f1bd5c8"
+      "path": "tests/conformance/test_program_pipeline.py",
+      "sha256": "761eaad7782a396a26b95ba5d9e3bad4cc04da003e093dc303d178702b50674c"
+    },
+    {
+      "path": "tests/fixtures/benchmark_cases/mixed_status_case.json",
+      "sha256": "1963be10af0fbcbe0ab437ae53a45c1bfe6c682fb90ccd43a2a9f00b621da0a4"
+    },
+    {
+      "path": "tests/fixtures/benchmark_cases/repeated_reporting_case.json",
+      "sha256": "b27823e14aa45e6712fdfa3cb2855d3433f7afccd4d9889ecd47674ee30f222a"
+    },
+    {
+      "path": "tests/fixtures/benchmark_cases/unresolved_lineage_case.json",
+      "sha256": "1b6e5a1a257364a311057060c5da52de4642ff17f9bd6cd0626726d3ca16d89e"
+    },
+    {
+      "path": "tests/fixtures/live_sources/cisa_kev_sample.json",
+      "sha256": "47d21535af7089b74a1d38cb741ac790bcba1ce3914c9868b07c2dbfea12ea51"
+    },
+    {
+      "path": "tests/test_agentic_soc.py",
+      "sha256": "8f20dd08809bfa8ea499832801d57c2f7c0932ea46b6893fbb36d0ce4c2c83ad"
+    },
+    {
+      "path": "tests/test_agentic_soc_adapter.py",
+      "sha256": "4fd5cc5a589a087fbfa643f712af36ce26fc7c260b830eb68229204ffaf5bcce"
+    },
+    {
+      "path": "tests/test_causal_paths.py",
+      "sha256": "007fb68a2e42d14eaef4849ecddd4a6f9eda600b7e4e7b6e34f4b1924075f9c2"
+    },
+    {
+      "path": "tests/test_cisa_kev_intake.py",
+      "sha256": "8f4703990060f47877536ef3b0d309733dfc29bf0bbe30d6123583b1a86a78cb"
+    },
+    {
+      "path": "tests/test_claim_lifecycle_api.py",
+      "sha256": "e2fb8ca87e7b6d7271fcdbfe05037e82a0061c3430a96369b05e96f08236abd7"
+    },
+    {
+      "path": "tests/test_defense_planning.py",
+      "sha256": "4ac920d9aa7bce6e9ea157487979d3b35f974ba01d9bd6baffe075974886b86b"
     },
     {
       "path": "tests/test_doctrine_reconciliation.py",
       "sha256": "ffb7d48c2fe4981e4f8db481d430203e2db3245efa4dbc883c2c0e9df08ec408"
     },
     {
-      "path": "tests/test_causal_paths.py",
-      "sha256": "007fb68a2e42d14eaef4849ecddd4a6f9eda600b7e4e7b6e34f4b1924075f9c2"
+      "path": "tests/test_live_event_verification.py",
+      "sha256": "7ed06dd8e43008c0d12fae1bed97f1d30e01b44e9622ff284dbe18301210d1e7"
+    },
+    {
+      "path": "tests/test_malware_triage.py",
+      "sha256": "ad736be7ec48026a4c38d98860a0939ceb0408835fd69a04b3aa4299099183ce"
+    },
+    {
+      "path": "tests/test_microsoft_intune.py",
+      "sha256": "7866cb8aa1ae337693bb57f6cbd289a6121f644ce402efa517b1d0e6c2ea0302"
+    },
+    {
+      "path": "tests/test_preflight.py",
+      "sha256": "0673d8cdaaf7b6b54847c60aaff2ee1d6d86992f690c5fd33216c1ea3e995621"
+    },
+    {
+      "path": "tests/test_provenance.py",
+      "sha256": "42763173307d93f23febc930448751214df437c6fe64fbe8eb7523503cce232b"
+    },
+    {
+      "path": "tests/test_provenance_events.py",
+      "sha256": "42f0279333dbdabf6832b28c1c776306c8dc34c46a8756427d02b3bebbe196cb"
+    },
+    {
+      "path": "tests/test_recognition_gate.py",
+      "sha256": "c63174be29a371bb5d7a87f8623666e1ed4cda59ab9f392a994edec54683db0a"
+    },
+    {
+      "path": "tests/test_remediation_orchestrator.py",
+      "sha256": "6a2390c885d133f7a3702455a4a5c5e8f127c24858337b6fc9eec23951b806d1"
+    },
+    {
+      "path": "tests/test_scan_reporting.py",
+      "sha256": "0e57913da54224da9dfdad82a3c96f27d106bb0cb66bc58be64d67a0476a2aca"
+    },
+    {
+      "path": "tests/test_scanner_adapters.py",
+      "sha256": "bad21367bda3e95b76cbfeda5accd7b342cedd8aad4fdb1d332cb30f4ac6d1e6"
+    },
+    {
+      "path": "tests/test_single_file_evil_twin.py",
+      "sha256": "4a4121992975b1ecc777d19aaed429fb8490c8af466988407a711c9d87babd09"
+    },
+    {
+      "path": "tests/test_validation.py",
+      "sha256": "c89effb3f42564e36903880b97860eee7a3b6d42544faba690b7abcd15aa8919"
+    },
+    {
+      "path": "tests/test_verify.py",
+      "sha256": "a4969916c1d61d7573846ae705c3a5915cfe81029185f56d7b4dccf00bda0f45"
+    },
+    {
+      "path": "tests/test_weighter.py",
+      "sha256": "f0c84f9748c36a26e422135280f5c38dfb0eed08ed0a1372a5bf30cb2c6f79b8"
+    },
+    {
+      "path": "tests/test_weights.py",
+      "sha256": "4c460550f4d186cb4bbecaaa2df42aea4402fe7ce6496dd772b9baad774bee5a"
+    },
+    {
+      "path": "topics/writing-style.md",
+      "sha256": "980b191acd5325d928e19659450379c1b8dbe4900b393edd8c301b253f7335c3"
+    },
+    {
+      "path": "verify_manifest.py",
+      "sha256": "c5c44bfc8c87502cefc487354cbeeb2b41d66042ffaff845ee4e66037e78143b"
+    },
+    {
+      "path": "vessel/__init__.py",
+      "sha256": "7dfb55f27b9fcb9ff08165c997aa2191f135125d4e7f9d5ed6784d7eea088ed4"
+    },
+    {
+      "path": "vesselframework_agent.py",
+      "sha256": "913e677dec6fcb1b8cd71d33609a2502833514abb146ba629314d5a20df42af2"
+    },
+    {
+      "path": "vesselframework_case_runner.py",
+      "sha256": "77156e1b0fe9ce81cf23a581b609fb735989fb8fc8ca8d54bc0f034b383e18e5"
+    },
+    {
+      "path": "vesselframework_reference_v1.1_provenance_firewall.py",
+      "sha256": "b489d3eb919cf8de833cc861f79ecae91645144c99ee210c7e950e38184cd38f"
+    },
+    {
+      "path": "vessell/__init__.py",
+      "sha256": "874314eddb1c3ce32d29af13f4bd10cd24d1ff3e9e363cf6654e7b226d1144f2"
+    },
+    {
+      "path": "vessell/agentic_soc.py",
+      "sha256": "de915a95602a90285a990bb84904663ff2661a664f34328e9d28acac3fcaa26d"
+    },
+    {
+      "path": "vessell/agentic_soc_adapter.py",
+      "sha256": "94ad0499649cd8e6d7d5e43f23713c9ded0d18e864b03d7b2d8f313acdba2b28"
+    },
+    {
+      "path": "vessell/app/__init__.py",
+      "sha256": "46ced1792a2edccbd4075e1f00ffb31f1177eeef2a14e14fc2d779e9f95de43e"
+    },
+    {
+      "path": "vessell/app/defense_planning.py",
+      "sha256": "59f2e47d35f0ba27eaa8a6e51d93895e8164cdff497f8c08b1fff76b14dda15f"
+    },
+    {
+      "path": "vessell/app/main.py",
+      "sha256": "3ce0bcbd037ae76076366ae618da3bb5bf933a6bcbff5ca11e561169cbe84f79"
+    },
+    {
+      "path": "vessell/app/microsoft_intune.py",
+      "sha256": "8fd1141ad3f2be7bd41846ae55c6b9e5943ea7089450ece121af9092bf86ffe4"
+    },
+    {
+      "path": "vessell/app/models.py",
+      "sha256": "2c73b25e98c4a8fe4e75c7d50ceeb74db9eb13a642f1e45eb50f0e655f138f28"
+    },
+    {
+      "path": "vessell/app/pipeline.py",
+      "sha256": "b9b36b32d916cde93a168ee51e42268343f12a73013b8017ee6f0433b4a5fe61"
+    },
+    {
+      "path": "vessell/app/preflight.py",
+      "sha256": "98aa07a4a085f9f8d5ce5f65361a235adde458be07d8b247721f479aaf93dbea"
+    },
+    {
+      "path": "vessell/app/remediation_dashboard.html",
+      "sha256": "23ed490ce18a04c6885c60ec3af910970a63236a0b3630785ab763529d3778f6"
+    },
+    {
+      "path": "vessell/app/remediation_orchestrator.py",
+      "sha256": "c68d7c8dbf978391a87876629d573b5715038b781d076e60c5fab45021f87f9f"
+    },
+    {
+      "path": "vessell/app/reporting.py",
+      "sha256": "e6b7b17bf03b3a4165769aec29f323f8e13244e25d4dd1984ada45f0896f6a83"
+    },
+    {
+      "path": "vessell/app/scanner_adapters.py",
+      "sha256": "afe85f5b8df81c30882c26667bc3d72880a77987db6288d59ca432d451e9af3f"
+    },
+    {
+      "path": "vessell/app/sources/__init__.py",
+      "sha256": "f05654b2cb7d2b4370a199559c48915e1ba69454e0e4d41171f98762ce58260d"
+    },
+    {
+      "path": "vessell/app/sources/cisa_kev.py",
+      "sha256": "b1a46bfed6ebf12f3a2a55b21ef1e257df2c453613ed2b6ee4aae54982c0a39c"
+    },
+    {
+      "path": "vessell/cli.py",
+      "sha256": "8ed5224dd75330295e05e3ca9aa9512c2a4263de62f53916d1b856ce74859af0"
+    },
+    {
+      "path": "vessell/malware_triage.py",
+      "sha256": "ee6df76c101d6cd0ace359452919047aad087c4f6d9a425cb7e0ce8c821abb43"
+    },
+    {
+      "path": "vessell/provenance.py",
+      "sha256": "13a317237ed898ae662fb4ce15a61183ddb1201f17f337213ecd0c8212d9a62c"
+    },
+    {
+      "path": "vessell/report.py",
+      "sha256": "01da890e289f4e6969041c90ae78166f2cc75f2532ed49ba8c69ad20a412973c"
+    },
+    {
+      "path": "vessell/scan_reporting.py",
+      "sha256": "aa90ca9fa021effe0e8615500a85863b2907312aa767da02b123f8a8d971fa02"
+    },
+    {
+      "path": "vessell/validation.py",
+      "sha256": "b0fb5130884a9d5a134419ffe50f9f88f6f5521ea19bcfdcf740d9c30a037c03"
+    },
+    {
+      "path": "vessell/verify.py",
+      "sha256": "3d086ffe6033658092a88d2496e38355337b72b2804c12c5e2f4c071cbf547b6"
+    },
+    {
+      "path": "vessell/weighter.py",
+      "sha256": "1b0f98089398e8e94b85cfa08cf4f0a56f4faf9dfdd2b78d767ddec2386dd8a5"
+    },
+    {
+      "path": "vessell/weights.py",
+      "sha256": "5d6f09042e695fb98b7136a6de136e68bcbd843bc7b580e456a8c05420516dfe"
     }
   ]
 }

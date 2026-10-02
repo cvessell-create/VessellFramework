@@ -121,6 +121,9 @@
         "is_official_record": {
           "type": "boolean"
         },
+        "is_ai_generated": {
+          "type": "boolean"
+        },
         "recorded_at": {
           "type": "string"
         },
@@ -145,7 +148,8 @@
         "tier",
         "recorded_at",
         "root",
-        "is_official_record"
+        "is_official_record",
+        "is_ai_generated"
       ],
       "title": "ClaimSource",
       "type": "object"

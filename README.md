@@ -19,6 +19,8 @@ If you are reviewing this as an academic rough-working submission, read in this 
 5. `vesselframework_reference_v1.1_provenance_firewall.py` + `tests/` (executable reference and regression checks)
 
 For package boundaries and canonical scope, see `CANONICAL_REFERENCE.md`.
+The claim lifecycle API and its limits are documented in
+[docs/claim-lifecycle.md](docs/claim-lifecycle.md).
 
 ## Governing doctrine
 
