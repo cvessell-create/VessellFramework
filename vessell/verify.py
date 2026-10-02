@@ -38,9 +38,11 @@ the calling pipeline) decides.
    (:func:`record_search_path`, :func:`gate_negative_finding`). A negative
    existential ("no X exists") is a claim like any other: it enters
    UNVERIFIED and may not be reported/operationalized as a finding until
-   at least two independent search paths corroborate the absence — with
-   every attempted path recorded as the claim's provenance. The analyst's
-   own search history is the witnessed path (Section 4 rule 5: causal
+   at least two independent successful dataset roots corroborate the absence.
+   Each attempt records an explicit outcome and dataset root, so blocked or
+   errored searches do not count and aliases over one index are not counted
+   as independent evidence. The analyst's search history is the witnessed
+   path (Section 4 rule 5: causal
    relationships are witnessed by the paths information follows; a
    one-path absence claim is an unwitnessed edge).
 
@@ -53,8 +55,8 @@ the calling pipeline) decides.
    off on both names. The paths never walked: spelling variants,
    co-author cross-check ("Redmond" + "Kuper"), title-keyword search.
    Under this gate the absence stays UNVERIFIED and unreportable until a
-   second independent path corroborates it; a path that finds the target
-   contradicts the absence outright.
+   second independent source root corroborates it; a path that finds the
+   target contradicts the absence outright.
 """
 
 from __future__ import annotations
@@ -92,6 +94,7 @@ __all__ = [
     "JobPosting",
     "PlantedNewsReport",
     "PlantedVerdict",
+    "SearchOutcome",
     "SearchPath",
     "SourceSighting",
     "Verdict",
@@ -963,6 +966,15 @@ def filter_ghost_jobs(
 MIN_ABSENCE_PATHS = 2  # independent search paths that must corroborate an absence
 
 
+class SearchOutcome(str, Enum):
+    """What an attempted lookup actually established."""
+
+    MATCH = "MATCH"
+    NOT_FOUND_IN_CHECKED_SOURCE = "NOT_FOUND_IN_CHECKED_SOURCE"
+    BLOCKED = "BLOCKED"
+    ERROR = "ERROR"
+
+
 @dataclass(frozen=True)
 class SearchPath:
     """One attempted search path logged against a claim — the witnessed path
@@ -982,15 +994,23 @@ class SearchPath:
     query: str  # what was searched for, e.g. "Jonathan Castillo"
     strategy: str  # how it was searched, e.g. "literal-author-name"
     source: str  # where it was searched, e.g. "arxiv.org"
+    outcome: SearchOutcome
+    dataset_root: str = ""  # shared index/provider root, for independence checks
     date: str = ""  # ISO date/datetime the search ran; defaults to now
     result_summary: str = ""  # what came back, in the analyst's own words
-    found: bool = False  # True when this path surfaced the target
+
+    @property
+    def found(self) -> bool:
+        """Compatibility view of whether this path found the target."""
+        return self.outcome is SearchOutcome.MATCH
 
     def to_dict(self) -> dict[str, object]:
         return {
             "query": self.query,
             "strategy": self.strategy,
             "source": self.source,
+            "outcome": self.outcome.value,
+            "dataset_root": self.dataset_root or self.source,
             "date": self.date,
             "result_summary": self.result_summary,
             "found": self.found,
@@ -1012,25 +1032,47 @@ def record_search_path(
     source: str,
     date: str = "",
     result_summary: str = "",
-    found: bool = False,
+    found: bool | None = None,
+    *,
+    outcome: SearchOutcome | str | None = None,
+    dataset_root: str = "",
 ) -> SearchPath:
     """Log one attempted search path against a claim's provenance.
 
     Hits and misses alike: the analyst's search history is the witnessed
     path of a negative finding, and a negative existential may not be
     reported until :func:`gate_negative_finding` clears it. Raises
-    KeyError for an unknown claim id.
+    KeyError for an unknown claim id. An explicit outcome is required for
+    non-match results: no result is not the same as a successful search with
+    no match. ``dataset_root`` identifies a shared index/provider for
+    independence checks; if omitted, ``source`` is used as its root label.
     """
     get_claim(claim_id)  # KeyError if unknown
     if not query.strip() or not strategy.strip() or not source.strip():
         raise ValueError("record_search_path needs a query, a strategy, and a source.")
+    if outcome is None:
+        if found is not True:
+            raise ValueError(
+                "record_search_path requires an explicit outcome; "
+                "a lookup with no reported match is not necessarily a successful search."
+            )
+        outcome = SearchOutcome.MATCH
+    elif found is not None:
+        raise ValueError("pass either outcome or the legacy found argument, not both.")
+    try:
+        normalized_outcome = SearchOutcome(outcome)
+    except ValueError:
+        raise ValueError(f"unsupported search outcome: {outcome!r}") from None
+    if dataset_root and not dataset_root.strip():
+        raise ValueError("dataset_root must be non-empty when provided.")
     path = SearchPath(
         query=query,
         strategy=strategy,
         source=source,
+        outcome=normalized_outcome,
+        dataset_root=dataset_root.strip() or source,
         date=date or datetime.now(UTC).isoformat(timespec="seconds"),
         result_summary=result_summary,
-        found=found,
     )
     _SEARCH_PATHS.setdefault(claim_id, []).append(path)
     return path
@@ -1042,14 +1084,18 @@ def search_paths(claim_id: str) -> list[SearchPath]:
     return list(_SEARCH_PATHS.get(claim_id, []))
 
 
-def _independent_absence_paths(paths: list[SearchPath]) -> set[tuple[str, str]]:
-    """Distinct (strategy, source) pairs among paths corroborating the absence.
+def _independent_absence_paths(paths: list[SearchPath]) -> set[str]:
+    """Distinct dataset roots confirming a scoped absence.
 
-    Re-running the same literal query on the same source is one path, not
-    two; a spelling variant, a co-author cross-check, or a different index
-    is a new one.
+    Blocked and errored searches do not corroborate an absence. Different
+    strategies or source labels backed by the same dataset root do not count
+    independently.
     """
-    return {(p.strategy, p.source) for p in paths if not p.found}
+    return {
+        p.dataset_root
+        for p in paths
+        if p.outcome is SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE
+    }
 
 
 def gate_negative_finding(claim_id: str) -> tuple[bool, str]:
@@ -1071,7 +1117,7 @@ def gate_negative_finding(claim_id: str) -> tuple[bool, str]:
     gated-or-cleared outcome is the expressed uncertainty.
     """
     paths = search_paths(claim_id)
-    hits = [p for p in paths if p.found]
+    hits = [p for p in paths if p.outcome is SearchOutcome.MATCH]
     if hits:
         return (
             False,
@@ -1082,21 +1128,30 @@ def gate_negative_finding(claim_id: str) -> tuple[bool, str]:
             ),
         )
     independent = _independent_absence_paths(paths)
+    incomplete = [
+        p for p in paths if p.outcome in (SearchOutcome.BLOCKED, SearchOutcome.ERROR)
+    ]
     if len(independent) < MIN_ABSENCE_PATHS:
+        incomplete_note = (
+            f" {len(incomplete)} blocked/error lookup(s) were excluded."
+            if incomplete
+            else ""
+        )
         return (
             False,
             (
                 f"Negative finding gated: {len(independent)} independent search "
                 f"path(s) corroborate the absence, need {MIN_ABSENCE_PATHS}. A "
                 "single-path absence is an unwitnessed edge — walk another "
-                "independent path (spelling variant, co-author cross-check, "
-                "different index) before reporting."
+                "independent successful dataset root before reporting."
+                + incomplete_note
             ),
         )
     return (
         True,
         (
-            f"{len(independent)} independent search paths corroborate the absence; "
+            f"{len(independent)} independent search paths corroborate absence "
+            "within the checked sources; "
             "cleared to report as a finding."
         ),
     )

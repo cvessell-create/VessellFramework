@@ -1,8 +1,11 @@
 """Regression tests for vessell.verify — planted-news checks and ghost-job filtering."""
 
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
+from jsonschema import Draft202012Validator
 
 from vessell.provenance import SourceStatus
 from vessell.verify import (
@@ -432,6 +435,7 @@ from vessell.provenance import (
 )
 from vessell.verify import (
     MIN_ABSENCE_PATHS,
+    SearchOutcome,
     SearchPath,
     gate_negative_finding,
     record_search_path,
@@ -472,11 +476,15 @@ def test_record_search_path_logs_against_claim(_clean_search_paths: None) -> Non
         source="arxiv.org",
         date="2026-09-30",
         result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     assert isinstance(path, SearchPath)
     assert path.date == "2026-09-30"
     assert search_paths(claim_id) == [path]
     assert path.to_dict()["result_summary"] == "zero hits"
+    schema_path = Path(__file__).parents[1] / "schemas" / "search.path.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(path.to_dict())
 
 
 def test_record_search_path_rejects_unknown_claim(_clean_search_paths: None) -> None:
@@ -501,6 +509,7 @@ def test_single_search_path_stays_gated(_clean_search_paths: None) -> None:
         strategy="literal-author-name",
         source="arxiv.org",
         result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     allowed, reason = gate_negative_finding(claim_id)
     assert allowed is False
@@ -514,10 +523,12 @@ def test_two_independent_paths_clear_the_gate(_clean_search_paths: None) -> None
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="arxiv.org", result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     record_search_path(
         claim_id, query="Castillo Redmond Kipper", strategy="spelling-variant",
-        source="arxiv.org", result_summary="zero hits",
+        source="Semantic Scholar", result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     allowed, reason = gate_negative_finding(claim_id)
     assert allowed is True
@@ -531,10 +542,12 @@ def test_same_strategy_same_source_counts_once(_clean_search_paths: None) -> Non
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="arxiv.org", result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="arxiv.org", result_summary="zero hits again",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     allowed, _ = gate_negative_finding(claim_id)
     assert allowed is False
@@ -545,10 +558,12 @@ def test_same_strategy_different_source_is_independent(_clean_search_paths: None
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="arxiv.org", result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="Semantic Scholar", result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     allowed, _ = gate_negative_finding(claim_id)
     assert allowed is True
@@ -560,11 +575,12 @@ def test_found_path_contradicts_the_absence(_clean_search_paths: None) -> None:
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="arxiv.org", result_summary="zero hits",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     record_search_path(
         claim_id, query="Redmond Kuper", strategy="coauthor-cross-check",
         source="arxiv.org", result_summary="found arXiv:2307.10484",
-        found=True,
+        outcome=SearchOutcome.MATCH,
     )
     allowed, reason = gate_negative_finding(claim_id)
     assert allowed is False
@@ -580,6 +596,7 @@ def test_castello_worked_example_end_to_end(_clean_search_paths: None) -> None:
     record_search_path(
         claim_id, query="Jonathan Castillo", strategy="literal-author-name",
         source="arxiv.org", result_summary="zero hits", date="2026-09-30",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     allowed, _ = gate_negative_finding(claim_id)
     assert allowed is False  # may not be reported as a finding
@@ -588,17 +605,18 @@ def test_castello_worked_example_end_to_end(_clean_search_paths: None) -> None:
     record_search_path(
         claim_id, query="Jonathan Castello", strategy="spelling-variant",
         source="arxiv.org", result_summary="found arXiv:2307.10484",
-        found=True, date="2026-09-30",
+        outcome=SearchOutcome.MATCH, date="2026-09-30",
     )
     record_search_path(
         claim_id, query="Redmond Kuper", strategy="coauthor-cross-check",
         source="arxiv.org", result_summary="found arXiv:2307.10484",
-        found=True, date="2026-09-30",
+        outcome=SearchOutcome.MATCH, date="2026-09-30",
     )
     record_search_path(
         claim_id, query="inductive diagrams causal reasoning",
         strategy="title-keyword", source="arxiv.org",
-        result_summary="found arXiv:2307.10484", found=True, date="2026-09-30",
+        result_summary="found arXiv:2307.10484", outcome=SearchOutcome.MATCH,
+        date="2026-09-30",
     )
     assert len(search_paths(claim_id)) == 4
     allowed, reason = gate_negative_finding(claim_id)
@@ -611,11 +629,96 @@ def test_every_attempted_path_is_provenance(_clean_search_paths: None) -> None:
     claim_id = _absence_claim()
     record_search_path(
         claim_id, query="a", strategy="s1", source="src1", result_summary="miss",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
     )
     record_search_path(
         claim_id, query="b", strategy="s2", source="src2", result_summary="hit",
-        found=True,
+        outcome=SearchOutcome.MATCH,
     )
     paths = search_paths(claim_id)
     assert [p.found for p in paths] == [False, True]
     assert all(p.date for p in paths)  # dates default to now
+
+
+def test_unclassified_lookup_cannot_be_recorded_as_a_miss(
+    _clean_search_paths: None,
+) -> None:
+    with pytest.raises(ValueError, match="explicit outcome"):
+        record_search_path(
+            _absence_claim(),
+            query="target",
+            strategy="literal",
+            source="index",
+            result_summary="no result payload",
+        )
+
+
+def test_blocked_and_errored_lookups_do_not_corroborate_absence(
+    _clean_search_paths: None,
+) -> None:
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id,
+        query="target",
+        strategy="literal",
+        source="index-a",
+        outcome=SearchOutcome.BLOCKED,
+        result_summary="HTTP 403 challenge",
+    )
+    record_search_path(
+        claim_id,
+        query="target",
+        strategy="literal",
+        source="index-b",
+        outcome=SearchOutcome.ERROR,
+        result_summary="service unavailable",
+    )
+
+    allowed, reason = gate_negative_finding(claim_id)
+
+    assert allowed is False
+    assert "2 blocked/error lookup(s) were excluded" in reason
+
+
+def test_different_strategies_over_same_dataset_root_count_once(
+    _clean_search_paths: None,
+) -> None:
+    claim_id = _absence_claim()
+    for source, strategy in (
+        ("index-a.example", "literal"),
+        ("index-b.example", "spelling-variant"),
+    ):
+        record_search_path(
+            claim_id,
+            query="target",
+            strategy=strategy,
+            source=source,
+            dataset_root="shared-index.example",
+            outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
+        )
+
+    allowed, reason = gate_negative_finding(claim_id)
+
+    assert allowed is False
+    assert "1 independent search path(s)" in reason
+
+
+def test_different_source_labels_with_same_dataset_root_count_once(
+    _clean_search_paths: None,
+) -> None:
+    claim_id = _absence_claim()
+    for source in ("index-a.example", "index-b.example"):
+        record_search_path(
+            claim_id,
+            query="target",
+            strategy="literal",
+            source=source,
+            dataset_root="shared-index.example",
+            outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
+            result_summary="zero results",
+        )
+
+    allowed, reason = gate_negative_finding(claim_id)
+
+    assert allowed is False
+    assert "1 independent search path(s)" in reason

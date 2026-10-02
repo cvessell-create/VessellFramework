@@ -377,7 +377,7 @@
     },
     {
       "path": "docs/claim-lifecycle.md",
-      "sha256": "dc9d689a2aa636bc621a462d73108756d225ad2d0589b3b08b3cab91fd3dc488"
+      "sha256": "2b65961a9c76c521bfddcebe7e932ebe3eba265b663f837dcc4f0f9d1dbe07e9"
     },
     {
       "path": "docs/commercialization-strategy.md",
@@ -393,7 +393,7 @@
     },
     {
       "path": "docs/traceability/doctrine_code_matrix.md",
-      "sha256": "dee4b4c9920139feff290840d056357d92a060f791a542d2402813892742d4d6"
+      "sha256": "019a86c7eab934ad46faa608e9c4579ce802bd28677b3b3cf532afef46072090"
     },
     {
       "path": "example_asset_inventory.json",
@@ -680,6 +680,10 @@
       "sha256": "db9c0d6ad951a9ce3b5eacbac48bc5899e2b436a9498ce7b8222fbd45cd7aab3"
     },
     {
+      "path": "schemas/search.path.schema.json",
+      "sha256": "d932b5ac3b9e2fcb3d583f46ac72e95085176e736a8f6d6e0aa0f70764518725"
+    },
+    {
       "path": "schemas/skill_record.schema.json",
       "sha256": "e09e6f99e040ba504e048173fa95d6c768ed5c6a3216f9cd70276d7ecd584aba"
     },
@@ -789,7 +793,7 @@
     },
     {
       "path": "tests/test_verify.py",
-      "sha256": "a4969916c1d61d7573846ae705c3a5915cfe81029185f56d7b4dccf00bda0f45"
+      "sha256": "3871fb430d6202c39a68b3a91ae8fe36a1ff9cfc6666035e85e0e0ea3a94bbaa"
     },
     {
       "path": "tests/test_weighter.py",
@@ -913,7 +917,7 @@
     },
     {
       "path": "vessell/verify.py",
-      "sha256": "3d086ffe6033658092a88d2496e38355337b72b2804c12c5e2f4c071cbf547b6"
+      "sha256": "8edff0e51482eac954e35c527620e24feb046d4e3acfbab751602a3dfb62b3ee"
     },
     {
       "path": "vessell/weighter.py",

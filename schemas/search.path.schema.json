@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VessellFramework search-path provenance record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1
+    },
+    "strategy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "MATCH",
+        "NOT_FOUND_IN_CHECKED_SOURCE",
+        "BLOCKED",
+        "ERROR"
+      ]
+    },
+    "dataset_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "date": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result_summary": {
+      "type": "string"
+    },
+    "found": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "query",
+    "strategy",
+    "source",
+    "outcome",
+    "dataset_root",
+    "date",
+    "result_summary",
+    "found"
+  ]
+}

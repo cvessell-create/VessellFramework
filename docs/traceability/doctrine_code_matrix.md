@@ -30,7 +30,7 @@ Grounded in Lamport (1978) happens-before and Castello/Redmond/Kuper (2024) caus
 
 | Section 1 rule | Code implementation | Conformance test | Status |
 |---|---|---|---|
-| A negative existential ("no X exists") enters UNVERIFIED and may not be reported/operationalized until ≥2 independent search paths corroborate the absence; every attempted path is recorded provenance | `vessell.verify.SearchPath`, `record_search_path()`, `search_paths()`, `gate_negative_finding()` / `require_negative_finding()` (independence = distinct strategy+source; any hit contradicts the absence; `MIN_ABSENCE_PATHS = 2`) | `tests/test_verify.py` (10 tests incl. the Castello worked example end-to-end) | Mapped |
+| A negative existential ("no X exists") enters UNVERIFIED and may not be reported/operationalized until ≥2 independent dataset roots corroborate the absence; every attempted path is recorded provenance with an explicit outcome | `vessell.verify.SearchOutcome`, `SearchPath`, `record_search_path()`, `search_paths()`, `gate_negative_finding()` / `require_negative_finding()` (only `NOT_FOUND_IN_CHECKED_SOURCE` counts; independence = distinct dataset roots; `MATCH` contradicts absence; `BLOCKED`/`ERROR` do not count; `MIN_ABSENCE_PATHS = 2`) | `tests/test_verify.py` (14 search-path tests including incomplete lookup, shared-root, and Castello cases) | Mapped |
 
 ## Tradecraft standards (ICD 203; ICPM-2020-200-01)
 
