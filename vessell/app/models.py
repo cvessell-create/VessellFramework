@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from vessell.harm_gate import HarmGateResult
+
 
 @dataclass(frozen=True)
 class PipelineCounts:
@@ -32,3 +34,4 @@ class PipelineResult:
     notes: list[str]
     convergence_note: str
     claim_ids: tuple[str, ...] = ()  # provenance claims this result was derived from
+    harm_gate: HarmGateResult | None = None

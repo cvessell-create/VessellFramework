@@ -65,6 +65,9 @@ def main() -> int:
     print(f"- markdown_report: {markdown_path}")
     print(f"- machine_report: {json_path}")
     print(f"- confidence_ceiling: {result.confidence_ceiling}")
+    if result.harm_gate is None or not result.harm_gate.cleared:
+        print("RUNNER STATUS: REVIEW REQUIRED (Harm Gate)")
+        return 1
     return 0
 
 

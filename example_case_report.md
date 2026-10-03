@@ -19,9 +19,10 @@
 - `telemetry-001` [SOURCE-ESTABLISHED] -> RESOLVED root=`telemetry-001`
 
 ## Maskirovka Check Gate
-- **Primary check:** Brute-Force Stealth (developed by Christopher R. Vessell)
-- **Reference checks:** Budgetary / Structural / Operational
+- Primary check: **Brute-Force Stealth** (developed by Christopher R. Vessell)
+- Reference checks: Budgetary / Structural / Operational
 - **Structural:** BLOCKED: Trigger conditions not met.
+- **Brute-Force Stealth:** BLOCKED: Trigger conditions not met.
 - **Convergence:** No multi-variant convergence claim supported.
 
 ## Harm Gate
@@ -31,6 +32,10 @@
 - Cleared by intake gate: True
 - Safeguards:
   - Document the Harm Gate and at least one mitigation or alternative.
+
+### Forward Posture
+- Supplied: False
+- Posture: **NOT SUPPLIED**
 
 ## Analyst-Supplied Findings
 - **Paradox:** The stated protection claim may exceed what the assessment actually measures.

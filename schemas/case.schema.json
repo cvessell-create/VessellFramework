@@ -8,6 +8,19 @@
     "decision_question": {"type": "string", "minLength": 1},
     "domain": {"type": "string", "minLength": 1},
     "subject": {"type": "string", "minLength": 1},
+    "harm_gate": {
+      "type": "object",
+      "properties": {
+        "accuracy_risk": {"type": "boolean"},
+        "academic_risk": {"type": "boolean"},
+        "professional_risk": {"type": "boolean"},
+        "legal_risk": {"type": "boolean"},
+        "financial_security_risk": {"type": "boolean"},
+        "hard_to_reverse": {"type": "boolean"},
+        "benefit_proportionate": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
     "maskirovka": {
       "type": "array",
       "items": {"$ref": "#/$defs/maskirovka_assessment"}

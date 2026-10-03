@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Retrospective external-data evaluation",
+  "type": "object",
+  "required": [
+    "evaluation", "evidence_status", "independent_external_validation",
+    "source_dataset", "source_license", "source_hashes", "implementation_sha256",
+    "counts", "metrics", "by_horizon", "limitations"
+  ],
+  "properties": {
+    "evaluation": {"type": "string", "minLength": 1},
+    "evidence_status": {"const": "RETROSPECTIVE_EXTERNAL_DATA_EVALUATION"},
+    "independent_external_validation": {"const": false},
+    "source_dataset": {"const": "ci7c-73kg"},
+    "source_license": {"type": "string", "minLength": 1},
+    "source_hashes": {
+      "type": "object", "minProperties": 4,
+      "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+    },
+    "implementation_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "counts": {
+      "type": "object",
+      "required": [
+        "selected", "scored", "unmatched_observation", "missing_baseline",
+        "missing_interval", "interval_scored", "exact_duplicate_forecasts_excluded",
+        "nonfuture_targets_excluded"
+      ],
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "ensemble_mae", "persistence_baseline_mae", "mean_paired_absolute_error_improvement",
+        "mean_95_interval_score", "empirical_95_interval_coverage"
+      ],
+      "properties": {
+        "ensemble_mae": {"type": "number", "minimum": 0},
+        "persistence_baseline_mae": {"type": "number", "minimum": 0},
+        "mean_paired_absolute_error_improvement": {"type": "number"},
+        "mean_95_interval_score": {"type": ["number", "null"], "minimum": 0},
+        "empirical_95_interval_coverage": {
+          "type": ["number", "null"], "minimum": 0, "maximum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "by_horizon": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["n", "ensemble_mae", "persistence_baseline_mae"],
+        "properties": {
+          "n": {"type": "integer", "minimum": 1},
+          "ensemble_mae": {"type": "number", "minimum": 0},
+          "persistence_baseline_mae": {"type": "number", "minimum": 0}
+        },
+        "additionalProperties": false
+      }
+    },
+    "limitations": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "additionalProperties": false
+}

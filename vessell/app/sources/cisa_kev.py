@@ -49,7 +49,7 @@ def select_recent_vulnerabilities(
     cutoff = as_of - timedelta(days=lookback_days)
 
     vulnerabilities = catalog.get("vulnerabilities", [])
-    recent = [entry for entry in vulnerabilities if _added_date(entry) >= cutoff]
+    recent = [entry for entry in vulnerabilities if cutoff <= _added_date(entry) <= as_of]
     recent.sort(key=_added_date, reverse=True)
     return recent[:limit]
 

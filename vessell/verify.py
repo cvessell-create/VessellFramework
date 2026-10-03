@@ -38,11 +38,11 @@ the calling pipeline) decides.
    (:func:`record_search_path`, :func:`gate_negative_finding`). A negative
    existential ("no X exists") is a claim like any other: it enters
    UNVERIFIED and may not be reported/operationalized as a finding until
-   at least two independent successful dataset roots corroborate the absence.
+   at least two independent successful search paths corroborate the absence.
    Each attempt records an explicit outcome and dataset root, so blocked or
-   errored searches do not count and aliases over one index are not counted
-   as independent evidence. The analyst's search history is the witnessed
-   path (Section 4 rule 5: causal
+   errored searches do not count and aliases over the same index are not
+   mistaken for independent evidence. The analyst's own search history is
+   the witnessed path (Section 4 rule 5: causal
    relationships are witnessed by the paths information follows; a
    one-path absence claim is an unwitnessed edge).
 
@@ -55,8 +55,8 @@ the calling pipeline) decides.
    off on both names. The paths never walked: spelling variants,
    co-author cross-check ("Redmond" + "Kuper"), title-keyword search.
    Under this gate the absence stays UNVERIFIED and unreportable until a
-   second independent source root corroborates it; a path that finds the
-   target contradicts the absence outright.
+   second independent path corroborates it; a path that finds the target
+   contradicts the absence outright.
 """
 
 from __future__ import annotations

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from vessell.harm_gate import evaluate_harm_gate
 from vessell.provenance import (
     ClaimKind,
     ClaimRecord,
@@ -145,6 +146,7 @@ def run_case_pipeline(case: dict[str, Any], *, track_provenance: bool = True) ->
     every operational use of a claim registers itself.
     """
     registry = ProvenanceRegistry()
+    harm_gate = evaluate_harm_gate(case.get("harm_gate"))
     evidence_set = _build_evidence_set(case, registry)
     status_counts = _status_counts(evidence_set)
 
@@ -166,6 +168,8 @@ def run_case_pipeline(case: dict[str, Any], *, track_provenance: bool = True) ->
     convergence_note = assess_maskirovka_convergence(assessments)
 
     notes: list[str] = []
+    if not harm_gate.cleared:
+        notes.append("Harm Gate requires review; this intake does not authorize action.")
     if counts.unresolved_lineage > 0:
         notes.append("Unresolved provenance blocks high-confidence convergence.")
     if counts.framework_synthesis > 0 or counts.working_hypothesis > 0:
@@ -198,4 +202,5 @@ def run_case_pipeline(case: dict[str, Any], *, track_provenance: bool = True) ->
         notes=notes,
         convergence_note=convergence_note,
         claim_ids=claim_ids,
+        harm_gate=harm_gate,
     )

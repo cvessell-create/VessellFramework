@@ -528,6 +528,14 @@ If not:
 
 Package presence is not proof of live runtime synchronization.
 
+The local `vessell.evaluation` module implements a limited retrospective
+evaluation of externally generated CDC ensemble incident-death forecasts:
+source hashes, exact location/date joins, explicit duplicate/nonfuture/missing
+exclusions, MAE, a persistence comparison, and 95% interval score/coverage.
+Its synchronized output is not prospective validation of framework-generated
+forecasts. See [evaluation methods](docs/evaluation-methods.md) for scope and
+the evidence still needed before efficacy claims.
+
 ## Relationship to VesselFramework Doctrine
 
 This skill operationalizes:

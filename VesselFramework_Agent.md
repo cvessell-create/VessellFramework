@@ -1,3 +1,13 @@
+# Optional local analysis integrations
+
+The local package includes a tool catalog and explicit local-file adapters.
+Run `vessell-tools list` to see decoding, metadata, cryptography, and OSINT
+integrations, and `vessell-tools doctor` to check which command-line tools are
+installed. Read-only inspection is available only for allow-listed local
+artifacts. OpenPGP decryption requires an explicit authorization flag, uses
+the local GnuPG keyring, and refuses to overwrite output. Network OSINT and
+active reconnaissance tools are catalog-only; they must not be run without
+lawful purpose and explicit scope. See [docs/tool-integrations.md](docs/tool-integrations.md).
 
 # VessellFramework Operational Master
 
@@ -25,7 +35,7 @@ The model agent, public-web OSINT, and vendor/product correlation may supply lea
 | Core evidence, provenance, Harm Gate | [SKILL.md](SKILL.md) | `vesselframework_case_runner.py`, `vessell.app.pipeline` |
 | Evidence-assurance validation | [Vessel_Evidence_Assurance_Validation_Orchestrator_SKILL_v0.1.md](Vessel_Evidence_Assurance_Validation_Orchestrator_SKILL_v0.1.md) | `vesselframework_reference_v1.1_provenance_firewall.py` |
 | Intelligence briefing | [Vessel_Intelligence_Briefing_Policy_SKILL_v0.1.md](Vessel_Intelligence_Briefing_Policy_SKILL_v0.1.md) | Case reporting modules |
-| Forecasting | [VesselFramework_Forecasting_SKILL_v1.0.md](VesselFramework_Forecasting_SKILL_v1.0.md) | `vesselframework_agent.py` |
+| Forecasting | [VesselFramework_Forecasting_SKILL_v1.0.md](VesselFramework_Forecasting_SKILL_v1.0.md) | `vesselframework_agent.py` (analyst workflow), `vessell.evaluation` (retrospective scoring; not validated forecast generation) |
 | Agentic SOC analysis | [VesselFramework_Agentic_SOC_Analyst_SKILL_v0.1.md](VesselFramework_Agentic_SOC_Analyst_SKILL_v0.1.md) | `vessell.agentic_soc`, `vessell.agentic_soc_adapter` |
 | Adversarial / Evil Twin review | [VesselFramework_Evil_Twin_Adversarial_Analyst_SKILL_v0.1.md](VesselFramework_Evil_Twin_Adversarial_Analyst_SKILL_v0.1.md) | `VesselFramework_SingleFile_EvilTwin_v0.2.py` |
 | Recognition assurance | [VesselFramework_Startle_Gate_Defence.md](VesselFramework_Startle_Gate_Defence.md) | `VesselFramework_SingleFile_EvilTwin_v0.2.py` |
@@ -131,3 +141,13 @@ Use **Tasks: Run Task** or the Run and Debug dropdown:
 - `Run KEV Remediation Orchestrator`
 
 The orchestrator will not start until `.env` is configured. The example inventory remains intentionally unauthorized and must be replaced with assets you are authorized to manage.
+# Optional local analysis integrations
+
+The local package includes a tool catalog and explicit local-file adapters.
+Run `vessell-tools list` to see decoding, metadata, cryptography, and OSINT
+integrations, and `vessell-tools doctor` to check which command-line tools are
+installed. Read-only inspection is available only for allow-listed local
+artifacts. OpenPGP decryption requires an explicit authorization flag, uses
+the local GnuPG keyring, and refuses to overwrite output. Network OSINT and
+active reconnaissance tools are catalog-only; they must not be run without
+lawful purpose and explicit scope. See [docs/tool-integrations.md](docs/tool-integrations.md).

@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-10-02T20:24:58+00:00",
+  "generated_utc": "2026-10-03T02:02:16.104912+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -53,7 +53,7 @@
     },
     {
       "path": "LICENSE",
-      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      "sha256": "988ee76427017d910675fd72b00e284aa51dbffa369f4b721247445afefcaf27"
     },
     {
       "path": "META_REVIEW_AND_ROADMAP.md",
@@ -253,7 +253,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "032d41a7ab1006c5ff2115e28410fd883b8952404efdaae480c61d3d26b8a575"
+      "sha256": "3c8e5f6f88416921b11e684d648d6692f26f31297d5db00ee2c075543bbce81b"
     },
     {
       "path": "SKILL.md",
@@ -265,7 +265,7 @@
     },
     {
       "path": "VesselFramework_Agent.md",
-      "sha256": "1a09aba70e0a362d25a524e25e68db55218d3cd8a057eb29f6d80f8fbf91205b"
+      "sha256": "0f453e1cbe9486a9577910dbbedd29073a25401f647555d904faee19f024542f"
     },
     {
       "path": "VesselFramework_Agentic_SOC_Analyst_SKILL_v0.1.md",
@@ -277,7 +277,7 @@
     },
     {
       "path": "VesselFramework_Forecasting_SKILL_v1.0.md",
-      "sha256": "aae71a9403ce26ef47a83085313b738baa58a001518fb2bac50d8bbae7a7ba65"
+      "sha256": "f27946e8a5ff135fd13d4b1b168a885a94431d8b4e975ffe95186b56170f9885"
     },
     {
       "path": "VesselFramework_Ghost_Job_Filter_SKILL_v0.1.md",
@@ -377,11 +377,19 @@
     },
     {
       "path": "docs/claim-lifecycle.md",
-      "sha256": "2b65961a9c76c521bfddcebe7e932ebe3eba265b663f837dcc4f0f9d1dbe07e9"
+      "sha256": "f4ee70c5648f707a2e1a2def49c1332f999ee4fbab8028c05c8ed1ae69e91c3e"
     },
     {
       "path": "docs/commercialization-strategy.md",
       "sha256": "093cd1bc25527616085d09614fa6a2e89034f785161140b436940a9a8b945fe9"
+    },
+    {
+      "path": "docs/evaluation-methods.md",
+      "sha256": "e02fd6cbd768fe334ae7922a48e257c51080b4878340e737312de56b39f53b73"
+    },
+    {
+      "path": "docs/free-method-courses.md",
+      "sha256": "471399b0eb5dc387d141b709889f10d245ac551974a0b3c1b16cfc969806a738"
     },
     {
       "path": "docs/grad-school-prospectus.md",
@@ -392,8 +400,20 @@
       "sha256": "8076e0f7a996af057d4b435d257a65f9ab1d337312f5e0a176aeb5ef74b0e517"
     },
     {
+      "path": "docs/tool-integrations.md",
+      "sha256": "c77ba46665c013ff8b8dff80c629cbf2bb63f30b9e625ea0d450be8804377449"
+    },
+    {
       "path": "docs/traceability/doctrine_code_matrix.md",
       "sha256": "019a86c7eab934ad46faa608e9c4579ce802bd28677b3b3cf532afef46072090"
+    },
+    {
+      "path": "docs/trade-secrets-notice.md",
+      "sha256": "bbd9c7771e409f2fb176419550fbd95c6f67f954924166987f16108ad41b64a3"
+    },
+    {
+      "path": "docs/washington-rcw-19.74.md",
+      "sha256": "d5ccb3915fad00fef0ccccc27b4d12b95c81674bcd50e65910d8369270fe1c0f"
     },
     {
       "path": "example_asset_inventory.json",
@@ -401,11 +421,11 @@
     },
     {
       "path": "example_case.json",
-      "sha256": "e900d67ffd5545bbd074b2c2c5e2489046d00ce62da6377d8d5bb9937fdf1e03"
+      "sha256": "df9a2a69ba8d43f3d18adfc522141a43bec1e51a3c63495716957942737d908e"
     },
     {
       "path": "example_case_report.md",
-      "sha256": "b39a2fc0ab201a090b0a2ca11b61d5d1ec78bade24a1588db59675bb0999073e"
+      "sha256": "85ec0132c0fdfbc2f2867ef27e08c475ae7802b118a564929af7ce0190579904"
     },
     {
       "path": "example_recognition_evidence.json",
@@ -413,7 +433,7 @@
     },
     {
       "path": "install_vesselframework_v3_8.py",
-      "sha256": "8a5e62e97a173e10720a8aeebda2ba725a81a1eebce353a2d888adbb35808aaf"
+      "sha256": "b4537519cc46d5ce722d016be53079464e8320e463a2131d4b88cf083c24435e"
     },
     {
       "path": "memory_payloads/areas__bottleneck-thesis.md.managed.md",
@@ -593,7 +613,7 @@
     },
     {
       "path": "pyproject.toml",
-      "sha256": "9c643a3c0e31adcb2a3c989d840bb1d6f9d694f29ad31e1a68ce6abd6bbbf081"
+      "sha256": "a3bdaa597bdb7a7e95911ce4f58525c245ef88b5ff72b830b4f23ae3877bb594"
     },
     {
       "path": "requirements/agent.txt",
@@ -649,11 +669,11 @@
     },
     {
       "path": "run_live_kev_case.py",
-      "sha256": "548d27480c4739f42b294e48aebb771fc35f072b96a4cd7b0998e7d5c20ae2fa"
+      "sha256": "21773b7fe06a8ddf97452c8244bba92cd6b9c2cf600aac486ba00019851cb39b"
     },
     {
       "path": "run_operational_master.py",
-      "sha256": "1cd7459b20af61be5b5108eef4bec8582643cac20a3f945e8bc1024e7a4f223a"
+      "sha256": "dad1c247e44d52637fb54ec5f398d30aa6b9c361459fc54f850b38d7ca866039"
     },
     {
       "path": "run_preflight.py",
@@ -665,11 +685,15 @@
     },
     {
       "path": "schemas/case.schema.json",
-      "sha256": "2485e7511da8b99557ac888a88d9a5bde0143d239f4653595f37b16c5a1763b9"
+      "sha256": "305ea77e787fb8b329c36e50a37b7ce19b9da77b2ec06dabb23b2fad05ae5028"
     },
     {
       "path": "schemas/claim.record.schema.json",
       "sha256": "9d49224474204b6a9c0a1afd0ffeadaeddf8458fdf737db775c519ff9f78c875"
+    },
+    {
+      "path": "schemas/evaluation.schema.json",
+      "sha256": "f94726dabd57ba7c2cf435a5bf2ec1f9d490ace202bc144838ffe4e5b4046729"
     },
     {
       "path": "schemas/evidence_product.schema.json",
@@ -689,7 +713,7 @@
     },
     {
       "path": "schemas/verification.record.schema.json",
-      "sha256": "599976a541bc21dde10ab900ee2547248750b9dc6ab42060e999939a0a617b08"
+      "sha256": "0ac0521ec6a619819400fed35673bd146aff0664a1ea9c1ac55443cfe6828f49"
     },
     {
       "path": "schemas/weight.record.schema.json",
@@ -729,11 +753,15 @@
     },
     {
       "path": "tests/test_cisa_kev_intake.py",
-      "sha256": "8f4703990060f47877536ef3b0d309733dfc29bf0bbe30d6123583b1a86a78cb"
+      "sha256": "1e06f188a0edc0bf22b87444d1b4fdb5b45e1982afcd09a1af89bf3e5e140726"
     },
     {
       "path": "tests/test_claim_lifecycle_api.py",
       "sha256": "e2fb8ca87e7b6d7271fcdbfe05037e82a0061c3430a96369b05e96f08236abd7"
+    },
+    {
+      "path": "tests/test_data_evidence.py",
+      "sha256": "dfccc1877c7d021ab755d45dbc11aaa65b8f391521efd7f288b7f3652a8a22eb"
     },
     {
       "path": "tests/test_defense_planning.py",
@@ -742,6 +770,18 @@
     {
       "path": "tests/test_doctrine_reconciliation.py",
       "sha256": "ffb7d48c2fe4981e4f8db481d430203e2db3245efa4dbc883c2c0e9df08ec408"
+    },
+    {
+      "path": "tests/test_evaluation.py",
+      "sha256": "32b4c78a42f6c5f464d480ade0b4a826221ff4074e2513606c0988101e90d3cd"
+    },
+    {
+      "path": "tests/test_evidence_assessment.py",
+      "sha256": "f4f421604c6036436a3de12cf12acdce76ca7685853784cb105de97661c23785"
+    },
+    {
+      "path": "tests/test_harm_gate.py",
+      "sha256": "1b5898f25db5c5a4355bbdd9e19733e80148f9bbec41535f6a3ad7574c67c506"
     },
     {
       "path": "tests/test_live_event_verification.py",
@@ -754,6 +794,10 @@
     {
       "path": "tests/test_microsoft_intune.py",
       "sha256": "7866cb8aa1ae337693bb57f6cbd289a6121f644ce402efa517b1d0e6c2ea0302"
+    },
+    {
+      "path": "tests/test_path_sync.py",
+      "sha256": "07c8e536b79aec0eec75b1b587198dc6cecea5b7cb497c845604b66907b6ae60"
     },
     {
       "path": "tests/test_preflight.py",
@@ -784,8 +828,16 @@
       "sha256": "bad21367bda3e95b76cbfeda5accd7b342cedd8aad4fdb1d332cb30f4ac6d1e6"
     },
     {
+      "path": "tests/test_schema_contracts.py",
+      "sha256": "d65a62afcaa4f9ea571635e1be24db20ae9bc25c54262471bfaa96a75b138dfd"
+    },
+    {
       "path": "tests/test_single_file_evil_twin.py",
       "sha256": "4a4121992975b1ecc777d19aaed429fb8490c8af466988407a711c9d87babd09"
+    },
+    {
+      "path": "tests/test_tooling.py",
+      "sha256": "633acf45a483a6377af88bb3e1e318391c824aa095c8615f5420b9fdf9050d02"
     },
     {
       "path": "tests/test_validation.py",
@@ -793,7 +845,7 @@
     },
     {
       "path": "tests/test_verify.py",
-      "sha256": "3871fb430d6202c39a68b3a91ae8fe36a1ff9cfc6666035e85e0e0ea3a94bbaa"
+      "sha256": "5b28def9cb373f5f752ba5392af53e27fb0cbe9d636d8f5c8bf26a90bfe5a4fc"
     },
     {
       "path": "tests/test_weighter.py",
@@ -821,7 +873,7 @@
     },
     {
       "path": "vesselframework_case_runner.py",
-      "sha256": "77156e1b0fe9ce81cf23a581b609fb735989fb8fc8ca8d54bc0f034b383e18e5"
+      "sha256": "17b0707cdbba62ffb201f5b23b6433dac3aec86095f48b5634c88e95c47bd0aa"
     },
     {
       "path": "vesselframework_reference_v1.1_provenance_firewall.py",
@@ -829,7 +881,7 @@
     },
     {
       "path": "vessell/__init__.py",
-      "sha256": "874314eddb1c3ce32d29af13f4bd10cd24d1ff3e9e363cf6654e7b226d1144f2"
+      "sha256": "348434ca0091f8b9f166f007452e5a168fb610e4cfc1614e09f86b845685f035"
     },
     {
       "path": "vessell/agentic_soc.py",
@@ -849,7 +901,7 @@
     },
     {
       "path": "vessell/app/main.py",
-      "sha256": "3ce0bcbd037ae76076366ae618da3bb5bf933a6bcbff5ca11e561169cbe84f79"
+      "sha256": "91a795c03d750f3819005d3d86302956434c597bcd449d9f9fe32e87a88a5796"
     },
     {
       "path": "vessell/app/microsoft_intune.py",
@@ -857,11 +909,11 @@
     },
     {
       "path": "vessell/app/models.py",
-      "sha256": "2c73b25e98c4a8fe4e75c7d50ceeb74db9eb13a642f1e45eb50f0e655f138f28"
+      "sha256": "0f859c9fd7b6897ceac812a5e122fe26ef799cec38d96c1f6df64ed784fee049"
     },
     {
       "path": "vessell/app/pipeline.py",
-      "sha256": "b9b36b32d916cde93a168ee51e42268343f12a73013b8017ee6f0433b4a5fe61"
+      "sha256": "a2fed6ca72982cb3e0ba7e29172df922b63b00b30e3f1873cec21504670f35e1"
     },
     {
       "path": "vessell/app/preflight.py",
@@ -877,7 +929,7 @@
     },
     {
       "path": "vessell/app/reporting.py",
-      "sha256": "e6b7b17bf03b3a4165769aec29f323f8e13244e25d4dd1984ada45f0896f6a83"
+      "sha256": "b11b6dc27b12bee94279e1f9f1ce9ce7046580e3724b0103170b129b1d77dfbf"
     },
     {
       "path": "vessell/app/scanner_adapters.py",
@@ -889,11 +941,27 @@
     },
     {
       "path": "vessell/app/sources/cisa_kev.py",
-      "sha256": "b1a46bfed6ebf12f3a2a55b21ef1e257df2c453613ed2b6ee4aae54982c0a39c"
+      "sha256": "1caab134db9b4044142d9ea33a57a9cdd93119b7d2a82fc6a1378252a9581e0d"
     },
     {
       "path": "vessell/cli.py",
       "sha256": "8ed5224dd75330295e05e3ca9aa9512c2a4263de62f53916d1b856ce74859af0"
+    },
+    {
+      "path": "vessell/data_evidence.py",
+      "sha256": "15f27033aeecf94ff41b9d0cad83454206737d8142e4abc20a8fe1a6df36b5f6"
+    },
+    {
+      "path": "vessell/evaluation.py",
+      "sha256": "a96997a1b059ddb3e344779718ef57cd1e49d973f08f479be54c3da845a92f3e"
+    },
+    {
+      "path": "vessell/evidence_assessment.py",
+      "sha256": "b4fd6f0ba4c6d93d015641af91e08e5276f56c280ac0dace03a29e6266df8940"
+    },
+    {
+      "path": "vessell/harm_gate.py",
+      "sha256": "4e95c2e7952b32a8fbc6643a1484529e9e240538c2c7081dda8cf92b052fd3af"
     },
     {
       "path": "vessell/malware_triage.py",
@@ -912,12 +980,28 @@
       "sha256": "aa90ca9fa021effe0e8615500a85863b2907312aa767da02b123f8a8d971fa02"
     },
     {
+      "path": "vessell/tooling/__init__.py",
+      "sha256": "ffdb0f8d364fc337cf93e4e9ba43744775f1a1b1d153e8ca5226f9d1c9f84b56"
+    },
+    {
+      "path": "vessell/tooling/catalog.py",
+      "sha256": "cd1c3071957756a19ed853ea4676bde575a51f76dcfa7f1a4c010a5ca33c5c81"
+    },
+    {
+      "path": "vessell/tooling/cli.py",
+      "sha256": "7469bc962d6be325153553b31e8cbd3a8dd9d6e1465ea6307e0cb9ee78b42327"
+    },
+    {
+      "path": "vessell/tooling/local_files.py",
+      "sha256": "7f731ed23e74c86c89c5d5c408069700ac7856894ae63c59a80f55bc6e92b9e2"
+    },
+    {
       "path": "vessell/validation.py",
       "sha256": "b0fb5130884a9d5a134419ffe50f9f88f6f5521ea19bcfdcf740d9c30a037c03"
     },
     {
       "path": "vessell/verify.py",
-      "sha256": "8edff0e51482eac954e35c527620e24feb046d4e3acfbab751602a3dfb62b3ee"
+      "sha256": "92b374e7deb2ba7acee6839413be37e8074a619bc35512044ed40b78d9eddf1e"
     },
     {
       "path": "vessell/weighter.py",
@@ -926,6 +1010,30 @@
     {
       "path": "vessell/weights.py",
       "sha256": "5d6f09042e695fb98b7136a6de136e68bcbd843bc7b580e456a8c05420516dfe"
+    },
+    {
+      "path": "vessell_framework.egg-info/PKG-INFO",
+      "sha256": "d436b1acd7e5c39c5856204f0b520ae9e58e6ce075eb543437dd6d2b87eac4ab"
+    },
+    {
+      "path": "vessell_framework.egg-info/SOURCES.txt",
+      "sha256": "10de9651ae55011aae4e57eaea0c1666c8b3e99919e3c7ae7193949c166b1ab3"
+    },
+    {
+      "path": "vessell_framework.egg-info/dependency_links.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "vessell_framework.egg-info/entry_points.txt",
+      "sha256": "1cd6ba475cf1408a2942b2301328935259ad400774e0b30c40390ad2df73fd57"
+    },
+    {
+      "path": "vessell_framework.egg-info/requires.txt",
+      "sha256": "6cca862f596197ffaeb3a8be4dc6ad6d405b77dabbe973179ea3e721b67df82b"
+    },
+    {
+      "path": "vessell_framework.egg-info/top_level.txt",
+      "sha256": "ec47fc4c710713b64f0dc5acee47dbe080a6038856d85fe9c407f1302becc94d"
     }
   ]
 }

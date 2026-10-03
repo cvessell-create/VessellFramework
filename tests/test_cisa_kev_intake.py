@@ -47,6 +47,13 @@ def test_select_recent_vulnerabilities_respects_limit() -> None:
     assert recent[0]["cveID"] == "CVE-2026-93952"
 
 
+def test_historical_selection_excludes_future_entries() -> None:
+    recent = select_recent_vulnerabilities(
+        _load_catalog(), lookback_days=14, as_of=date(2026, 9, 20)
+    )
+    assert all(date.fromisoformat(entry["dateAdded"]) <= date(2026, 9, 20) for entry in recent)
+
+
 def test_build_case_from_kev_produces_source_established_evidence() -> None:
     catalog = _load_catalog()
 

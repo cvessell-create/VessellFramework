@@ -11,6 +11,13 @@ re-exported from both `vessell` and the compatibility namespace `vessel`.
   designated as an official record.
 - Corroboration requires an official record or two distinct provenance roots.
   Repeated reports from one root count once.
+- Attribution of an artifact, path, package, or warning to a person or project
+  is a separate claim from describing its contents. Do not infer ownership,
+  authorship, or association from a name embedded in an artifact alone. Keep
+  the artifact separate unless provenance supports the link; record and
+  propagate an explicit correction when the subject disclaims it. Do not
+  present unsupported personal, academic, professional, or career-impacting
+  conclusions as findings.
 - `gate_for_use(claim, "low")` permits provisional use only with the status
   attached. Consequential use requires corroboration or an explicit,
   named, reasoned waiver. Waivers are consumed by the next consequential
@@ -22,13 +29,6 @@ re-exported from both `vessell` and the compatibility namespace `vessel`.
   has not received or skip an earlier correction in the same lineage.
 - A claim with an expired `valid_until` value is stale. Stale claims cannot
   pass the consequential-use gate until revalidated.
-- Attribution of an artifact, path, package, or warning to a person or project
-  is a separate claim from describing its contents. Do not infer ownership,
-  authorship, or association from a name embedded in an artifact alone. Keep
-  the artifact separate unless provenance supports the link; record and
-  propagate an explicit correction when the subject disclaims it. Do not
-  present unsupported personal, academic, professional, or career-impacting
-  conclusions as findings.
 - Negative existential claims use the search-path gate in `vessell.verify`:
   at least two independent dataset roots must support the absence, and any
   path that finds the target contradicts the negative claim. Record an
@@ -37,6 +37,20 @@ re-exported from both `vessell` and the compatibility namespace `vessel`.
   remain visible but do not count. `dataset_root` identifies shared provider
   or index infrastructure so aliases over one backend are counted once. It
   is caller-supplied provenance, not an authenticity guarantee.
+
+```python
+from vessell.verify import SearchOutcome, record_search_path
+
+record_search_path(
+    claim.id,
+    query="target name",
+    strategy="literal-name",
+    source="index.example",
+    outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
+    dataset_root="index-provider.example",
+    result_summary="Search completed; zero matches.",
+)
+```
 
 ## Example
 

@@ -21,6 +21,8 @@ If you are reviewing this as an academic rough-working submission, read in this 
 For package boundaries and canonical scope, see `CANONICAL_REFERENCE.md`.
 The claim lifecycle API and its limits are documented in
 [docs/claim-lifecycle.md](docs/claim-lifecycle.md).
+Optional decoding, cryptography, file-inspection, and OSINT integrations are
+cataloged in [docs/tool-integrations.md](docs/tool-integrations.md).
 
 ## Governing doctrine
 
@@ -93,6 +95,14 @@ python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest
 python VesselFramework_SingleFile_EvilTwin_v0.2.py recognition --subject "Alex Cvessell" --evidence example_recognition_evidence.json
 ```
 
+Discover optional local analysis tools:
+
+```sh
+vessell-tools list
+vessell-tools doctor
+vessell-tools inspect exiftool ./artifact.bin
+```
+
 The recognition gate quarantines name-only matches, classifies recognition
 stages, and counts independent provenance roots rather than search-result
 quantity.
@@ -129,7 +139,7 @@ The original flat launchers and doctrine files remain the compatibility layer fo
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 
-1. `python -m pytest tests/ -q` — 144-test regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
+1. `python -m pytest tests/ -q` — regression suite: provenance, validation, scanner adapters, malware triage, defense planning, remediation orchestration, agentic SOC, EvilTwin gate, Llama evidence weighting, planted-news verification, hostile-spread intel, ghost-job filtering, and the claim-correction doctrine reconciliation (`tests/test_doctrine_reconciliation.py`).
 2. `python vesselframework_case_runner.py example_case.json` — structured case intake: provenance firewall, deception (maskirovka) checks, harm gate, analyst-ready report.
 3. `python run_live_kev_case.py` — live CISA Known Exploited Vulnerabilities intake through the same pipeline.
 4. `python VesselFramework_SingleFile_EvilTwin_v0.2.py selftest` — identity/recognition provenance gate.
@@ -137,6 +147,40 @@ Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for th
 6. `python -m pytest tests/test_verify.py -q` — planted-news corroboration checks, hostile-spread intel (burst/clone-army/laundering detection), and ghost-job filtering, each verdict shipping its audit record.
 
 Engineering signals: typed Python, mypy + ruff gates, JSON schemas for machine-readable contracts, SHA-256 integrity manifest (`python verify_manifest.py`), CI on Python 3.13, Apache-2.0 licensed.
+
+### Measured evaluation and remaining limits
+
+Both case runners now share the Harm Gate assessment in `vessell/harm_gate.py`.
+All seven risk/reversibility/proportionality fields must be explicit booleans
+before clearance. Missing fields produce UNKNOWN exposure and review required;
+invalid types fail validation. Existing partial cases intentionally require
+review instead of treating omitted answers as no risk. Clearance is an intake
+result, not permission to act or proof of control efficacy.
+
+Run the reproducible external-data evaluator with an attributed CDC download
+directory containing the source files and `download_manifest.json`:
+
+```bash
+python -m vessell.evaluation --data-dir /path/to/public_evaluation_data --output-dir outputs/evaluation
+```
+
+It verifies source SHA-256 values, rejects conflicting duplicate keys and malformed numeric
+values, joins state ensemble incident-death forecasts to observations, and
+reports exact duplicate exclusions, MAE, a prior-observation persistence comparison, 95% interval scores,
+coverage, per-horizon results, and explicit exclusion counts. Paired JSON and
+Markdown reports are read back and checked for exact synchronization. These
+are exploratory scores of **CDC forecasts**, not proof that VessellFramework
+improves forecasting. Revised archive observations do not establish the data
+available at issue time. No independent external framework validation or
+controlled control-efficacy study is claimed.
+
+See [evaluation methods by framework aspect](docs/evaluation-methods.md) and
+[free university/Khan Academy/YouTube method courses](docs/free-method-courses.md).
+
+The path synchronizer verifies the post-write hash against expected content,
+not merely that a hash can be read. Tests cover corrupted writes and byte-level
+agreement of the packaged skill copy; this does not attest to other machines
+or a private runtime that was not inspected.
 
 ## License
 

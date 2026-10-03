@@ -38,7 +38,10 @@
   ],
   "harm_gate": {
     "accuracy_risk": true,
+    "academic_risk": false,
     "professional_risk": true,
+    "legal_risk": false,
+    "financial_security_risk": false,
     "hard_to_reverse": false,
     "benefit_proportionate": true
   },

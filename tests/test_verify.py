@@ -569,6 +569,33 @@ def test_same_strategy_different_source_is_independent(_clean_search_paths: None
     assert allowed is True
 
 
+def test_different_strategies_over_same_dataset_root_count_once(
+    _clean_search_paths: None,
+) -> None:
+    claim_id = _absence_claim()
+    record_search_path(
+        claim_id,
+        query="target",
+        strategy="literal",
+        source="index-a.example",
+        dataset_root="shared-index.example",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
+    )
+    record_search_path(
+        claim_id,
+        query="target variant",
+        strategy="spelling-variant",
+        source="index-b.example",
+        dataset_root="shared-index.example",
+        outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
+    )
+
+    allowed, reason = gate_negative_finding(claim_id)
+
+    assert allowed is False
+    assert "1 independent search path(s)" in reason
+
+
 def test_found_path_contradicts_the_absence(_clean_search_paths: None) -> None:
     """The Castello correction: a co-author cross-check finds the paper."""
     claim_id = _absence_claim()
@@ -678,29 +705,6 @@ def test_blocked_and_errored_lookups_do_not_corroborate_absence(
 
     assert allowed is False
     assert "2 blocked/error lookup(s) were excluded" in reason
-
-
-def test_different_strategies_over_same_dataset_root_count_once(
-    _clean_search_paths: None,
-) -> None:
-    claim_id = _absence_claim()
-    for source, strategy in (
-        ("index-a.example", "literal"),
-        ("index-b.example", "spelling-variant"),
-    ):
-        record_search_path(
-            claim_id,
-            query="target",
-            strategy=strategy,
-            source=source,
-            dataset_root="shared-index.example",
-            outcome=SearchOutcome.NOT_FOUND_IN_CHECKED_SOURCE,
-        )
-
-    allowed, reason = gate_negative_finding(claim_id)
-
-    assert allowed is False
-    assert "1 independent search path(s)" in reason
 
 
 def test_different_source_labels_with_same_dataset_root_count_once(

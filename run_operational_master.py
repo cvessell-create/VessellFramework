@@ -34,7 +34,7 @@ def main() -> int:
         case_result = run_case_pipeline(case)
         assets = load_asset_inventory(args.inventory)
         defense_plan = build_defense_plan(assets, catalog)
-    except (OSError, ValueError) as error:
+    except (OSError, TypeError, ValueError) as error:
         print(f"RUN FAILED: {error}")
         return 1
 
@@ -50,6 +50,9 @@ def main() -> int:
     print(f"- defense_plan: {plan_path}")
     print(f"- remediation_actions: {defense_plan['matched_action_count']}")
     print("- next_step: import scanner-confirmed CVEs before any approval or dispatch.")
+    if case_result.harm_gate is None or not case_result.harm_gate.cleared:
+        print("RUNNER STATUS: REVIEW REQUIRED (Harm Gate)")
+        return 1
     return 0
 
 
