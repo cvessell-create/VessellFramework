@@ -8,9 +8,14 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 SCHEMA_ROOT = Path(__file__).parents[1] / "schemas"
+PACKAGED_SCHEMA_ROOT = Path(__file__).parent / "_resources" / "schemas"
+if PACKAGED_SCHEMA_ROOT.is_dir():
+    SCHEMA_ROOT = PACKAGED_SCHEMA_ROOT
 
 
 def load_schema(name: str) -> dict[str, Any]:
+    if Path(name).name != name or not name.endswith(".schema.json"):
+        raise ValueError("Schema name must identify a packaged schema, not an arbitrary path.")
     path = SCHEMA_ROOT / name
     with path.open("r", encoding="utf-8") as file:
         schema = json.load(file)

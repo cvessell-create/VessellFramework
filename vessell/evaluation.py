@@ -182,10 +182,14 @@ def score_cdc(data_dir: Path) -> dict[str, Any]:
 def render_report(result: dict[str, Any]) -> str:
     payload = json.dumps(result, sort_keys=True, separators=(",", ":")).encode()
     report_id = hashlib.sha256(payload).hexdigest()
+    scope = result.get(
+        "evidence_scope",
+        "This is an external-data scoring run, not independent validation of framework efficacy.",
+    )
     return (
         f"# {result['evaluation']}\n\n"
         f"Report payload SHA-256: `{report_id}`\n\n"
-        "This is an external-data scoring run, not independent validation of framework efficacy.\n\n"
+        f"{scope}\n\n"
         "The exact machine-readable result follows; Markdown and JSON must agree.\n\n"
         f"```json\n{json.dumps(result, indent=2, sort_keys=True)}\n```\n"
     )

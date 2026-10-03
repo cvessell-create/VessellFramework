@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-10-03T02:34:27.835946+00:00",
+  "generated_utc": "2026-10-03T03:00:15.649221+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "01d543c251502b5fdc961962f127579cd065509f3de68137ffe78317b07bb090"
+      "sha256": "5362cecae94b3f2243e5836f9fc34917482ce7be8b89a0ec7092bd5509e51e28"
     },
     {
       "path": ".gitignore",
@@ -54,6 +54,10 @@
     {
       "path": "LICENSE",
       "sha256": "988ee76427017d910675fd72b00e284aa51dbffa369f4b721247445afefcaf27"
+    },
+    {
+      "path": "MANIFEST.in",
+      "sha256": "e1501d607a621c6eb1569b706c86f605ac3cb38185523bec716130a8f7b76bc8"
     },
     {
       "path": "META_REVIEW_AND_ROADMAP.md",
@@ -253,7 +257,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "f5c31cd4b33cfd5cdebcb1ba97fd2087e133c33bf432086afdeca0c8b965f582"
+      "sha256": "cddd06cf029e393416ee418480f263cb264540c98c9bf03a9f82c15d7638f8ba"
     },
     {
       "path": "SKILL.md",
@@ -265,7 +269,7 @@
     },
     {
       "path": "VesselFramework_Agent.md",
-      "sha256": "0f453e1cbe9486a9577910dbbedd29073a25401f647555d904faee19f024542f"
+      "sha256": "89e6e93ba3ed8211871b4ddabb9d3684af8feb6c4592e98ba699f5da30ba5319"
     },
     {
       "path": "VesselFramework_Agentic_SOC_Analyst_SKILL_v0.1.md",
@@ -372,6 +376,10 @@
       "sha256": "2b003dfb6f4acc7fcbaecabe77ae3bd5c2ab1526c36e64cf43631de458858e86"
     },
     {
+      "path": "case_studies/claim_correction/spec.json",
+      "sha256": "c4c274bf47fbc54ba088037ba29ccea30e440487c6eb34b5ee654a0335d2903e"
+    },
+    {
       "path": "docs/claim-correction-case-study.md",
       "sha256": "d823849749d17b3698332a24b811fca7371a1d255a8e79d1b587985c01b09cf0"
     },
@@ -396,8 +404,12 @@
       "sha256": "34d16c5b29acda1784732e2c1f4fd4256dba68f407ef3c1a4dc12b28b9bf5c2a"
     },
     {
+      "path": "docs/operational-case-studies.md",
+      "sha256": "5a08feb9cdba91b898c960631144a647cf62133a77ff0c73a49915f64fdca851"
+    },
+    {
       "path": "docs/os-sandbox.md",
-      "sha256": "2cee34ccf46a0d0c4605fec90918c2b5e185f02ea67a0eb281d71bb630a09fc4"
+      "sha256": "9ec846d08f26125ea1cfa99f464c1d68c73ddf11297877b0f214044d4c70c8f6"
     },
     {
       "path": "docs/references.md",
@@ -405,7 +417,7 @@
     },
     {
       "path": "docs/replay-lab.md",
-      "sha256": "09f5ecc0e0a1a3329a3ea8e8fdd49b22a035a4a3cb252b95aa224368616a2134"
+      "sha256": "a349796d7bd5a5b87c78cbb8a7967590f9e7c466c01d5b86b0565ea45b68aa65"
     },
     {
       "path": "docs/tool-integrations.md",
@@ -621,7 +633,7 @@
     },
     {
       "path": "pyproject.toml",
-      "sha256": "85be3727ca05f4e45550cb4f7556a8fd42ee2a42f38c66bbd407f6e58b8a63f8"
+      "sha256": "a3d3baf6c0ad7ec9e8322f79fdaf27287760bac82573667fca14069217b4c17a"
     },
     {
       "path": "requirements/agent.txt",
@@ -697,7 +709,11 @@
     },
     {
       "path": "sandbox/run.py",
-      "sha256": "4d23ae1fa9c5c2d013ff0ccd22b64067283d75f79c08e1f76a71ffe14870e4a7"
+      "sha256": "5a35e98c38f62d65be6b20f6b3c02495cfcfed838c7fd14e57d76c34f5a941e9"
+    },
+    {
+      "path": "schemas/case-study.schema.json",
+      "sha256": "1ed7519c675d0a695532d0a77277cd9fab4bcc4660f61d7cb955955a32ac85fc"
     },
     {
       "path": "schemas/case.schema.json",
@@ -736,6 +752,10 @@
       "sha256": "af83f681e7f0508929960f5819684093b9a3e1816232a6d06ddea68b44254e9a"
     },
     {
+      "path": "setup.py",
+      "sha256": "d4890d0d3b7e45009f5d75b2ccdff8853565e7238450d9f712c373a07fa83dd3"
+    },
+    {
       "path": "tests/conformance/test_program_pipeline.py",
       "sha256": "761eaad7782a396a26b95ba5d9e3bad4cc04da003e093dc303d178702b50674c"
     },
@@ -762,6 +782,10 @@
     {
       "path": "tests/test_agentic_soc_adapter.py",
       "sha256": "4fd5cc5a589a087fbfa643f712af36ce26fc7c260b830eb68229204ffaf5bcce"
+    },
+    {
+      "path": "tests/test_case_study.py",
+      "sha256": "70713eded9bd2bdc47d5b71a59a7a8a9ff747690f4bfe3d117aa2a28f69c7a90"
     },
     {
       "path": "tests/test_causal_paths.py",
@@ -937,7 +961,7 @@
     },
     {
       "path": "vessell/app/main.py",
-      "sha256": "91a795c03d750f3819005d3d86302956434c597bcd449d9f9fe32e87a88a5796"
+      "sha256": "c05e493c5259db7d5c3e3037216d31a856830edc3f3d81dbb6d842a8ea274822"
     },
     {
       "path": "vessell/app/microsoft_intune.py",
@@ -980,6 +1004,10 @@
       "sha256": "1caab134db9b4044142d9ea33a57a9cdd93119b7d2a82fc6a1378252a9581e0d"
     },
     {
+      "path": "vessell/case_study.py",
+      "sha256": "28eb28f7a1ec294583665a0ef08a4887a1635ee8c7cb846134b1a395ddef655d"
+    },
+    {
       "path": "vessell/cli.py",
       "sha256": "8ed5224dd75330295e05e3ca9aa9512c2a4263de62f53916d1b856ce74859af0"
     },
@@ -989,7 +1017,7 @@
     },
     {
       "path": "vessell/evaluation.py",
-      "sha256": "a96997a1b059ddb3e344779718ef57cd1e49d973f08f479be54c3da845a92f3e"
+      "sha256": "fd0df455b07032bf6246d6a54164fc05b719f551ac59b2db28f55a4ee1812328"
     },
     {
       "path": "vessell/evidence_assessment.py",
@@ -1005,7 +1033,7 @@
     },
     {
       "path": "vessell/provenance.py",
-      "sha256": "13a317237ed898ae662fb4ce15a61183ddb1201f17f337213ecd0c8212d9a62c"
+      "sha256": "5d03f2f9ecf64aa5a9bd49a27cc9fe6303d5ea1755fb73462685780efc0bd6df"
     },
     {
       "path": "vessell/reference_data.py",
@@ -1045,7 +1073,7 @@
     },
     {
       "path": "vessell/validation.py",
-      "sha256": "b0fb5130884a9d5a134419ffe50f9f88f6f5521ea19bcfdcf740d9c30a037c03"
+      "sha256": "4eb8b1eb549defdcca749adb4147cbe0e3b0a32db8c2bc88b57ac0943383e516"
     },
     {
       "path": "vessell/verify.py",

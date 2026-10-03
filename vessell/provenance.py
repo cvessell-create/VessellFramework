@@ -18,6 +18,9 @@ def _load_reference() -> ModuleType:
     reference_path = (
         Path(__file__).parents[1] / "vesselframework_reference_v1.1_provenance_firewall.py"
     )
+    packaged_reference = Path(__file__).parent / "_resources" / "reference.py"
+    if packaged_reference.is_file():
+        reference_path = packaged_reference
     spec = spec_from_file_location("vessel_reference", reference_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load reference implementation: {reference_path}")

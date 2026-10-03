@@ -1,0 +1,30 @@
+{
+  "design": "RECONSTRUCTED_LOCAL_COMPARISON",
+  "source_document_sha256": "edbfb32d793a313b1a5dc6451221c0798bd17164822ec7dc9bb80e2ac945c475",
+  "scenarios": [
+    {
+      "id": "unverified-constraint",
+      "claim": "A reported constraint should exclude an entire opportunity category.",
+      "source": "Deidentified reported intake reconstructed from the supplied study",
+      "official_record": false,
+      "uncertainty": "Single reported constraint; not independently verified.",
+      "observed_at": "2026-09-24T12:00:00Z",
+      "correction": "The earlier exclusion is withdrawn; no replacement eligibility finding is established.",
+      "correction_reason": "Source narrative reports withdrawal; preserve original and require new evidence.",
+      "corrected_at": "2026-09-30T12:00:00Z",
+      "consumers": ["goal", "scheduled-search", "morning-edition", "evening-edition", "memory"]
+    },
+    {
+      "id": "corroborated-control",
+      "claim": "A constructed official record supports a low-impact scheduling fact.",
+      "source": "Constructed positive control for gate behavior",
+      "official_record": true,
+      "uncertainty": "Synthetic control; not an actual institutional assertion.",
+      "observed_at": "2026-09-24T12:00:00Z",
+      "correction": "The constructed scheduling record is revised; the replacement needs corroboration.",
+      "correction_reason": "Controlled revision event",
+      "corrected_at": "2026-09-30T12:00:00Z",
+      "consumers": ["calendar", "briefing"]
+    }
+  ]
+}

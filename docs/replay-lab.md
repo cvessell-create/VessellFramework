@@ -28,11 +28,9 @@ python3.13 -m venv /absolute/path/to/replay-lab/venv
   /absolute/path/to/rebuild/tests
 ```
 
-Use the repository's editable/source-checkout installation: the provenance
-adapter loads a legacy reference file from the checkout root. A non-editable
-wheel currently omits that file and cannot run this lab independently. The
-lab still has its own dependency environment; implementation hashes record the
-exact checkout used. After source changes, rerun the lab and verify new hashes;
+Use an editable/source-checkout installation when running the source tests.
+The lab has its own dependency environment; implementation hashes record the
+exact implementation used. After source changes, rerun the lab and verify new hashes;
 reinstall when declared dependencies change. Record `python -m pip freeze`
 from that environment for replication.
 
@@ -62,3 +60,9 @@ Passing this lab closes reproducibility, input-validation and local
 synchronization checks. It does not establish external efficacy. Controlled
 operational telemetry, valid posting/claim labels, frozen prospective framework
 forecasts, and comparative analyst/learning outcomes remain separate needs.
+## Installed distribution
+
+Version 3.9.0 packages the provenance reference and runtime schemas in wheels.
+Non-editable execution outside the checkout is now checked in CI. An editable
+installation is still appropriate when running the source regression suite;
+it is no longer the workaround required to import the runtime.

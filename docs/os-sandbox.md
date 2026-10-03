@@ -16,7 +16,12 @@ evaluation is offline.
 Install Docker CLI and Colima, then start the dedicated profile:
 
 ```sh
-colima start --profile vf-replay --cpu 2 --memory 4 --disk 30 --runtime docker
+colima start --profile vf-replay --cpu 2 --memory 4 --disk 30 --runtime docker \
+  --activate=false \
+  --mount /absolute/path/to/public_evaluation_data:r \
+  --mount /absolute/path/to/data_audit:r \
+  --mount /absolute/path/to/sandbox_expansion:r \
+  --mount /absolute/path/to/sandbox-results:w
 ```
 
 Do not change another project's default Docker context. Use the dedicated

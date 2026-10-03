@@ -8,6 +8,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+from vessell.validation import validate_record
+
 from .pipeline import run_case_pipeline
 from .reporting import write_outputs
 
@@ -23,7 +25,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="vf-program")
     parser.add_argument(
         "--input",
-        default="example_case.json",
+        required=True,
         type=Path,
         help="Path to case input JSON.",
     )
@@ -43,6 +45,7 @@ def main() -> int:
         return 1
 
     try:
+        validate_record(case, "case.schema.json")
         result = run_case_pipeline(case)
     except (KeyError, TypeError, ValueError) as error:
         print(f"RUN FAILED: invalid case payload: {error}")
@@ -50,7 +53,11 @@ def main() -> int:
 
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     stem = f"{timestamp}_{_slugify(result.title)}"
-    markdown_path, json_path = write_outputs(result, args.output_dir, stem)
+    try:
+        markdown_path, json_path = write_outputs(result, args.output_dir, stem)
+    except (OSError, ValueError) as error:
+        print(f"RUN FAILED: unable to persist verified reports: {error}")
+        return 2
 
     print("RUN COMPLETE")
     print(f"- markdown_report: {markdown_path}")

@@ -4,7 +4,21 @@ VessellFramework is an auditable Python runtime and a set of doctrine and skill 
 
 Author: Christopher R. Vessell
 
-Current package state: v3.8.1 rough working candidate prepared for graduate-level review and feedback.
+Current package state: v3.9.0 operational local case-study release. Executable
+workflows, source contracts, persistent study receipts and regression checks
+are available; independent field efficacy is not claimed.
+
+Start with [operational case studies](docs/operational-case-studies.md):
+
+```sh
+python -m pip install .
+vessell-study --spec case_studies/claim_correction/spec.json --output-dir outputs/study-001
+vessell-study --verify-only --output-dir outputs/study-001/framework
+```
+
+This writes actual managed local consumer files and compares their correction
+outcomes against an explicit snapshot-only baseline. Authorization, fail-closed
+gates and provenance controls remain enforced. External systems are not modified.
 
 For the complete skill, agent, executable-code, scanner, and authorized remediation map, start with [VesselFramework_Agent.md](VesselFramework_Agent.md). Historical artifacts retain their original `VesselFramework` names; the active Python namespace is `vessell`.
 
@@ -27,7 +41,8 @@ cataloged in [docs/tool-integrations.md](docs/tool-integrations.md).
 ## Governing doctrine
 
 The claim-correction case study ([docs/claim-correction-case-study.md](docs/claim-correction-case-study.md))
-is the governing spec for this codebase. Its six-step playbook is implemented head-to-toe:
+is a governing requirement source. Its six-step playbook has executable local
+mechanisms; external integration and field validation remain separate work:
 
 1. **Tag at intake** — every claim enters with source, tier, kind (ICD 203 report/assumption/judgment),
    uncertainty, and observation date (`vessell.provenance.intake_claim`; `vessell.validation.require_provenance_fields`).
@@ -39,7 +54,9 @@ is the governing spec for this codebase. Its six-step playbook is implemented he
 4. **Disavow by supersession, never erasure** — `disavow` keeps the original record and links the
    correction; corrections inherit kind, uncertainty, and revalidation schedule.
 5. **Propagate, then verify the update landed** — `register_dependent` on every operational use;
-   `confirm_dependent_update` / `pending_corrections` close the loop.
+   the managed case-study adapter writes and reads back JSON consumers before
+   calling `confirm_dependent_update`. Registry acknowledgment alone does not
+   verify arbitrary external systems.
 6. **Re-validate on schedule** — `valid_until` + `is_stale` + `revalidate_claim`; stale corroborated
    claims fail closed for consequential use.
 
@@ -62,8 +79,8 @@ citations are in [docs/references.md](docs/references.md):
 - **Redmond, Shen, Vazou & Kuper (2022)** — *Verified causal broadcast with
   Liquid Haskell* (arXiv:2206.14767): the machine-checked guarantee that no
   message is delivered in an order violating causality. The dependents
-  registry is that guarantee in miniature — `CausalOrderingError` instead of
-  silent out-of-order completion.
+  registry checks analogous local ordering using `CausalOrderingError`; these
+  Python checks are not that paper's machine-checked guarantee.
 
 ## Quick start
 
@@ -135,7 +152,7 @@ for record in weighted.records:
 
 The original flat launchers and doctrine files remain the compatibility layer for version 3.8.1. New executable functionality belongs in `vessell/`, machine-readable contracts belong in `schemas/`, and regression tests belong in `tests/`. Optional integrations are separated into `requirements/agent.txt`, `documents.txt`, and `research.txt`.
 
-## What this demonstrates
+## Executable workflows and regression coverage
 
 Five-minute tour (see `VessellFramework_Portfolio_Showcase_SKILL_v1.0.md` for the guided version):
 

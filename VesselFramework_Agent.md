@@ -151,3 +151,11 @@ artifacts. OpenPGP decryption requires an explicit authorization flag, uses
 the local GnuPG keyring, and refuses to overwrite output. Network OSINT and
 active reconnaissance tools are catalog-only; they must not be run without
 lawful purpose and explicit scope. See [docs/tool-integrations.md](docs/tool-integrations.md).
+# Operational case-study entry point
+
+The 3.9.0 release adds `vessell-study --spec
+case_studies/claim_correction/spec.json --output-dir outputs/study-001`.
+It compares real local JSON consumers, persists SQLite receipts and verifies
+correction writes before acknowledgment. See
+[operational case studies](docs/operational-case-studies.md) for scope, source
+findings and evidence limitations. Existing authorization controls remain.
