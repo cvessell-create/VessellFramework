@@ -95,3 +95,37 @@ outcomes, authorized real-system connectors, crash/concurrency recovery and
 sector-specific field studies remain subsequent gates. Public-data audits,
 CDC retrospective scoring, the replay lab and Linux containment remain
 separate evidence streams; their results are not new framework field outcomes.
+
+## Release measurements
+
+Executable source evaluated at commit
+`6b4447d030911485a144d0e5e86c8973cb3259fa`; subsequent release changes only
+document the measurements and update the source-integrity manifest.
+The frozen specification SHA-256 is
+`c4c274bf47fbc54ba088037ba29ccea30e440487c6eb34b5ee654a0335d2903e`.
+The case-study implementation SHA-256 is
+`28eb28f7a1ec294583665a0ef08a4887a1635ee8c7cb846134b1a395ddef655d`.
+
+| Local outcome | Snapshot-only baseline | Framework |
+|---|---:|---:|
+| Unverified consequential uses allowed (five-consumer scenario) | 5 | 0 |
+| Corroborated positive-control uses allowed | 2 | 2 |
+| Corrected consumer files verified by read-back | 0 / 7 | 7 / 7 |
+| Original snapshots remaining after withdrawal | 7 | 0 |
+| Newly issued unverified corrections pass consequential gate | 0 | 0 |
+
+All 342 regression tests passed on macOS and inside the offline Linux
+container (zero Linux skips/failures/errors). Focused lint and strict type
+checks passed. All ten containment assertions and all 271 source-manifest
+entries passed in the evaluated image. Existing public-data replay and
+ATT&CK/EPSS audits also passed without modifying the frozen inputs.
+
+A fresh environment installed the non-editable wheel and completed the same
+comparison from outside the checkout, then reopened and verified seven
+framework receipts. A separate base-R script recalculated SHA-256 with the
+system hashing tool and read all fourteen baseline/framework snapshot IDs:
+all matched the exported SQLite receipts; seven original snapshots remained
+in the baseline and none in the framework arm. This is cross-language
+computational replication by the same evaluation workflow, **not independent
+third-party or field validation**. No significance or population efficacy
+estimate is reported from these seven managed consumers.

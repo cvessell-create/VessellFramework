@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-10-03T03:00:15.649221+00:00",
+  "generated_utc": "2026-10-03T03:06:44.851951+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -381,11 +381,11 @@
     },
     {
       "path": "docs/claim-correction-case-study.md",
-      "sha256": "d823849749d17b3698332a24b811fca7371a1d255a8e79d1b587985c01b09cf0"
+      "sha256": "cf08d66d0e7259bd0d5456f5a27f960195b2292e645779c6a524b475543db0ce"
     },
     {
       "path": "docs/claim-lifecycle.md",
-      "sha256": "f4ee70c5648f707a2e1a2def49c1332f999ee4fbab8028c05c8ed1ae69e91c3e"
+      "sha256": "44e04d3c2e01623ba16d6d061c286576a3bc5ef20dda3eb843ac16fde772fc83"
     },
     {
       "path": "docs/commercialization-strategy.md",
@@ -405,7 +405,7 @@
     },
     {
       "path": "docs/operational-case-studies.md",
-      "sha256": "5a08feb9cdba91b898c960631144a647cf62133a77ff0c73a49915f64fdca851"
+      "sha256": "c87f6dba3db8faa6cb487a3a0ded774c72b5bfa960ebadf4fc68134b66f42ecb"
     },
     {
       "path": "docs/os-sandbox.md",

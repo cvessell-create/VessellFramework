@@ -94,6 +94,10 @@ correction = disavow(
 
 Use `deliver_correction` to deliver the correction to registered dependents
 and `confirm_dependent_update` only after each dependent has applied it.
+These library calls manage registry state; they do not themselves write or
+inspect the consumer's file or remote state. The
+[operational case-study adapter](operational-case-studies.md) writes registered
+local JSON consumers, reads them back and only then acknowledges the update.
 `propagate_correction(claim_id)` without a correction ID is a read-only
 enumeration of registered dependents.
 
@@ -105,3 +109,8 @@ it is not a digital signature, a proof that a claim is true, or evidence that
 a remote dependent received an update. Applications that require durable
 records must persist exported claim/event records in their controlled
 storage and retain independently verifiable backups.
+An unanchored hash chain alone cannot detect deletion of its entire history
+or a trailing suffix; retain expected populations or an independently pinned
+terminal digest. The case-study database records expected populations and its
+checksum is pinned in synchronized reports. Receipt checks work after restart;
+the live lifecycle registry is not restored or made crash-resumable by them.

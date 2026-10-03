@@ -1,5 +1,14 @@
 # From AI to SI: Claim Provenance and Correction Propagation
 
+> Release evaluation note (3.9.0): the narrative below is an author-reported
+> historical case, retained for provenance. Its original external
+> configurations, memory exports and operational logs were not supplied for
+> this release's independent inspection. Statements about historical repair,
+> SI-level operation or proof are not conclusions established by Python tests.
+> The [current executable comparison](operational-case-studies.md) measures
+> deidentified managed local files against a specified baseline, preserves
+> safeguards and separates those outcomes from external efficacy.
+
 **A VessellFramework case study in claim provenance, correction propagation, and lawful correction**
 *Christopher R. Vessell — September 30, 2026*
 
