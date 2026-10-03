@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vessell-framework"
-version = "3.9.0"
+version = "3.9.1"
 description = "VessellFramework: provenance-first evidence, local artifact analysis, OSINT integrations, and approved remediation controls."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -24,6 +24,8 @@ orchestrator = ["fastapi>=0.115", "httpx>=0.28", "uvicorn[standard]>=0.34"]
 vessell = "vessell.cli:main"
 vessell-tools = "vessell.tooling.cli:main"
 vessell-study = "vessell.case_study:main"
+vessell-workflow = "vessell.workflow:main"
+vessell-game = "vessell.game_bridge:main"
 vessell-program = "vessell.app.main:main"
 vessell-remediator = "vessell.app.remediation_orchestrator:main"
 vf = "vessell.cli:main"

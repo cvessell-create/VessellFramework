@@ -1,5 +1,16 @@
 # Optional local analysis integrations
 
+The [game architecture skill](GAME_DEVELOPMENT_SKILL.md) covers original and
+paused game components. `python -m vessell.workflow` runs the adapted bounded
+analyst workflow; `python -m vessell.game_architecture` inventories the pinned
+game and paused source snapshots without executing game code.
+
+The [Hail game integration](docs/game-integration.md) adds local seeded
+autonomous FPS comparison and a Python-backed provenance/correction game.
+Run `python -m vessell.game_bridge --help` for the loopback server and
+comparison runner. This is fictional local game play, not a production or
+external-action connector.
+
 The local package includes a tool catalog and explicit local-file adapters.
 Run `vessell-tools list` to see decoding, metadata, cryptography, and OSINT
 integrations, and `vessell-tools doctor` to check which command-line tools are

@@ -1,0 +1,39 @@
+{
+  "controller": "agent",
+  "operator": "Local workflow evaluator",
+  "command_budget": 20,
+  "case": {
+    "title": "Synthetic source-copy and correction workflow",
+    "decision_question": "Can copied sources silently clear a consequential use, and can correction be verified?",
+    "domain": "Local software evaluation",
+    "subject": "Fictional analytic workflow",
+    "evidence": [
+      {"description": "Synthetic primary record", "status": "SOURCE-ESTABLISHED", "source_id": "primary"},
+      {"description": "Synthetic copy", "status": "SOURCE-ESTABLISHED", "source_id": "copy", "upstream_of": "primary"},
+      {"description": "Synthetic independent record", "status": "SOURCE-ESTABLISHED", "source_id": "independent"}
+    ],
+    "harm_gate": {
+      "accuracy_risk": false, "academic_risk": false, "professional_risk": false,
+      "legal_risk": false, "financial_security_risk": false, "hard_to_reverse": false,
+      "benefit_proportionate": true
+    },
+    "analysis": {"posture": "Measure local workflow behavior only; no external action."}
+  },
+  "claim": {
+    "text": "A synthetic intake claim supports the proposed local decision.",
+    "source": "Synthetic primary lead",
+    "root": "primary-root",
+    "uncertainty": "No independent factual validation; fixture tests declared lineage only."
+  },
+  "sources": [
+    {"id": "primary", "description": "Synthetic primary record", "root": "primary-root"},
+    {"id": "copy", "description": "Copy of the synthetic primary", "root": "primary-root"},
+    {"id": "independent", "description": "Synthetic independent record", "root": "independent-root"}
+  ],
+  "consumers": ["goals", "analysis", "briefing", "memory"],
+  "correction": {
+    "text": "The original claim is withdrawn; replacement decisions require new evidence.",
+    "reason": "Controlled fixture withdrawal"
+  },
+  "commands": []
+}

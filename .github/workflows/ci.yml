@@ -20,3 +20,6 @@ jobs:
       - run: python -m pip wheel . --no-deps --wheel-dir /tmp/vessell-wheel
       - run: python -m pip install --force-reinstall --no-deps /tmp/vessell-wheel/*.whl
       - run: cd /tmp && vessell-study --spec "$GITHUB_WORKSPACE/case_studies/claim_correction/spec.json" --output-dir /tmp/vessell-installed-case-study
+      - run: cd /tmp && vessell-workflow --spec "$GITHUB_WORKSPACE/case_studies/game_patterns/workflow.json" --output-dir /tmp/vessell-workflow-a
+      - run: cd /tmp && vessell-workflow --spec "$GITHUB_WORKSPACE/case_studies/game_patterns/workflow.json" --output-dir /tmp/vessell-workflow-b --compare-to /tmp/vessell-workflow-a
+      - run: cd /tmp && vessell-workflow --output-dir /tmp/vessell-workflow-b --verify-only

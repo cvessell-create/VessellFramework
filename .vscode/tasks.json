@@ -177,9 +177,36 @@
 				"${input:localScannerPath}"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Hail: local framework bridge",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"-m",
+				"vessell.game_bridge",
+				"--game-dir",
+				"${input:hailGameDirectory}",
+				"--output-dir",
+				"${input:hailOutputDirectory}",
+				"--port",
+				"8765"
+			],
+			"isBackground": true,
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
+		{
+			"id": "hailGameDirectory",
+			"type": "promptString",
+			"description": "Absolute path to your hail-to-the-analyst checkout"
+		},
+		{
+			"id": "hailOutputDirectory",
+			"type": "promptString",
+			"description": "Local game receipt directory outside both repositories"
+		},
 		{
 			"id": "scannerAssetId",
 			"type": "promptString",

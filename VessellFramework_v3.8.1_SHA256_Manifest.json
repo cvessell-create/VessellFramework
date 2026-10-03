@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-10-03T03:06:44.851951+00:00",
+  "generated_utc": "2026-10-03T09:47:53.209638+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "5362cecae94b3f2243e5836f9fc34917482ce7be8b89a0ec7092bd5509e51e28"
+      "sha256": "6484f39445a929932cc76eb19d86a1c4acae9826cde7f74a8378e5ac4427e2cb"
     },
     {
       "path": ".gitignore",
@@ -33,7 +33,7 @@
     },
     {
       "path": ".vscode/tasks.json",
-      "sha256": "1b98d9c3b590775b7bbfc702b62fa2fcd887d16c7b199e30c2379cb6eaa58fb1"
+      "sha256": "2c8dff7da2e30457d6d7b12692a1d5c37226cbf75078516bb1b0cc3db147e1e5"
     },
     {
       "path": "6972090122f12179507291.pdf",
@@ -52,12 +52,16 @@
       "sha256": "d5ac0139c2d12cad6be8d2e5bc9a23f9152f6060561e7d5895a9544d8dd6cf51"
     },
     {
+      "path": "GAME_DEVELOPMENT_SKILL.md",
+      "sha256": "c05df042ed3fe41bbe2c05390c6274f5608e81fd4c004a6cc7afac1cd5a1e182"
+    },
+    {
       "path": "LICENSE",
       "sha256": "988ee76427017d910675fd72b00e284aa51dbffa369f4b721247445afefcaf27"
     },
     {
       "path": "MANIFEST.in",
-      "sha256": "e1501d607a621c6eb1569b706c86f605ac3cb38185523bec716130a8f7b76bc8"
+      "sha256": "13dc0bd9e775982cd733a97ae99cab6ca60cc41150532a1640db7dd7638ce25b"
     },
     {
       "path": "META_REVIEW_AND_ROADMAP.md",
@@ -257,11 +261,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "cddd06cf029e393416ee418480f263cb264540c98c9bf03a9f82c15d7638f8ba"
+      "sha256": "4f86bcba6f270f6404cb27510f80be17d97b4f7596cd5ad4f01f7cefba354852"
     },
     {
       "path": "SKILL.md",
-      "sha256": "503e8eafa9073151786d14fec852258405bd75671ed01b94779a8e92f94bd85e"
+      "sha256": "084ab91c3f942b62d183de964e7f554a789490f8f30efbee255a2d25b189b69e"
     },
     {
       "path": "Security_Control_Selection_Placement_Analyst_SKILL_v0.1.md",
@@ -269,7 +273,7 @@
     },
     {
       "path": "VesselFramework_Agent.md",
-      "sha256": "89e6e93ba3ed8211871b4ddabb9d3684af8feb6c4592e98ba699f5da30ba5319"
+      "sha256": "96ae11d0b90b3234af1b76d1d1e8f08b9c541bedd07b31e8b458b17d4a36f1a5"
     },
     {
       "path": "VesselFramework_Agentic_SOC_Analyst_SKILL_v0.1.md",
@@ -380,6 +384,10 @@
       "sha256": "c4c274bf47fbc54ba088037ba29ccea30e440487c6eb34b5ee654a0335d2903e"
     },
     {
+      "path": "case_studies/game_patterns/workflow.json",
+      "sha256": "6d9022d1798c7cb34ddd6eaa78e71156c20c37e58299c592638aef68e4ad6be3"
+    },
+    {
       "path": "docs/claim-correction-case-study.md",
       "sha256": "cf08d66d0e7259bd0d5456f5a27f960195b2292e645779c6a524b475543db0ce"
     },
@@ -398,6 +406,14 @@
     {
       "path": "docs/free-method-courses.md",
       "sha256": "471399b0eb5dc387d141b709889f10d245ac551974a0b3c1b16cfc969806a738"
+    },
+    {
+      "path": "docs/game-component-map.json",
+      "sha256": "e80438a6fc0d132f411cc84cabb772ee645fec1be41b7b00fca631c95247f8c8"
+    },
+    {
+      "path": "docs/game-integration.md",
+      "sha256": "05795da37c9909c87d229b64f618e73d6762643952d9dd7f214f928dc40552d7"
     },
     {
       "path": "docs/grad-school-prospectus.md",
@@ -473,7 +489,7 @@
     },
     {
       "path": "mnt/skills/user/vessel-framework-analyst/SKILL.md",
-      "sha256": "503e8eafa9073151786d14fec852258405bd75671ed01b94779a8e92f94bd85e"
+      "sha256": "084ab91c3f942b62d183de964e7f554a789490f8f30efbee255a2d25b189b69e"
     },
     {
       "path": "outputs/case_runs/20260923T010108Z_illustrative-provenance-and-posture-review.json",
@@ -633,7 +649,7 @@
     },
     {
       "path": "pyproject.toml",
-      "sha256": "a3d3baf6c0ad7ec9e8322f79fdaf27287760bac82573667fca14069217b4c17a"
+      "sha256": "8b031ec2871b174eda84b174cb3ff338e567f531375d47b097f60e64d88f2ad9"
     },
     {
       "path": "requirements/agent.txt",
@@ -752,6 +768,10 @@
       "sha256": "af83f681e7f0508929960f5819684093b9a3e1816232a6d06ddea68b44254e9a"
     },
     {
+      "path": "schemas/workflow.schema.json",
+      "sha256": "60ae73bbd7450eddccbf8211c19e39493c4a709215e6606bf0b0105d9671538f"
+    },
+    {
       "path": "setup.py",
       "sha256": "d4890d0d3b7e45009f5d75b2ccdff8853565e7238450d9f712c373a07fa83dd3"
     },
@@ -822,6 +842,14 @@
     {
       "path": "tests/test_evidence_assessment.py",
       "sha256": "f4f421604c6036436a3de12cf12acdce76ca7685853784cb105de97661c23785"
+    },
+    {
+      "path": "tests/test_game_architecture.py",
+      "sha256": "98d9d564ff69324e5e8655faafb155f5063df894bbfed1523a2606584b3a3f49"
+    },
+    {
+      "path": "tests/test_game_bridge.py",
+      "sha256": "d71d206eca69e1cb8d07a2dae0dceff49b784b288130362ad83e592e6c6df340"
     },
     {
       "path": "tests/test_harm_gate.py",
@@ -914,6 +942,10 @@
     {
       "path": "tests/test_weights.py",
       "sha256": "4c460550f4d186cb4bbecaaa2df42aea4402fe7ce6496dd772b9baad774bee5a"
+    },
+    {
+      "path": "tests/test_workflow.py",
+      "sha256": "f5b9e8cb338dc14d84c5693340d2cc7186cbb839423be41aeba765b71b8a9306"
     },
     {
       "path": "topics/writing-style.md",
@@ -1024,6 +1056,14 @@
       "sha256": "609fe949186f893402f297e26b4b353e35cff7e1c6a4c31fcd46ca99ca47e734"
     },
     {
+      "path": "vessell/game_architecture.py",
+      "sha256": "9122e2a01a59e3c59788633b4b19a98b8cccc86b894d05dfd47eb5cf8a2006ee"
+    },
+    {
+      "path": "vessell/game_bridge.py",
+      "sha256": "f064de8fe7bf0cf079582b8e97cfeb1ec8bf89bfa1a5fc9cbdc0e2454a015954"
+    },
+    {
       "path": "vessell/harm_gate.py",
       "sha256": "4e95c2e7952b32a8fbc6643a1484529e9e240538c2c7081dda8cf92b052fd3af"
     },
@@ -1086,6 +1126,10 @@
     {
       "path": "vessell/weights.py",
       "sha256": "5d6f09042e695fb98b7136a6de136e68bcbd843bc7b580e456a8c05420516dfe"
+    },
+    {
+      "path": "vessell/workflow.py",
+      "sha256": "9649241d1a7661684ea4e822705a8890eeaf53445dc2b23a9fd4bee69e9d1739"
     }
   ]
 }

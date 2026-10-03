@@ -1,0 +1,41 @@
+{
+  "source_repository": "https://github.com/cvessell-create/hail-to-the-analyst",
+  "original_commit": "0a147bf95e231eff68ea3be7f10003752ce3b573",
+  "original_index_sha256": "0703c346480d6f5aa01b4793e1d760738ba3bc1d9030e225034f076f10638d60",
+  "evidence_level": "Observed source architecture; authoring process reconstructed, not historical logs",
+  "components": [
+    {"id": "presentation", "functions": [], "source": "index.html HTML/CSS", "target": "vessell/app/reporting.py", "adaptation": "Semantic reports, responsive views and accessible status; cosmetic styling grants no authority", "standing": "existing-report-surface"},
+    {"id": "narrative", "functions": ["setMessage", "title", "briefing"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Event-referenced narrative and explicit source/uncertainty, not character dialogue as evidence", "standing": "implemented-workflow"},
+    {"id": "world-loader", "functions": ["parseMap", "loadLevel"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Validated case specification, claim intake, consumers and isolated per-run outputs", "standing": "implemented-workflow"},
+    {"id": "entity-factory", "functions": ["spawnEnemy"], "source": "index.html", "target": "vessell/app/pipeline.py", "adaptation": "Typed evidence records; fictional enemy labels never become real-person classifications", "standing": "existing-pipeline"},
+    {"id": "collision-boundary", "functions": ["solid", "moveEntity"], "source": "index.html", "target": "schemas/workflow.schema.json", "adaptation": "Closed contracts and valid state transitions reject impossible operations", "standing": "implemented-workflow"},
+    {"id": "visibility", "functions": ["hasLOS"], "source": "index.html", "target": "vessell/provenance.py", "adaptation": "Declared provenance roots limit conclusions; visibility is not independent corroboration", "standing": "existing-provenance"},
+    {"id": "access-control", "functions": ["use"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Consequential provenance gate AND shared Harm Gate precede local decision permission", "standing": "implemented-workflow"},
+    {"id": "mission-completion", "functions": ["finishLevel", "victory", "die"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Completion requires corrected read-back consumers; failed workflows do not emit successful reports", "standing": "implemented-workflow"},
+    {"id": "action-resources", "functions": ["fire", "cycleWeapon"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Explicit command budget, typed operations and proposal/execution separation; no real weapons", "standing": "implemented-workflow"},
+    {"id": "damage-feedback", "functions": ["killEnemy", "damage"], "source": "index.html", "target": "vessell/harm_gate.py", "adaptation": "Explicit review/error states; health and kills are not analytical confidence metrics", "standing": "existing-harm-gate"},
+    {"id": "world-update", "functions": ["update", "enemyShoot"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Ordered bounded commands, observation handling and preserved corrections", "standing": "implemented-workflow"},
+    {"id": "projection", "functions": ["wallColor", "render", "spriteScreen", "renderSprites"], "source": "index.html", "target": "vessell/evaluation.py", "adaptation": "Read-only report projections and paired machine/human synchronization; no Python 3D renderer claimed", "standing": "existing-report-projection"},
+    {"id": "procedural-assets", "functions": ["drawEnemy", "drawPickup", "drawWeapon"], "source": "index.html", "target": "GAME_DEVELOPMENT_SKILL.md", "adaptation": "Reusable presentation templates explained; art and fictional weapons retained as game-only knowledge", "standing": "documented-not-runtime-ported"},
+    {"id": "hud-map", "functions": ["drawHUD", "drawMap"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Trace populations, source roots, gate outcomes and correction receipts replace combat score", "standing": "implemented-workflow"},
+    {"id": "clock", "functions": ["loop"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Logical ticks and deterministic replay projection; execution timestamps remain separate", "standing": "implemented-workflow"},
+    {"id": "audio", "functions": ["tone", "initAudio"], "source": "index.html", "target": "GAME_DEVELOPMENT_SKILL.md", "adaptation": "Audio lifecycle explained; analyst engine does not need or claim an audio synthesizer", "standing": "documented-not-runtime-ported"},
+    {"id": "input-pause", "functions": ["pause", "joyMove", "joyEnd", "bindHold"], "source": "index.html", "target": "vessell/workflow.py", "adaptation": "Operator or agent command adapters, explicit pause/resume, backend remains authority", "standing": "implemented-workflow"},
+    {"id": "seeded-player", "functions": [], "source": "simulation/policy.js; simulation/run.cjs; simulation/worker.cjs", "target": "vessell/game_bridge.py", "adaptation": "Reuse paused proposal/observation protocol, deterministic worker and Python-gated execution", "standing": "paused-game-integration"},
+    {"id": "browser-coach", "functions": [], "source": "lab.html; simulation/lab.js; simulation/lab.css", "target": "docs/game-integration.md", "adaptation": "Reuse explicit connection status and failure UX; no fake backend on static Pages", "standing": "paused-game-integration"},
+    {"id": "recall-sequel", "functions": [], "source": "recall.html; simulation/recall.js", "target": "vessell/workflow.py", "adaptation": "Shared-root rejection, independently corroborated use and verified correction transferred into generic analyst workflow", "standing": "implemented-workflow"},
+    {"id": "evaluation-release", "functions": [], "source": "simulation/test.cjs; simulation/FINDINGS.md; .github/workflows/ci.yml", "target": "tests/test_workflow.py", "adaptation": "Reproducibility, negative tests, frozen identities and independent evidence boundaries", "standing": "implemented-workflow"}
+  ],
+  "narrative_elements": [
+    {"element": "Jack Slade", "standing": "fictional player character", "transfer": "Operator role, not an invented analyst credential"},
+    {"element": "The Fabricators and The Fabricator", "standing": "fictional syndicate and boss", "transfer": "Adversarial hypotheses and bottlenecks, never attribution to real people"},
+    {"element": "The Archive", "standing": "fictional first mission", "transfer": "Evidence intake, declared lineage and access preconditions"},
+    {"element": "Fabrication Plant", "standing": "fictional second mission", "transfer": "Multi-stage workflow and explicit terminal outcome"},
+    {"element": "Mole, Drone and Troll", "standing": "fictional enemy types", "transfer": "Document behavior variants without stigmatizing real subjects"},
+    {"element": "Sidearm, Breacher and Redactor", "standing": "fictional weapons", "transfer": "Strategy/resource choice metaphor only; no real-world action tools"},
+    {"element": "Taunts, briefings, pickups and HUD messages", "standing": "authored local strings", "transfer": "Event templates grounded in actual records rather than LLM-generated facts"},
+    {"element": "Victory rank, death and restart", "standing": "game feedback", "transfer": "Measured completion/failure and new-run isolation, not intelligence or efficacy certification"},
+    {"element": "Signal Recall east-passage rumor", "standing": "paused synthetic sequel scenario", "transfer": "Provisional claim followed by source-copy test and actual file correction"},
+    {"element": "Archive, Echo and Survey terminals", "standing": "prescribed synthetic lineage", "transfer": "Shared-root and independent-root fixture; not authenticated real sources"}
+  ]
+}

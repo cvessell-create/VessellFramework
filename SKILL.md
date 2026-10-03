@@ -1,6 +1,16 @@
 # VesselFramework Analyst — Complete Meta Skill
 ## Version 3.8.1
 
+## Game architecture adaptation
+
+From the repository root, load `GAME_DEVELOPMENT_SKILL.md`.
+The Game Development and Analyst Workflow Reconstruction Skill
+maps every named function, component and narrative family from the original
+Hail game and the paused simulation/Signal Recall build into framework design
+patterns. It adds a bounded executable analyst workflow while preserving this
+skill's governing order and evidence standards. Fictional game metrics, labels
+and stories never become real-world evidence or authorization.
+
 ## Role
 
 This is the operational VesselFramework analyst skill.

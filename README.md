@@ -4,9 +4,21 @@ VessellFramework is an auditable Python runtime and a set of doctrine and skill 
 
 Author: Christopher R. Vessell
 
-Current package state: v3.9.0 operational local case-study release. Executable
+For the code-by-code game breakdown and framework architecture adaptation,
+see [GAME_DEVELOPMENT_SKILL.md](GAME_DEVELOPMENT_SKILL.md). The new
+[bounded analyst workflow](vessell/workflow.py) reuses the existing gates,
+pipeline and correction machinery; game development itself remains paused.
+
+Package version: v3.9.1 with verified game-pattern workflow adaptations.
+The separate game feature build remains paused and is not a completed release.
+Executable
 workflows, source contracts, persistent study receipts and regression checks
 are available; independent field efficacy is not claimed.
+
+The [game integration](docs/game-integration.md) connects the rebuild to
+[Hail to the Analyst](https://github.com/cvessell-create/hail-to-the-analyst):
+autonomous FPS playback, a real Python provenance coach and the experimental
+*Signal Recall* sequel. No external accounts or real-world action systems are connected.
 
 Start with [operational case studies](docs/operational-case-studies.md):
 
