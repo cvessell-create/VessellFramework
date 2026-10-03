@@ -5,6 +5,10 @@ container, or controlled field study. It performs only local reads and writes,
 does not scan real targets, and does not deploy patches or contact employers.
 Package installation during setup requires network access.
 
+For Linux VM-backed, offline container isolation, use the
+[OS sandbox](os-sandbox.md). That runner verifies containment before running
+this replay suite.
+
 ## Setup and run
 
 Use Python 3.13 or newer and keep the environment/output outside source data.

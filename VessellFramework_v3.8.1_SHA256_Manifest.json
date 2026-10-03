@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-10-03T02:14:14.341395+00:00",
+  "generated_utc": "2026-10-03T02:34:27.835946+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -396,12 +396,16 @@
       "sha256": "34d16c5b29acda1784732e2c1f4fd4256dba68f407ef3c1a4dc12b28b9bf5c2a"
     },
     {
+      "path": "docs/os-sandbox.md",
+      "sha256": "2cee34ccf46a0d0c4605fec90918c2b5e185f02ea67a0eb281d71bb630a09fc4"
+    },
+    {
       "path": "docs/references.md",
       "sha256": "8076e0f7a996af057d4b435d257a65f9ab1d337312f5e0a176aeb5ef74b0e517"
     },
     {
       "path": "docs/replay-lab.md",
-      "sha256": "42f80e0373819d88cbe3b1132645f7a223ce7d7db4f351aa180e5594ecc443f1"
+      "sha256": "09f5ecc0e0a1a3329a3ea8e8fdd49b22a035a4a3cb252b95aa224368616a2134"
     },
     {
       "path": "docs/tool-integrations.md",
@@ -688,6 +692,14 @@
       "sha256": "9d6302f873220be6226509fe2f2bae31ce79dcfc90202328c09733fc5f879e81"
     },
     {
+      "path": "sandbox/Dockerfile",
+      "sha256": "858a3f8661556b95b6dc589b7241a801afc40d06394801d5e98d6631ec06dd2c"
+    },
+    {
+      "path": "sandbox/run.py",
+      "sha256": "4d23ae1fa9c5c2d013ff0ccd22b64067283d75f79c08e1f76a71ffe14870e4a7"
+    },
+    {
       "path": "schemas/case.schema.json",
       "sha256": "305ea77e787fb8b329c36e50a37b7ce19b9da77b2ec06dabb23b2fad05ae5028"
     },
@@ -804,6 +816,10 @@
       "sha256": "7866cb8aa1ae337693bb57f6cbd289a6121f644ce402efa517b1d0e6c2ea0302"
     },
     {
+      "path": "tests/test_os_sandbox.py",
+      "sha256": "dface3685901f2f07f32ada1265f18c156378d809093855ec721ee3d2ec003f8"
+    },
+    {
       "path": "tests/test_path_sync.py",
       "sha256": "07c8e536b79aec0eec75b1b587198dc6cecea5b7cb497c845604b66907b6ae60"
     },
@@ -822,6 +838,10 @@
     {
       "path": "tests/test_recognition_gate.py",
       "sha256": "c63174be29a371bb5d7a87f8623666e1ed4cda59ab9f392a994edec54683db0a"
+    },
+    {
+      "path": "tests/test_reference_data.py",
+      "sha256": "27ff5c83255b99f01964c3b72906de7252837b3ea6436a6775cf9e31fc7169ba"
     },
     {
       "path": "tests/test_remediation_orchestrator.py",
@@ -986,6 +1006,10 @@
     {
       "path": "vessell/provenance.py",
       "sha256": "13a317237ed898ae662fb4ce15a61183ddb1201f17f337213ecd0c8212d9a62c"
+    },
+    {
+      "path": "vessell/reference_data.py",
+      "sha256": "aa989945ed97991d6fad93d95a054c96701d862b31c1be8454beb8c9b1f7e7ef"
     },
     {
       "path": "vessell/replay_lab.py",
