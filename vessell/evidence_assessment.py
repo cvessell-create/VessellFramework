@@ -73,9 +73,11 @@ def combine_assessment(
                 "Posting-level ghost-job and source-grouped claim-verification labels.",
                 "Archived weather forecast vintages and as-published outcome vintages.",
                 "Controlled analyst/learning studies with meaningful outcomes.",
-                "Full PDF source-content and Parquet row-level validation.",
+                ("Substantive PDF source review and OPM field-definition/period reconciliation "
+                 "remain distinct from successful decoding and required-field checks."),
                 "Unlinked historical artifacts have not been individually reassessed.",
-                "Remote GitHub and other-machine synchronization has not been verified.",
+                ("Other-machine/private-runtime synchronization remains unverified; "
+                 "GitHub source identity is checked separately by fetched tree hashes."),
             ],
         },
         "limitations": [
@@ -105,6 +107,9 @@ def main() -> int:
             "tests/test_evaluation.py", "tests/test_data_evidence.py",
             "tests/test_evidence_assessment.py",
             "docs/evaluation-methods.md", "docs/free-method-courses.md",
+            "vessell/source_readers.py", "vessell/replay_lab.py",
+            "tests/test_source_readers.py", "tests/test_replay_lab.py",
+            "tests/test_distribution_manifest.py", "docs/replay-lab.md",
         })
         hashes = {path: sha256(args.project_root / path) for path in sorted(artifacts)}
         result = combine_assessment(

@@ -1,6 +1,6 @@
 {
   "package_version": "3.8.1",
-  "generated_utc": "2026-10-03T02:02:16.104912+00:00",
+  "generated_utc": "2026-10-03T02:14:14.341395+00:00",
   "runtime_state_claim": "UNVERIFIED/NOT APPLIED",
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "d939c03ee8fd4d4e43e71dc5a35c8afb8a6be6aba0be80b2d51a901d838f5d15"
+      "sha256": "01d543c251502b5fdc961962f127579cd065509f3de68137ffe78317b07bb090"
     },
     {
       "path": ".gitignore",
@@ -253,7 +253,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "3c8e5f6f88416921b11e684d648d6692f26f31297d5db00ee2c075543bbce81b"
+      "sha256": "f5c31cd4b33cfd5cdebcb1ba97fd2087e133c33bf432086afdeca0c8b965f582"
     },
     {
       "path": "SKILL.md",
@@ -385,7 +385,7 @@
     },
     {
       "path": "docs/evaluation-methods.md",
-      "sha256": "e02fd6cbd768fe334ae7922a48e257c51080b4878340e737312de56b39f53b73"
+      "sha256": "f2ec3e4773b5826c7b4af4151cfae958a5bd3ae08ffbbb8307d072ee8f57c375"
     },
     {
       "path": "docs/free-method-courses.md",
@@ -398,6 +398,10 @@
     {
       "path": "docs/references.md",
       "sha256": "8076e0f7a996af057d4b435d257a65f9ab1d337312f5e0a176aeb5ef74b0e517"
+    },
+    {
+      "path": "docs/replay-lab.md",
+      "sha256": "42f80e0373819d88cbe3b1132645f7a223ce7d7db4f351aa180e5594ecc443f1"
     },
     {
       "path": "docs/tool-integrations.md",
@@ -613,7 +617,7 @@
     },
     {
       "path": "pyproject.toml",
-      "sha256": "a3bdaa597bdb7a7e95911ce4f58525c245ef88b5ff72b830b4f23ae3877bb594"
+      "sha256": "85be3727ca05f4e45550cb4f7556a8fd42ee2a42f38c66bbd407f6e58b8a63f8"
     },
     {
       "path": "requirements/agent.txt",
@@ -768,6 +772,10 @@
       "sha256": "4ac920d9aa7bce6e9ea157487979d3b35f974ba01d9bd6baffe075974886b86b"
     },
     {
+      "path": "tests/test_distribution_manifest.py",
+      "sha256": "c6487399641934684c025d7c868dfaa5f148bc7385b693654fc9d76d03c46a1d"
+    },
+    {
       "path": "tests/test_doctrine_reconciliation.py",
       "sha256": "ffb7d48c2fe4981e4f8db481d430203e2db3245efa4dbc883c2c0e9df08ec408"
     },
@@ -820,6 +828,10 @@
       "sha256": "6a2390c885d133f7a3702455a4a5c5e8f127c24858337b6fc9eec23951b806d1"
     },
     {
+      "path": "tests/test_replay_lab.py",
+      "sha256": "91044d4f158ec28cdfb8a789be2caa3037e390b55e370c9b181bb4ddc7bed687"
+    },
+    {
       "path": "tests/test_scan_reporting.py",
       "sha256": "0e57913da54224da9dfdad82a3c96f27d106bb0cb66bc58be64d67a0476a2aca"
     },
@@ -834,6 +846,10 @@
     {
       "path": "tests/test_single_file_evil_twin.py",
       "sha256": "4a4121992975b1ecc777d19aaed429fb8490c8af466988407a711c9d87babd09"
+    },
+    {
+      "path": "tests/test_source_readers.py",
+      "sha256": "e3dfe0f9fe262c4e7e37c9cddc3c411c49a0308108dbb6e4e205a97a689fe3a2"
     },
     {
       "path": "tests/test_tooling.py",
@@ -949,7 +965,7 @@
     },
     {
       "path": "vessell/data_evidence.py",
-      "sha256": "15f27033aeecf94ff41b9d0cad83454206737d8142e4abc20a8fe1a6df36b5f6"
+      "sha256": "390cdea35a37a18cfed4677fa0326e57f1b857305ac1850e5c81658f1a0f32f0"
     },
     {
       "path": "vessell/evaluation.py",
@@ -957,7 +973,7 @@
     },
     {
       "path": "vessell/evidence_assessment.py",
-      "sha256": "b4fd6f0ba4c6d93d015641af91e08e5276f56c280ac0dace03a29e6266df8940"
+      "sha256": "609fe949186f893402f297e26b4b353e35cff7e1c6a4c31fcd46ca99ca47e734"
     },
     {
       "path": "vessell/harm_gate.py",
@@ -972,12 +988,20 @@
       "sha256": "13a317237ed898ae662fb4ce15a61183ddb1201f17f337213ecd0c8212d9a62c"
     },
     {
+      "path": "vessell/replay_lab.py",
+      "sha256": "495fec8d45735d0c7fb43b3ef171c15fef6761d8e7269add9e46e509e1c31e51"
+    },
+    {
       "path": "vessell/report.py",
       "sha256": "01da890e289f4e6969041c90ae78166f2cc75f2532ed49ba8c69ad20a412973c"
     },
     {
       "path": "vessell/scan_reporting.py",
       "sha256": "aa90ca9fa021effe0e8615500a85863b2907312aa767da02b123f8a8d971fa02"
+    },
+    {
+      "path": "vessell/source_readers.py",
+      "sha256": "82af3c2559fab9a4f9f9dfb05d4a75115448457ce06cbc3e6de5e5afd37a7d5a"
     },
     {
       "path": "vessell/tooling/__init__.py",
@@ -1010,30 +1034,6 @@
     {
       "path": "vessell/weights.py",
       "sha256": "5d6f09042e695fb98b7136a6de136e68bcbd843bc7b580e456a8c05420516dfe"
-    },
-    {
-      "path": "vessell_framework.egg-info/PKG-INFO",
-      "sha256": "d436b1acd7e5c39c5856204f0b520ae9e58e6ce075eb543437dd6d2b87eac4ab"
-    },
-    {
-      "path": "vessell_framework.egg-info/SOURCES.txt",
-      "sha256": "10de9651ae55011aae4e57eaea0c1666c8b3e99919e3c7ae7193949c166b1ab3"
-    },
-    {
-      "path": "vessell_framework.egg-info/dependency_links.txt",
-      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
-    },
-    {
-      "path": "vessell_framework.egg-info/entry_points.txt",
-      "sha256": "1cd6ba475cf1408a2942b2301328935259ad400774e0b30c40390ad2df73fd57"
-    },
-    {
-      "path": "vessell_framework.egg-info/requires.txt",
-      "sha256": "6cca862f596197ffaeb3a8be4dc6ad6d405b77dabbe973179ea3e721b67df82b"
-    },
-    {
-      "path": "vessell_framework.egg-info/top_level.txt",
-      "sha256": "ec47fc4c710713b64f0dc5acee47dbe080a6038856d85fe9c407f1302becc94d"
     }
   ]
 }

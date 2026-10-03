@@ -173,7 +173,9 @@ def verify_catalog(data_dir: Path, entries: list[dict[str, Any]]) -> dict[str, s
     return hashes
 
 
-def audit_data(data_dir: Path, previous_catalog: Path | None = None) -> dict[str, Any]:
+def audit_data(
+    data_dir: Path, previous_catalog: Path | None = None, *, decode_sources: bool = False,
+) -> dict[str, Any]:
     initial = json.loads((data_dir / "download_manifest.json").read_text(encoding="utf-8"))
     verified_catalog = verify_catalog(data_dir, initial["downloads"])
     if previous_catalog is not None:
@@ -229,6 +231,17 @@ def audit_data(data_dir: Path, previous_catalog: Path | None = None) -> dict[str
     if start != b"PAR1" or end != b"PAR1":
         raise ValueError("Invalid OPM Parquet framing.")
     checks[parquet.name] = {"validation": "Framing only; semantic/row validation pending."}
+    if decode_sources:
+        from vessell.source_readers import audit_opm, audit_pdf
+
+        metadata = json.loads((data_dir / "opm_accessions_metadata.json").read_text())
+        records = [row for row in metadata if row["filename"] == "accessions_202409_3"]
+        if len(records) != 1:
+            raise ValueError("Expected exactly one matching OPM accessions metadata record.")
+        period = records[0]["year"] + records[0]["month"]
+        checks[parquet.name] = audit_opm(parquet, period)
+        for name in ("cisa_ssvc_guide.pdf", "cisa_aa24_038a_advisory.pdf"):
+            checks[name] = audit_pdf(data_dir / name)
     return {
         "evaluation": "Public-data suitability and quality audit",
         "independent_external_validation": False,
@@ -249,13 +262,17 @@ def main() -> int:
     parser.add_argument("--data-dir", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--previous-catalog", type=Path)
+    parser.add_argument("--decode-sources", action="store_true",
+                        help="Decode all PDF pages and OPM Parquet rows; requires [evaluation].")
     args = parser.parse_args()
     try:
         if args.output_dir.resolve() == args.data_dir.resolve():
             raise ValueError("Audit outputs must be separate from source data.")
-        result = audit_data(args.data_dir, args.previous_catalog)
+        result = audit_data(
+            args.data_dir, args.previous_catalog, decode_sources=args.decode_sources,
+        )
         machine, human = write_reports(result, args.output_dir)
-    except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile,
+    except (OSError, ValueError, KeyError, TypeError, RuntimeError, zipfile.BadZipFile,
             ElementTree.ParseError) as error:
         print(f"DATA AUDIT FAILED: {error}", file=sys.stderr)
         return 2

@@ -177,6 +177,10 @@ controlled control-efficacy study is claimed.
 See [evaluation methods by framework aspect](docs/evaluation-methods.md) and
 [free university/Khan Academy/YouTube method courses](docs/free-method-courses.md).
 
+Use the [isolated replay lab](docs/replay-lab.md) to test public-data handling,
+missing-intake safeguards, corrupted-source rejection and parallel consistency
+without contacting real targets.
+
 The path synchronizer verifies the post-write hash against expected content,
 not merely that a hash can be read. Tests cover corrupted writes and byte-level
 agreement of the packaged skill copy; this does not attest to other machines

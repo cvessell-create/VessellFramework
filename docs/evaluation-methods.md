@@ -32,7 +32,7 @@ claims against the new code and results while retaining the historical scores.
 | Evil Twin / recognition and Startle Gate | False acceptance/rejection, challenge replay and timeout tests in an authorized environment; assess verification burden | Existing recognition and single-file tests | Realistic labeled challenges and independent evaluators; do not equate fixture success with identification accuracy |
 | Cyber-range learning | Education-style comparative study, baseline equivalence, attrition, pre/post and delayed retention; blinded scoring | WWC standards and study-review records for method selection; IPEDS directory for institution context | Consenting participants, protocol/ethics review as applicable, a comparison group, meaningful skill outcomes; existing unrelated studies do not validate this framework |
 | Schemas, citation metadata and canonical scope | Required-field/type/range contracts, serializer-schema agreement, accurate citation/version and canonical/noncanonical classification | New positive and required-field-negative tests for forecast, evidence-product, skill and verification records | Schema validity is not real-world validity. Scope/citation files should retain their documentary role |
-| Synchronization / integrity | Expected-versus-read-back content hash, corrupt-write negative test, exact canonical/mirror comparison, manifest drift verification | Installer now checks expected content; packaged skill bytes tested; paired reports verified | Proof applies only to inspected local files. Remote GitHub, private mounts and other machines remain unverified unless independently read back |
+| Synchronization / integrity | Expected-versus-read-back content hash, corrupt-write negative test, exact canonical/mirror comparison, manifest drift verification | Installer now checks expected content; packaged skill bytes tested; paired reports verified; GitHub source publication checked against fetched-tree hashes | Source publication verification does not establish deployment. Private mounts and other machines remain unverified unless independently read back |
 
 ## Domain datasets must not be pooled indiscriminately
 
@@ -142,9 +142,11 @@ file hashes are captured as a local baseline, not asserted as remote
 authentication. On later runs, pass the prior generated JSON with
 `--previous-catalog /path/to/data_audit/evaluation.json` to reject source drift.
 Output JSON and Markdown use the shared exact read-back synchronization check.
-Do not overwrite source data with reports. PDF and OPM Parquet entries state
-their limited framing/header validation rather than claiming full semantic
-inspection. This audit does not fit a model, infer causal effects, or supply
+Do not overwrite source data with reports. By default PDF and OPM Parquet entries state their limited framing/header
+validation. Install `.[evaluation]` and pass `--decode-sources` to decode every
+PDF page and OPM row, exposing missing/redacted fields and action dates outside
+the file reference month. Decoding is not a complete substantive source audit
+or a causal evaluation. This audit does not fit a model, infer causal effects, or supply
 missing operational outcome labels.
 
 To combine an earlier weight assessment with these results while preserving
@@ -161,6 +163,9 @@ Both input reports must have synchronized Markdown counterparts. The generated
 extension hashes linked implementation/test files, lists every historical
 artifact's linkage status, and explicitly leaves unreviewed gaps unresolved.
 It does not rerun Llama or silently inflate historical importance/support scores.
+
+The [isolated replay lab](replay-lab.md) runs these checks with frozen inputs,
+copied-source/output fault injection and parallel gate evaluation.
 
 ## What cannot honestly be closed with downloaded data
 
